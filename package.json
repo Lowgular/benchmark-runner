@@ -1,0 +1,8 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@angular/compiler": "^21.1.3",
+    "@lowgular/wcs-ratings": "file:../../../../lowgular-internal/dist/apps/wcs-ratings",
+    "web-codegen-scorer": "^0.0.61"
+  }
+}
