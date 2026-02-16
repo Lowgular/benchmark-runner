@@ -1,0 +1,43 @@
+<div class="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+  <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-semibold text-slate-800">Welcome back</h1>
+    <p class="text-slate-500 mt-2">Sign in to your account</p>
+
+    <form class="mt-6 space-y-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-slate-700" for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="test@lowgular.io"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-slate-700" for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter your password"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="w-full rounded-lg bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 transition"
+      >
+        Submit
+      </button>
+    </form>
+
+    @if (successMessage()) {
+      <p class="mt-4 rounded-lg bg-emerald-50 text-emerald-700 px-4 py-2 text-sm font-medium">
+        {{ successMessage() }}
+      </p>
+    }
+  </div>
+</div>

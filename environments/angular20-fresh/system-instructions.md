@@ -17,6 +17,7 @@ Follow instructions below CAREFULLY:
 - Do not assume globals like (`new Date()`) are available.
 - Do not write arrow functions in templates (they are not supported).
 - Do not write Regular expressions in templates (they are not supported).
+- ALWAYS `unsubscribe`. If you use `toSignal` then you are fine, if you need to subscribe in template then ALWAYS use `async` pipe and if you need to send data to backend once ALWAYS use `take(1)` RxJs operator
 
 You are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.
 

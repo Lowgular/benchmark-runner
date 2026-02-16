@@ -1,0 +1,9 @@
+{
+  "fileSize": 2226,
+  "buildResult": {
+    "status": "error",
+    "message": "✘ [ERROR] TS2724: '\"@angular/core\"' has no exported member named 'toSignal'. Did you mean 'Signal'? [plugin angular-compiler]\n\n    src/app/app.ts:1:36:\n      1 │ import { Component, inject, signal, toSignal } from '@angular/core';\n        ╵                                     ~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

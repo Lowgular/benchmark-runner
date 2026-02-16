@@ -1,0 +1,17 @@
+import { Injectable, inject } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { LoginRequest, LoginResponse } from "../models/login.model";
+
+@Injectable({
+  providedIn: "root",
+})
+export class AuthService {
+  private readonly http = inject(HttpClient);
+  private readonly endpoint =
+    "https://us-central1-lowgular-platform-c0e93.cloudfunctions.net/api/mock/login";
+
+  login(payload: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(this.endpoint, payload);
+  }
+}

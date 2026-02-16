@@ -1,0 +1,83 @@
+[
+  {
+    "id": "7123358b8a0390795bb4c103ee4a4aa53ebc9e34a78facb624015e4aabe226ac",
+    "version": 3,
+    "displayName": "Angular 20 Greenfield",
+    "timestamp": "2026-02-13T09:51:29.988Z",
+    "totalPoints": 87.5,
+    "maxOverallPoints": 100,
+    "appsCount": 1,
+    "labels": [],
+    "environmentId": "1ad278ee-fdad-4a67-83c6-0519f977f886",
+    "framework": {
+      "fullStackFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      },
+      "clientSideFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      }
+    },
+    "model": "z-ai/glm-5_low",
+    "stats": {
+      "builds": {
+        "successfulInitialBuilds": 1,
+        "successfulBuildsAfterRepair": 0,
+        "failedBuilds": 0
+      },
+      "tests": {
+        "successfulInitialTests": 0,
+        "successfulTestsAfterRepair": 0,
+        "failedTests": 0,
+        "noTestsRun": 1
+      },
+      "buckets": [
+        {
+          "name": "Excellent",
+          "nameWithLabels": "Excellent (98-100%)",
+          "min": 98,
+          "max": 100,
+          "id": "excellent",
+          "appsCount": 0
+        },
+        {
+          "name": "Great",
+          "nameWithLabels": "Great (85-97%)",
+          "min": 85,
+          "max": 97,
+          "id": "great",
+          "appsCount": 1
+        },
+        {
+          "name": "Good",
+          "nameWithLabels": "Good (71-84%)",
+          "min": 71,
+          "max": 84,
+          "id": "good",
+          "appsCount": 0
+        },
+        {
+          "name": "Poor",
+          "nameWithLabels": "Poor (0-70%)",
+          "min": 0,
+          "max": 70,
+          "id": "poor",
+          "appsCount": 0
+        }
+      ],
+      "runtime": {
+        "appsWithErrors": 0,
+        "appsWithoutErrors": 1
+      },
+      "security": {
+        "appsWithErrors": 0,
+        "appsWithoutErrors": 1
+      }
+    },
+    "runner": {
+      "id": "ai-sdk",
+      "displayName": "AI SDK"
+    }
+  }
+]

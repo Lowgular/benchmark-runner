@@ -1,0 +1,30 @@
+<div class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="mx-auto max-w-3xl px-6 py-10">
+    <header class="mb-8">
+      <h1 class="text-3xl font-semibold">Users</h1>
+      <p class="text-sm text-slate-500">Total: {{ totalUsers() }}</p>
+    </header>
+
+    <ul class="space-y-4">
+      @for (user of users(); track user.id) {
+        <li class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm">
+          <img
+            [ngSrc]="user.avatarUrl"
+            width="48"
+            height="48"
+            class="h-12 w-12 rounded-full object-cover"
+            alt="User avatar"
+          />
+          <div>
+            <p class="text-base font-medium text-slate-800">
+              {{ user.email }}
+            </p>
+            <p class="text-xs text-slate-500">
+              Last login: {{ user.lastLoggedInAt | date: "dd.MM.yyyy, HH:mm" }}
+            </p>
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+</div>

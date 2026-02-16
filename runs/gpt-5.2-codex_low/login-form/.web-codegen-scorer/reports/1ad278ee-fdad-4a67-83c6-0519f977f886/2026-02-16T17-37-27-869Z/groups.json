@@ -1,0 +1,82 @@
+[
+  {
+    "id": "8e9deeb8a4521244064e9fcd4419c2a7bb514c2c5644a67e8c5203ef133beb81",
+    "version": 3,
+    "displayName": "Angular 20 Greenfield",
+    "timestamp": "2026-02-16T17:38:11.121Z",
+    "totalPoints": 94,
+    "maxOverallPoints": 100,
+    "appsCount": 1,
+    "labels": [],
+    "environmentId": "1ad278ee-fdad-4a67-83c6-0519f977f886",
+    "framework": {
+      "fullStackFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      },
+      "clientSideFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      }
+    },
+    "model": "openai/gpt-5.2-codex_low",
+    "stats": {
+      "builds": {
+        "successfulInitialBuilds": 0,
+        "successfulBuildsAfterRepair": 0,
+        "failedBuilds": 1,
+        "errorDistribution": {
+          "TypeScript Error": 1
+        }
+      },
+      "tests": {
+        "successfulInitialTests": 0,
+        "successfulTestsAfterRepair": 0,
+        "failedTests": 0,
+        "noTestsRun": 1
+      },
+      "buckets": [
+        {
+          "name": "Excellent",
+          "nameWithLabels": "Excellent (98-100%)",
+          "min": 98,
+          "max": 100,
+          "id": "excellent",
+          "appsCount": 0
+        },
+        {
+          "name": "Great",
+          "nameWithLabels": "Great (85-97%)",
+          "min": 85,
+          "max": 97,
+          "id": "great",
+          "appsCount": 1
+        },
+        {
+          "name": "Good",
+          "nameWithLabels": "Good (71-84%)",
+          "min": 71,
+          "max": 84,
+          "id": "good",
+          "appsCount": 0
+        },
+        {
+          "name": "Poor",
+          "nameWithLabels": "Poor (0-70%)",
+          "min": 0,
+          "max": 70,
+          "id": "poor",
+          "appsCount": 0
+        }
+      ],
+      "security": {
+        "appsWithErrors": 0,
+        "appsWithoutErrors": 1
+      }
+    },
+    "runner": {
+      "id": "ai-sdk",
+      "displayName": "AI SDK"
+    }
+  }
+]

@@ -1,0 +1,23 @@
+<main class="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+  @if (product(); as item) {
+    <article class="max-w-xl w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+      <div class="flex flex-col md:flex-row gap-6 items-center">
+        <div class="w-40 h-40 flex-shrink-0 bg-slate-100 rounded-xl overflow-hidden">
+          <img
+            class="w-full h-full object-cover"
+            [ngSrc]="item.image"
+            [alt]="item.name"
+            width="160"
+            height="160"
+            priority
+          />
+        </div>
+        <div class="flex-1 space-y-3">
+          <h1 class="text-2xl font-semibold text-slate-900">{{ item.name }}</h1>
+          <p class="text-slate-600 text-sm leading-relaxed">{{ item.description }}</p>
+          <p class="text-lg font-bold text-emerald-600">{{ formattedPrice() }}</p>
+        </div>
+      </div>
+    </article>
+  }
+</main>

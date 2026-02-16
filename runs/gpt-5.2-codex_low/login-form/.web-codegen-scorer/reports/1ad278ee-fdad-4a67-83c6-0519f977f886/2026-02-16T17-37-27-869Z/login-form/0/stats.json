@@ -1,0 +1,9 @@
+{
+  "fileSize": 4069,
+  "buildResult": {
+    "status": "error",
+    "message": "✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:14:33:\n      14 │   private readonly formBuilder = inject(FormBuilder);\n         ╵                                  ~~~~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:15:33:\n      15 │   private readonly authService = inject(AuthService);\n         ╵                                  ~~~~~~\n\n\n✘ [ERROR] TS7006: Parameter 'response' implicitly has an 'any' type. [plugin angular-compiler]\n\n    src/app/app.ts:36:18:\n      36 │       .subscribe((response) => {\n         ╵                   ~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

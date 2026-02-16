@@ -1,0 +1,500 @@
+{
+  "id": "1a2840c6-99ce-4189-91e6-1896afbc5f04",
+  "group": "8e9deeb8a4521244064e9fcd4419c2a7bb514c2c5644a67e8c5203ef133beb81",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "login-form",
+        "prompt": "# Login Form\n\nThe purpose of this application is to show a simple form submission.\n\n## File system\n\nYou are in greenfield Angular starter app and here are the files\n\n\n---\n\n## Endpoints\n\nYou must use this endpoint in order to fetch the product detail model:\n`POST https://us-central1-lowgular-platform-c0e93.cloudfunctions.net/api/mock/login`\n\nRequest body format:\n\n```json\n{\n  \"email\": \"string representing email to be logged in\",\n  \"password\": \"string representing password for the email\"\n}\n```\n\nThe endpoint will respond with this json format:\n\n```json\n{\n  \"accessToken\": \"string representing jwt simplest format\"\n}\n```\n\n## Functional Requirements\n\n```gherkin\nGiven I am on the \"/\" router\nWhen I fill up the \"email\" field with the value \"test@lowgular.io\"\nAnd I fill up the \"password\" field with the value \"test\"\nAnd I press \"submit\"\nThen I should see \"logged in successfully\" message\n```\n\n### Out of Functional Scope\n\nThe following are explicitly NOT part of this task so DO NOT attempt to develp these features:\n\n- Routing and navigating to another route\n- Error handling (assume the API always succeeds)\n- Loading states (no need to show loading indicators)\n\n## Technical Requirements\n\nIMPORTANT: for this task you do not need to setup routing - simply use a single `App` component and show the state change as part of internal component state.\n\nUse the simple CMS (Component Model Service) architecture:\n\n- Component - Do not write your own component, simply use app.ts and app.html to finish the task\n- Model - you are required to create own model file\n- Service - you are required to create own service file\n- HttpClient - you must use HttpClient to fetch data from the specified endpoint\n\n## UI Requirements\n\nYou MUST create the valid HTML that will represent a login form.\n\nIt is important that you show the correct form fields and bind them into Http Request.\n\nYou must bind the following form fiels:\n\n- email (input text)\n- password (input password)\n- submit button\n\nIMPORTANT: The tailwind css is already added to the project so use its default utility classes.\n\nWe do not evaluate the visuals for this task, however as professional frontend developer you should take care that the app looks nice and is functional.\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { Component, signal } from \"@angular/core\";\nimport { ReactiveFormsModule, FormBuilder, Validators } from \"@angular/forms\";\nimport { take } from \"rxjs\";\nimport { AuthService } from \"./services/auth.service\";\nimport { LoginRequest } from \"./models/login.model\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [ReactiveFormsModule],\n})\nexport class App {\n  private readonly formBuilder = inject(FormBuilder);\n  private readonly authService = inject(AuthService);\n\n  protected readonly successMessage = signal<string | null>(null);\n  protected readonly accessToken = signal<string | null>(null);\n\n  protected readonly form = this.formBuilder.nonNullable.group({\n    email: [\"\", [Validators.required, Validators.email]],\n    password: [\"\", [Validators.required]],\n  });\n\n  protected onSubmit(): void {\n    if (this.form.invalid) {\n      this.form.markAllAsTouched();\n      return;\n    }\n\n    const payload: LoginRequest = this.form.getRawValue();\n\n    this.authService\n      .login(payload)\n      .pipe(take(1))\n      .subscribe((response) => {\n        this.accessToken.set(response.accessToken);\n        this.successMessage.set(\"logged in successfully\");\n      });\n  }\n}\n"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-100 flex items-center justify-center p-6\">\n  <div class=\"w-full max-w-md bg-white rounded-xl shadow-lg p-8\">\n    <h1 class=\"text-2xl font-semibold text-slate-800\">Welcome back</h1>\n    <p class=\"text-slate-500 mt-2\">Sign in to your account</p>\n\n    <form class=\"mt-6 space-y-4\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit()\">\n      <div class=\"space-y-2\">\n        <label class=\"block text-sm font-medium text-slate-700\" for=\"email\">Email</label>\n        <input\n          id=\"email\"\n          type=\"email\"\n          formControlName=\"email\"\n          class=\"w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n          placeholder=\"test@lowgular.io\"\n        />\n      </div>\n\n      <div class=\"space-y-2\">\n        <label class=\"block text-sm font-medium text-slate-700\" for=\"password\">Password</label>\n        <input\n          id=\"password\"\n          type=\"password\"\n          formControlName=\"password\"\n          class=\"w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n          placeholder=\"Enter your password\"\n        />\n      </div>\n\n      <button\n        type=\"submit\"\n        class=\"w-full rounded-lg bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 transition\"\n      >\n        Submit\n      </button>\n    </form>\n\n    @if (successMessage()) {\n      <p class=\"mt-4 rounded-lg bg-emerald-50 text-emerald-700 px-4 py-2 text-sm font-medium\">\n        {{ successMessage() }}\n      </p>\n    }\n  </div>\n</div>\n"
+        },
+        {
+          "filePath": "src/app/app.css",
+          "code": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
+        },
+        {
+          "filePath": "src/app/models/login.model.ts",
+          "code": "export interface LoginRequest {\n  email: string;\n  password: string;\n}\n\nexport interface LoginResponse {\n  accessToken: string;\n}\n"
+        },
+        {
+          "filePath": "src/app/services/auth.service.ts",
+          "code": "import { Injectable, inject } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { LoginRequest, LoginResponse } from \"../models/login.model\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class AuthService {\n  private readonly http = inject(HttpClient);\n  private readonly endpoint =\n    \"https://us-central1-lowgular-platform-c0e93.cloudfunctions.net/api/mock/login\";\n\n  login(payload: LoginRequest): Observable<LoginResponse> {\n    return this.http.post<LoginResponse>(this.endpoint, payload);\n  }\n}\n"
+        },
+        {
+          "filePath": "src/app/app.config.ts",
+          "code": "import {\n  ApplicationConfig,\n  provideBrowserGlobalErrorListeners,\n  provideZoneChangeDetection,\n} from \"@angular/core\";\nimport { provideRouter } from \"@angular/router\";\nimport { provideHttpClient } from \"@angular/common/http\";\n\nimport { routes } from \"./app.routes\";\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n    provideHttpClient(),\n  ],\n};\n"
+        }
+      ],
+      "finalAttempt": {
+        "buildResult": {
+          "status": "error",
+          "message": "✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:14:33:\n      14 │   private readonly formBuilder = inject(FormBuilder);\n         ╵                                  ~~~~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:15:33:\n      15 │   private readonly authService = inject(AuthService);\n         ╵                                  ~~~~~~\n\n\n✘ [ERROR] TS7006: Parameter 'response' implicitly has an 'any' type. [plugin angular-compiler]\n\n    src/app/app.ts:36:18:\n      36 │       .subscribe((response) => {\n         ╵                   ~~~~~~~~\n\n\n",
+          "errorType": "TypeScript Error"
+        },
+        "serveTestingResult": null,
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.ts",
+            "code": "import { Component, signal } from \"@angular/core\";\nimport { ReactiveFormsModule, FormBuilder, Validators } from \"@angular/forms\";\nimport { take } from \"rxjs\";\nimport { AuthService } from \"./services/auth.service\";\nimport { LoginRequest } from \"./models/login.model\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [ReactiveFormsModule],\n})\nexport class App {\n  private readonly formBuilder = inject(FormBuilder);\n  private readonly authService = inject(AuthService);\n\n  protected readonly successMessage = signal<string | null>(null);\n  protected readonly accessToken = signal<string | null>(null);\n\n  protected readonly form = this.formBuilder.nonNullable.group({\n    email: [\"\", [Validators.required, Validators.email]],\n    password: [\"\", [Validators.required]],\n  });\n\n  protected onSubmit(): void {\n    if (this.form.invalid) {\n      this.form.markAllAsTouched();\n      return;\n    }\n\n    const payload: LoginRequest = this.form.getRawValue();\n\n    this.authService\n      .login(payload)\n      .pipe(take(1))\n      .subscribe((response) => {\n        this.accessToken.set(response.accessToken);\n        this.successMessage.set(\"logged in successfully\");\n      });\n  }\n}\n"
+          },
+          {
+            "filePath": "src/app/app.html",
+            "code": "<div class=\"min-h-screen bg-slate-100 flex items-center justify-center p-6\">\n  <div class=\"w-full max-w-md bg-white rounded-xl shadow-lg p-8\">\n    <h1 class=\"text-2xl font-semibold text-slate-800\">Welcome back</h1>\n    <p class=\"text-slate-500 mt-2\">Sign in to your account</p>\n\n    <form class=\"mt-6 space-y-4\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit()\">\n      <div class=\"space-y-2\">\n        <label class=\"block text-sm font-medium text-slate-700\" for=\"email\">Email</label>\n        <input\n          id=\"email\"\n          type=\"email\"\n          formControlName=\"email\"\n          class=\"w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n          placeholder=\"test@lowgular.io\"\n        />\n      </div>\n\n      <div class=\"space-y-2\">\n        <label class=\"block text-sm font-medium text-slate-700\" for=\"password\">Password</label>\n        <input\n          id=\"password\"\n          type=\"password\"\n          formControlName=\"password\"\n          class=\"w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n          placeholder=\"Enter your password\"\n        />\n      </div>\n\n      <button\n        type=\"submit\"\n        class=\"w-full rounded-lg bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 transition\"\n      >\n        Submit\n      </button>\n    </form>\n\n    @if (successMessage()) {\n      <p class=\"mt-4 rounded-lg bg-emerald-50 text-emerald-700 px-4 py-2 text-sm font-medium\">\n        {{ successMessage() }}\n      </p>\n    }\n  </div>\n</div>\n"
+          },
+          {
+            "filePath": "src/app/app.css",
+            "code": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
+          },
+          {
+            "filePath": "src/app/models/login.model.ts",
+            "code": "export interface LoginRequest {\n  email: string;\n  password: string;\n}\n\nexport interface LoginResponse {\n  accessToken: string;\n}\n"
+          },
+          {
+            "filePath": "src/app/services/auth.service.ts",
+            "code": "import { Injectable, inject } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { LoginRequest, LoginResponse } from \"../models/login.model\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class AuthService {\n  private readonly http = inject(HttpClient);\n  private readonly endpoint =\n    \"https://us-central1-lowgular-platform-c0e93.cloudfunctions.net/api/mock/login\";\n\n  login(payload: LoginRequest): Observable<LoginResponse> {\n    return this.http.post<LoginResponse>(this.endpoint, payload);\n  }\n}\n"
+          },
+          {
+            "filePath": "src/app/app.config.ts",
+            "code": "import {\n  ApplicationConfig,\n  provideBrowserGlobalErrorListeners,\n  provideZoneChangeDetection,\n} from \"@angular/core\";\nimport { provideRouter } from \"@angular/router\";\nimport { provideHttpClient } from \"@angular/common/http\";\n\nimport { routes } from \"./app.routes\";\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n    provideHttpClient(),\n  ],\n};\n"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 94,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 47,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Change Detection Strategy",
+                "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+                "id": "change-detection-strategy",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Pass\nsrc/app/app.ts.6.0.11.2"
+              },
+              {
+                "state": 0,
+                "name": "Dependency Injection",
+                "description": "Use the inject() function for dependency injection in components, directives, pipes, and injectable services. Do not use constructor parameters for injection.",
+                "id": "dependency-injection",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Dependency Injection"
+                ],
+                "message": "Pass\nsrc/app/app.ts.13.2.13.53,src/app/app.ts.14.2.14.53,src/app/services/auth.service.ts.9.2.9.45"
+              },
+              {
+                "state": 1,
+                "name": "Input and Output",
+                "description": "Use input() and output() functions for component inputs and outputs. Do not use @Input() or @Output() decorators.",
+                "id": "input-output",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Analysis: found 0 properties related to input or output"
+              },
+              {
+                "state": 1,
+                "name": "No Mutate on Signals",
+                "description": "For writable signals, use set() or update() to change values. Do not use mutate().",
+                "id": "no-mutate-on-signals",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Analysis: no mutate() calls on signals found"
+              },
+              {
+                "state": 1,
+                "name": "No NgModules",
+                "description": "Do not use NgModules. Use standalone components only.",
+                "id": "no-ng-module",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "Analysis: found 0 NgModules"
+              },
+              {
+                "state": 0,
+                "name": "Standalone Components",
+                "description": "Do not set the standalone property on @Component, @Directive, or @Pipe (standalone is true by default). You may set standalone: true; never set standalone: false.",
+                "id": "standalone",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "Pass\nsrc/app/app.ts.6.0.11.2"
+              },
+              {
+                "state": 1,
+                "name": "Pure State Transformations",
+                "description": "Inside computed() and update() callbacks, keep transformations pure: no standalone function calls and no this.property = ... assignments.",
+                "id": "pure-state-transformations",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Analysis: no update() or computed() callbacks found"
+              },
+              {
+                "state": 0,
+                "name": "Template Cognitive Load",
+                "description": "Keep templates simple. Prefer flat conditionals; deep nesting of @if hurts readability. Use native control flow (@if, @for); avoid nesting conditionals more than two levels.",
+                "id": "template-cognitive-load",
+                "scoreReduction": "10%",
+                "successPercentage": 0.9,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Partial Pass (90%)\nsrc/app/app.html.36.4.40.5"
+              },
+              {
+                "state": 0,
+                "name": "Template Properties",
+                "description": "For component state used in templates, use signals (preferred) or RxJS observables. Do not use plain class properties for template-bound state.",
+                "id": "template-properties",
+                "scoreReduction": "10%",
+                "successPercentage": 0.5,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Partial Pass (50%)\n/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/gpt-5.2-codex_low/login-form/.web-codegen-scorer/tmp-workspaces/fw-1ad278ee-fdad-4a67-83c6-0519f977f886-build-login-formUl3uHz/src/app/app.ts.16.2.16.66,/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/gpt-5.2-codex_low/login-form/.web-codegen-scorer/tmp-workspaces/fw-1ad278ee-fdad-4a67-83c6-0519f977f886-build-login-formUl3uHz/src/app/app.ts.19.2.22.5"
+              },
+              {
+                "state": 0,
+                "name": "Subscription Management",
+                "description": "Make sure to to ALWAYS unsubscribe from observables. Use takeUntilDestroyed(), take(), takeUntil() or async pipe - avoid manual unsubscribe() calls.",
+                "id": "subscription-management",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "Pass\nsrc/app/app.ts.34.12.34.19"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 27,
+            "assessments": [
+              {
+                "state": 1,
+                "name": "No Derived State in Wrong Context",
+                "description": "For derived state that reads signals, use computed(). Do not read signals inside property initializers or getters; that breaks reactivity.",
+                "id": "no-derived-state-in-wrong-context",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Analysis: no signal reads in wrong context (property initializer or getter) found"
+              },
+              {
+                "state": 1,
+                "name": "Host Bindings",
+                "description": "Do not use @HostBinding or @HostListener. Put host bindings and listeners in the host object of the @Component or @Directive decorator.",
+                "id": "host-bindings",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Analysis: found 0 host bindings"
+              },
+              {
+                "state": 1,
+                "name": "Class Binding",
+                "description": "Use class bindings (e.g. [class.foo], [attr.class]) instead of ngClass in templates.",
+                "id": "class-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 class bindings"
+              },
+              {
+                "state": 1,
+                "name": "Style Binding",
+                "description": "Use style bindings ([style.foo], [attr.style]) instead of ngStyle in templates.",
+                "id": "style-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 style bindings"
+              },
+              {
+                "state": 0,
+                "name": "Only Provided in Root",
+                "description": "For singleton services, use providedIn: 'root' in the @Injectable decorator.",
+                "id": "only-provided-in-root",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Services"
+                ],
+                "message": "Pass\nsrc/app/services/auth.service.ts.6.2.6.20"
+              },
+              {
+                "state": 0,
+                "name": "Form Binding",
+                "description": "Prefer Reactive forms (formControl, formGroup, formArray) over template-driven forms (ngModel, ngForm, ngModelGroup).",
+                "id": "form-binding",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Pass\nsrc/app/app.html.5.33.5.51,src/app/app.html.11.10.11.33,src/app/app.html.22.10.22.36"
+              },
+              {
+                "state": 0,
+                "name": "Template Flow",
+                "description": "Use native control flow (@if, @for, @switch) instead of *ngIf, *ngFor, *ngSwitch in templates.",
+                "id": "template-flow",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Pass\nsrc/app/app.html.36.4.40.5"
+              },
+              {
+                "state": 1,
+                "name": "Image Src Binding",
+                "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+                "id": "image-src-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 image src bindings"
+              },
+              {
+                "state": 0,
+                "name": "Observable to Signal",
+                "description": "Prefer creating a signal from an RxJS Observable with toSignal() rather than subscribing and calling .set() inside the subscribe block.",
+                "id": "observable-to-signal",
+                "scoreReduction": "20%",
+                "successPercentage": 0.5,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Partial Pass (50%)\nsrc/app/app.ts.16.2.16.66,src/app/app.ts.17.2.17.63"
+              },
+              {
+                "state": 1,
+                "name": "Template Formatting",
+                "description": "Use built-in pipes (currency, number, date) or custom pure pipes for formatting in templates. Do not add component methods that only format data for the template.",
+                "id": "template-formatting",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 components with templates"
+              },
+              {
+                "state": 0,
+                "name": "Form Submitting",
+                "description": "Use ngSubmit on form elements and avoid using click on input elements in order to submit the form.",
+                "id": "form-submitting",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Pass\nsrc/app/app.html.5.52.5.75"
+              }
+            ]
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "No Any Type Definitions",
+                "description": "Avoid the any type; use unknown when the type is uncertain. Prefer strict typing for properties, methods, and their signatures.",
+                "id": "type-definition",
+                "scoreReduction": "50%",
+                "successPercentage": 1,
+                "category": "low-impact",
+                "groupingLabels": [
+                  "TypeScript Best Practices"
+                ],
+                "message": "Pass"
+              },
+              {
+                "state": 1,
+                "name": "No Globals in Templates",
+                "description": "Do not assume globals like new Date(), Math, window, or document are available in templates.",
+                "id": "no-globals-in-templates",
+                "category": "low-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 global object usages"
+              },
+              {
+                "state": 1,
+                "name": "Prefer Inline Templates",
+                "description": "Prefer inline templates for small components (under 20 lines). Use external HTML files only when the template is 20 or more lines.",
+                "id": "prefer-inline-templates",
+                "category": "low-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Analysis: no component templates found"
+              },
+              {
+                "state": 0,
+                "name": "Component Paths",
+                "description": "When using external template or style files, use paths relative to the component TS file (e.g. ./app.html, ./app.css).",
+                "id": "component-paths",
+                "scoreReduction": "30%",
+                "successPercentage": 1,
+                "category": "low-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Pass\nsrc/app/app.ts.8.2.8.27,src/app/app.ts.9.2.9.23"
+              }
+            ]
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.ts",
+              "code": "import { Component, signal } from \"@angular/core\";\nimport { ReactiveFormsModule, FormBuilder, Validators } from \"@angular/forms\";\nimport { take } from \"rxjs\";\nimport { AuthService } from \"./services/auth.service\";\nimport { LoginRequest } from \"./models/login.model\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [ReactiveFormsModule],\n})\nexport class App {\n  private readonly formBuilder = inject(FormBuilder);\n  private readonly authService = inject(AuthService);\n\n  protected readonly successMessage = signal<string | null>(null);\n  protected readonly accessToken = signal<string | null>(null);\n\n  protected readonly form = this.formBuilder.nonNullable.group({\n    email: [\"\", [Validators.required, Validators.email]],\n    password: [\"\", [Validators.required]],\n  });\n\n  protected onSubmit(): void {\n    if (this.form.invalid) {\n      this.form.markAllAsTouched();\n      return;\n    }\n\n    const payload: LoginRequest = this.form.getRawValue();\n\n    this.authService\n      .login(payload)\n      .pipe(take(1))\n      .subscribe((response) => {\n        this.accessToken.set(response.accessToken);\n        this.successMessage.set(\"logged in successfully\");\n      });\n  }\n}\n"
+            },
+            {
+              "filePath": "src/app/app.html",
+              "code": "<div class=\"min-h-screen bg-slate-100 flex items-center justify-center p-6\">\n  <div class=\"w-full max-w-md bg-white rounded-xl shadow-lg p-8\">\n    <h1 class=\"text-2xl font-semibold text-slate-800\">Welcome back</h1>\n    <p class=\"text-slate-500 mt-2\">Sign in to your account</p>\n\n    <form class=\"mt-6 space-y-4\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit()\">\n      <div class=\"space-y-2\">\n        <label class=\"block text-sm font-medium text-slate-700\" for=\"email\">Email</label>\n        <input\n          id=\"email\"\n          type=\"email\"\n          formControlName=\"email\"\n          class=\"w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n          placeholder=\"test@lowgular.io\"\n        />\n      </div>\n\n      <div class=\"space-y-2\">\n        <label class=\"block text-sm font-medium text-slate-700\" for=\"password\">Password</label>\n        <input\n          id=\"password\"\n          type=\"password\"\n          formControlName=\"password\"\n          class=\"w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500\"\n          placeholder=\"Enter your password\"\n        />\n      </div>\n\n      <button\n        type=\"submit\"\n        class=\"w-full rounded-lg bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 transition\"\n      >\n        Submit\n      </button>\n    </form>\n\n    @if (successMessage()) {\n      <p class=\"mt-4 rounded-lg bg-emerald-50 text-emerald-700 px-4 py-2 text-sm font-medium\">\n        {{ successMessage() }}\n      </p>\n    }\n  </div>\n</div>\n"
+            },
+            {
+              "filePath": "src/app/app.css",
+              "code": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
+            },
+            {
+              "filePath": "src/app/models/login.model.ts",
+              "code": "export interface LoginRequest {\n  email: string;\n  password: string;\n}\n\nexport interface LoginResponse {\n  accessToken: string;\n}\n"
+            },
+            {
+              "filePath": "src/app/services/auth.service.ts",
+              "code": "import { Injectable, inject } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { LoginRequest, LoginResponse } from \"../models/login.model\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class AuthService {\n  private readonly http = inject(HttpClient);\n  private readonly endpoint =\n    \"https://us-central1-lowgular-platform-c0e93.cloudfunctions.net/api/mock/login\";\n\n  login(payload: LoginRequest): Observable<LoginResponse> {\n    return this.http.post<LoginResponse>(this.endpoint, payload);\n  }\n}\n"
+            },
+            {
+              "filePath": "src/app/app.config.ts",
+              "code": "import {\n  ApplicationConfig,\n  provideBrowserGlobalErrorListeners,\n  provideZoneChangeDetection,\n} from \"@angular/core\";\nimport { provideRouter } from \"@angular/router\";\nimport { provideHttpClient } from \"@angular/common/http\";\n\nimport { routes } from \"./app.routes\";\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n    provideHttpClient(),\n  ],\n};\n"
+            }
+          ],
+          "usage": {
+            "inputTokens": 1813,
+            "outputTokens": 2140,
+            "totalTokens": 3953,
+            "thinkingTokens": 896
+          },
+          "reasoning": "**Planning Angular app structure**\n\nI'm outlining an Angular standalone app with reactive forms and signals, adding provideHttpClient in app.config without bootstrap changes. I'll create model and service files, use inject instead of constructors, keep cleanup with take(1) subscriptions, and handle form submission via service calls while avoiding arrow functions in templates.**Clarifying template setup and signals**\n\nI'm resolving template linking by choosing `templateUrl` despite conflicting instructions, planning to use `styleUrl` similarly. Signals will track success messages and access token, with reactive form setup using injected FormBuilder and AuthService, subscribing with take(1) to safely handle login responses.\n[REDACTED]",
+          "buildResult": {
+            "status": "error",
+            "message": "✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:14:33:\n      14 │   private readonly formBuilder = inject(FormBuilder);\n         ╵                                  ~~~~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:15:33:\n      15 │   private readonly authService = inject(AuthService);\n         ╵                                  ~~~~~~\n\n\n✘ [ERROR] TS7006: Parameter 'response' implicitly has an 'any' type. [plugin angular-compiler]\n\n    src/app/app.ts:36:18:\n      36 │       .subscribe((response) => {\n         ╵                   ~~~~~~~~\n\n\n",
+            "errorType": "TypeScript Error"
+          },
+          "serveTestingResult": null,
+          "attempt": 0
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "toolLogs": [],
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "openai/gpt-5.2-codex_low",
+      "environmentId": "1ad278ee-fdad-4a67-83c6-0519f977f886",
+      "displayName": "Angular 20 Greenfield",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 1813,
+        "outputTokens": 2140,
+        "thinkingTokens": 896,
+        "totalTokens": 3953
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "d78e304ad1e168d4c769638847bfbc33056f8b54b59395ade3accce3924bb1c1"
+    },
+    "timestamp": "2026-02-16T17:38:11.121Z",
+    "reportName": "2026-02-16T17-37-27-869Z",
+    "systemPromptGeneration": "Follow instructions below CAREFULLY:\n\n- Code MUST be implemented in Angular.\n- Put the component code inside `src/app/app.ts`\n- Component class MUST always be named `App`\n- Component's selector MUST always be \"app-root\" (the `selector: 'app-root'` MUST be present in the \"@Component\" decorator)\n- Use standalone components, do NOT generate NgModules\n- Generate the template code inside a separate HTML file and link it in the `template` field of the `App` component\n- Generate the styling code inside a separate CSS file and link it in the `styleUrl` field of the `App` component\n- Use Tailwind CSS\n- Completeness: include all necessary code to run independently\n- Use comments sparingly and only for complex parts of the code\n- Make sure the generated code is **complete** and **runnable**\n- Make sure the generated code contains a **complete** implementation of the `App` class\n- Do NOT generate `bootstrapApplication` calls\n- If the task requires to fetch data using `HttpClient` make sure to use `provideHttpClient()` in `bootstrapApplication` providers\n- Do not assume globals like (`new Date()`) are available.\n- Do not write arrow functions in templates (they are not supported).\n- Do not write Regular expressions in templates (they are not supported).\n- ALWAYS `unsubscribe`. If you use `toSignal` then you are fine, if you need to subscribe in template then ALWAYS use `async` pipe and if you need to send data to backend once ALWAYS use `take(1)` RxJs operator\n\nYou are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.\n\n### TypeScript Best Practices\n\n- Use strict type checking\n- Prefer type inference when the type is obvious\n- Avoid the `any` type; use `unknown` when type is uncertain\n\n### Angular Best Practices\n\n- Always use standalone components over NgModules\n- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.\n- Use signals for state management\n- Implement lazy loading for feature routes\n- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead\n- Use `NgOptimizedImage` for all static images.\n  - `NgOptimizedImage` does not work for inline base64 images.\n\n### Components\n\n- Keep components small and focused on a single responsibility\n- Use `input()` and `output()` functions instead of decorators\n- Use `computed()` for derived state\n- NEVER use `changeDetection` property in `@Component` decorator because by default it is set to `ChangeDetectionStrategy.OnPush`\n- Prefer inline templates for small components\n- Prefer Reactive forms instead of Template-driven ones\n- Do NOT use `ngModel` directive\n- Do NOT use `ngClass`, use `class` bindings instead\n- DO NOT use `ngStyle`, use `style` bindings instead\n- When using external templates/styles, use paths relative to the component TS file.\n- Formatting HTML templates MUST prioritize using built-in pipes (e.g. currency, number, date) or create custom pure pipe. Do NOT bloat your components with pure methods that are only responsible for formatting data and return formatted value\n\n### State Management\n\n- Use signals for local component state\n- Use `computed()` for derived state\n- Keep state transformations pure and predictable\n- Do NOT use `mutate` on signals, use `update` or `set` instead\n- Prefer to create a signal properties from an RxJs Observable with `toSignal` and avoid setting values manually with `.set()` inside a subscribe block\n\n### Templates\n\n- Keep templates simple and avoid complex logic\n- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`\n- Use the async pipe to handle observables\n\n### Services\n\n- Design services around a single responsibility\n- Use the `providedIn: 'root'` option for singleton services\n- ALWAYS use the `inject()` function and NEVER use constructor parameters for dependency injection\n",
+    "systemPromptRepair": "Please fix the given errors and return the corrected code.",
+    "labels": []
+  }
+}
