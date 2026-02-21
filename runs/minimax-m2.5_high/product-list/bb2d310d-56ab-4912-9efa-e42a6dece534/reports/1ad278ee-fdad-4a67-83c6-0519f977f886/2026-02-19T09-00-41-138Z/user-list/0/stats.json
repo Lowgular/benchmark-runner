@@ -1,0 +1,9 @@
+{
+  "fileSize": 2431,
+  "buildResult": {
+    "status": "error",
+    "message": "✘ [ERROR] NG2008: Could not find stylesheet file './app.css'. [plugin angular-compiler]\n\n    src/app/app.ts:9:12:\n      9 │   styleUrl: './app.css',\n        ╵             ~~~~~~~~~~~\n\n\n",
+    "errorType": "Angular Diagnostic"
+  },
+  "serveTestingResult": null
+}
