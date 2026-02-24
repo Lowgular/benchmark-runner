@@ -1,0 +1,32 @@
+<div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+  <div *ngIf="product$ | async as product" class="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden md:max-w-2xl">
+    <div class="md:flex">
+      <div class="md:shrink-0">
+        <img 
+          class="h-48 w-full object-cover md:h-full md:w-48" 
+          [src]="product.image" 
+          [alt]="product.name"
+        >
+      </div>
+      <div class="p-8">
+        <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
+          Product Detail
+        </div>
+        <h1 class="block mt-1 text-2xl leading-tight font-bold text-black">
+          {{ product.name }}
+        </h1>
+        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
+          {{ product.description }}
+        </p>
+        <div class="mt-6 flex items-center justify-between">
+          <span class="text-3xl font-bold text-gray-900">
+            {{ product.price | currency:'USD':'symbol':'1.2-2' }}
+          </span>
+          <button class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

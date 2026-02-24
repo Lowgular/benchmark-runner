@@ -1,0 +1,559 @@
+{
+  "promptDef": {
+    "name": "all",
+    "prompt": "Your task is to refactor the codebase according the the sarif report generated with violations and use existing skill descriptions in order to improve the code\n\n## Report\n\nYou will see the Sarif report file that contains all the violations, you MUST use it to improve the code base.\n\nFor each rule you need to pay extra attention to following properties:\n\n- `properties.skill` optional property that will point you to specific skill that MUST be applied to fix the code. The property is optional and if is present then you MUST run the skill for all the locations in results. If the property is NOT PRESENT then you MUST NOT run that skill and you can ignore the rule violations\n- `results` this represent all of the places where rule was violated\n  - `locations` property explaining where to find the violations\n\n## Relevant files:\n\nThese are relevant files that you MUST use to perform the improvements.\n\nYou will see:\n\n- files in `src/app` folder to be modified\n- files in `skills` folder to be used in order to improve the codebase\n- report.sarif - files describing what is wrong, where to find it and which skill to use\n\n\n---\n\nNow go ahead and perform the improvements\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "src/app/app.ts"
+    },
+    {
+      "filePath": "src/app/product.service.ts",
+      "code": "import { Component, OnInit, inject } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  private productService = inject(ProductService);\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}import { Injectable, inject } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({ providedIn: \"root\" })\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "success",
+      "message": "Application linted successfully!",
+      "results": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.dependency-injection.inject-function"
+                  },
+                  {
+                    "id": "angular.change-detection.none"
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.dependency-injection.inject-function",
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/product.service.ts"
+                      },
+                      "region": {
+                        "startLine": 14,
+                        "startColumn": 3,
+                        "endLine": 14,
+                        "endColumn": 51
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "ruleId": "angular.dependency-injection.inject-function",
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/product.service.ts"
+                      },
+                      "region": {
+                        "startLine": 31,
+                        "startColumn": 3,
+                        "endLine": 31,
+                        "endColumn": 37
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "ruleId": "angular.change-detection.none",
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/product.service.ts"
+                      },
+                      "region": {
+                        "startLine": 5,
+                        "startColumn": 1,
+                        "endLine": 10,
+                        "endColumn": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "error",
+      "message": "✘ [ERROR] TS2304: Cannot find name 'src'. [plugin angular-compiler]\n\n    src/app/app.ts:0:0:\n      0 │ \n        ╵ ^\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:4:\n      1 │ src/app/app.ts\n        ╵     ~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:8:\n      1 │ src/app/app.ts\n        ╵         ~~~\n\n\n✘ [ERROR] TS2306: File '/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/tests/.web-codegen-scorer/tmp-workspaces/fw-1ad278ee-fdad-4a67-83c6-0519f977f886-build-all7pcC14/src/app/app.ts' is not a module. [plugin angular-compiler]\n\n    src/main.ts:2:20:\n      2 │ import { App } from \"./app/app\";\n        ╵                     ~~~~~~~~~~~\n\n\n",
+      "errorType": "TypeScript Error"
+    },
+    "serveTestingResult": null,
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "src/app/app.ts"
+      },
+      {
+        "filePath": "src/app/product.service.ts",
+        "code": "import { Component, OnInit, inject } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  private productService = inject(ProductService);\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}import { Injectable, inject } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({ providedIn: \"root\" })\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Change Detection Strategy",
+            "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+            "id": "change-detection-strategy",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Pass\nsrc/app/product.service.ts.4.0.9.2"
+          },
+          {
+            "state": 0,
+            "name": "Dependency Injection",
+            "description": "Use the inject() function for dependency injection in components, directives, pipes, and injectable services. Do not use constructor parameters for injection.",
+            "id": "dependency-injection",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Dependency Injection"
+            ],
+            "message": "Pass\nsrc/app/product.service.ts.13.2.13.50,src/app/product.service.ts.30.2.30.36"
+          },
+          {
+            "state": 1,
+            "name": "Input and Output",
+            "description": "Use input() and output() functions for component inputs and outputs. Do not use @Input() or @Output() decorators.",
+            "id": "input-output",
+            "category": "high-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Analysis: found 0 properties related to input or output"
+          },
+          {
+            "state": 1,
+            "name": "No Mutate on Signals",
+            "description": "For writable signals, use set() or update() to change values. Do not use mutate().",
+            "id": "no-mutate-on-signals",
+            "category": "high-impact",
+            "groupingLabels": [
+              "State Management"
+            ],
+            "message": "Analysis: no mutate() calls on signals found"
+          },
+          {
+            "state": 1,
+            "name": "No NgModules",
+            "description": "Do not use NgModules. Use standalone components only.",
+            "id": "no-ng-module",
+            "category": "high-impact",
+            "groupingLabels": [
+              "Angular Best Practices"
+            ],
+            "message": "Analysis: found 0 NgModules"
+          },
+          {
+            "state": 0,
+            "name": "Standalone Components",
+            "description": "Do not set the standalone property on @Component, @Directive, or @Pipe (standalone is true by default). You may set standalone: true; never set standalone: false.",
+            "id": "standalone",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Angular Best Practices"
+            ],
+            "message": "Pass\nsrc/app/product.service.ts.4.0.9.2"
+          },
+          {
+            "state": 1,
+            "name": "Pure State Transformations",
+            "description": "Inside computed() and update() callbacks, keep transformations pure: no standalone function calls and no this.property = ... assignments.",
+            "id": "pure-state-transformations",
+            "category": "high-impact",
+            "groupingLabels": [
+              "State Management"
+            ],
+            "message": "Analysis: no update() or computed() callbacks found"
+          },
+          {
+            "state": 0,
+            "name": "Component Decorator Paths",
+            "description": "Component decorator paths must be set on correct property and the values should be paths relative to the component TS file",
+            "id": "component-paths",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Pass\nsrc/app/product.service.ts.6.2.6.27,src/app/product.service.ts.7.2.7.23"
+          },
+          {
+            "state": 1,
+            "name": "Template Cognitive Load",
+            "description": "Keep templates simple. Prefer flat conditionals; deep nesting of @if hurts readability. Use native control flow (@if, @for); avoid nesting conditionals more than two levels.",
+            "id": "template-cognitive-load",
+            "category": "high-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Analysis: found 0 component templates"
+          },
+          {
+            "state": 1,
+            "name": "Template Properties",
+            "description": "For component state used in templates, use signals (preferred) or RxJS observables. Do not use plain class properties for template-bound state.",
+            "id": "template-properties",
+            "category": "high-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Error during execution:\nError: ENOENT: no such file or directory, open 'src/app/app.html'"
+          },
+          {
+            "state": 1,
+            "name": "Subscription Management",
+            "description": "Make sure to to ALWAYS unsubscribe from observables. Use takeUntilDestroyed(), take(), takeUntil() or async pipe - avoid manual unsubscribe() calls.",
+            "id": "subscription-management",
+            "category": "high-impact",
+            "groupingLabels": [
+              "Angular Best Practices"
+            ],
+            "message": "Error during execution:\nError: ENOENT: no such file or directory, open 'src/app/app.html'"
+          }
+        ]
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": [
+          {
+            "state": 1,
+            "name": "No Derived State in Wrong Context",
+            "description": "For derived state that reads signals, use computed(). Do not read signals inside property initializers or getters; that breaks reactivity.",
+            "id": "no-derived-state-in-wrong-context",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "State Management"
+            ],
+            "message": "Analysis: no signal reads in wrong context (property initializer or getter) found"
+          },
+          {
+            "state": 1,
+            "name": "Host Bindings",
+            "description": "Do not use @HostBinding or @HostListener. Put host bindings and listeners in the host object of the @Component or @Directive decorator.",
+            "id": "host-bindings",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Analysis: found 0 host bindings"
+          },
+          {
+            "state": 1,
+            "name": "Class Binding",
+            "description": "Use class bindings (e.g. [class.foo], [attr.class]) instead of ngClass in templates.",
+            "id": "class-binding",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Analysis: found 0 component templates"
+          },
+          {
+            "state": 1,
+            "name": "Style Binding",
+            "description": "Use style bindings ([style.foo], [attr.style]) instead of ngStyle in templates.",
+            "id": "style-binding",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Analysis: found 0 component templates"
+          },
+          {
+            "state": 0,
+            "name": "Only Provided in Root",
+            "description": "For singleton services, use providedIn: 'root' in the @Injectable decorator.",
+            "id": "only-provided-in-root",
+            "scoreReduction": "20%",
+            "successPercentage": 1,
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Services"
+            ],
+            "message": "Pass\nsrc/app/product.service.ts.25.14.25.32"
+          },
+          {
+            "state": 1,
+            "name": "Form Binding",
+            "description": "Prefer Reactive forms (formControl, formGroup, formArray) over template-driven forms (ngModel, ngForm, ngModelGroup).",
+            "id": "form-binding",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Error during execution:\nError: ENOENT: no such file or directory, open 'src/app/app.html'"
+          },
+          {
+            "state": 1,
+            "name": "Template Flow",
+            "description": "Use native control flow (@if, @for, @switch) instead of *ngIf, *ngFor, *ngSwitch in templates.",
+            "id": "template-flow",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Analysis: found 0 component templates"
+          },
+          {
+            "state": 1,
+            "name": "Image Src Binding",
+            "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+            "id": "image-src-binding",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Analysis: found 0 component templates"
+          },
+          {
+            "state": 1,
+            "name": "Observable to Signal",
+            "description": "Prefer creating a signal from an RxJS Observable with toSignal() rather than subscribing and calling .set() inside the subscribe block.",
+            "id": "observable-to-signal",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "State Management"
+            ],
+            "message": "Analysis: found 0 relevant properties"
+          },
+          {
+            "state": 1,
+            "name": "Template Formatting",
+            "description": "Use built-in pipes (currency, number, date) or custom pure pipes for formatting. Do not put formatting logic or hardcoded symbols (e.g. $) in the template — that is hard to spot and breaks i18n. Prefer pipes; if formatting lives in the component (method, computed, or property), that is less bad but still penalized.",
+            "id": "template-formatting",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Error during execution:\nError: ENOENT: no such file or directory, open 'src/app/app.html'"
+          },
+          {
+            "state": 1,
+            "name": "Form Submitting",
+            "description": "Use ngSubmit on form elements and avoid using click on input elements in order to submit the form.",
+            "id": "form-submitting",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Error during execution:\nError: ENOENT: no such file or directory, open 'src/app/app.html'"
+          }
+        ]
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "No Any Type Definitions",
+            "description": "Avoid the any type; use unknown when the type is uncertain. Prefer strict typing for properties, methods, and their signatures.",
+            "id": "type-definition",
+            "scoreReduction": "50%",
+            "successPercentage": 1,
+            "category": "low-impact",
+            "groupingLabels": [
+              "TypeScript Best Practices"
+            ],
+            "message": "Pass"
+          },
+          {
+            "state": 1,
+            "name": "No Globals in Templates",
+            "description": "Do not assume globals like new Date(), Math, window, or document are available in templates.",
+            "id": "no-globals-in-templates",
+            "category": "low-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Analysis: found 0 component templates"
+          },
+          {
+            "state": 1,
+            "name": "Prefer Inline Templates",
+            "description": "Prefer inline templates for small components (under 20 lines). Use external HTML files only when the template is 20 or more lines.",
+            "id": "prefer-inline-templates",
+            "category": "low-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Analysis: no component templates found"
+          }
+        ]
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "src/app/app.ts"
+        },
+        {
+          "filePath": "src/app/product.service.ts",
+          "code": "import { Component, OnInit, inject } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  private productService = inject(ProductService);\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}import { Injectable, inject } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({ providedIn: \"root\" })\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+        }
+      ],
+      "usage": {
+        "inputTokens": 5776,
+        "outputTokens": 354,
+        "totalTokens": 6130,
+        "thinkingTokens": 0,
+        "cost": 0.0021576
+      },
+      "reasoning": "",
+      "buildResult": {
+        "status": "error",
+        "message": "✘ [ERROR] TS2304: Cannot find name 'src'. [plugin angular-compiler]\n\n    src/app/app.ts:0:0:\n      0 │ \n        ╵ ^\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:4:\n      1 │ src/app/app.ts\n        ╵     ~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:8:\n      1 │ src/app/app.ts\n        ╵         ~~~\n\n\n✘ [ERROR] TS2306: File '/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/tests/.web-codegen-scorer/tmp-workspaces/fw-1ad278ee-fdad-4a67-83c6-0519f977f886-build-all7pcC14/src/app/app.ts' is not a module. [plugin angular-compiler]\n\n    src/main.ts:2:20:\n      2 │ import { App } from \"./app/app\";\n        ╵                     ~~~~~~~~~~~\n\n\n",
+        "errorType": "TypeScript Error"
+      },
+      "serveTestingResult": null,
+      "attempt": 0,
+      "lintResult": {
+        "status": "success",
+        "message": "Application linted successfully!",
+        "results": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.dependency-injection.inject-function"
+                    },
+                    {
+                      "id": "angular.change-detection.none"
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.dependency-injection.inject-function",
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/product.service.ts"
+                        },
+                        "region": {
+                          "startLine": 14,
+                          "startColumn": 3,
+                          "endLine": 14,
+                          "endColumn": 51
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ruleId": "angular.dependency-injection.inject-function",
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/product.service.ts"
+                        },
+                        "region": {
+                          "startLine": 31,
+                          "startColumn": 3,
+                          "endLine": 31,
+                          "endColumn": 37
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ruleId": "angular.change-detection.none",
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/product.service.ts"
+                        },
+                        "region": {
+                          "startLine": 5,
+                          "startColumn": 1,
+                          "endLine": 10,
+                          "endColumn": 3
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "toolLogs": [],
+  "testResult": null,
+  "testRepairAttempts": 0
+}

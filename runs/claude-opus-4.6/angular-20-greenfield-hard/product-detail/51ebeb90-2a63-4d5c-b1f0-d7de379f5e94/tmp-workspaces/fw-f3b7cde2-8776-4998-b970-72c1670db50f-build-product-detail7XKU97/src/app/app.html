@@ -1,0 +1,18 @@
+<div class="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+  @if (product) {
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden max-w-sm w-full">
+      <div class="flex items-center justify-center bg-gray-50 p-6">
+        <img
+          [src]="product.image"
+          [alt]="product.name"
+          class="rounded-lg object-cover"
+        />
+      </div>
+      <div class="p-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
+        <p class="text-sm text-gray-600 mb-4 leading-relaxed">{{ product.description }}</p>
+        <p class="text-xl font-semibold text-emerald-600">{{ formattedPrice }}</p>
+      </div>
+    </div>
+  }
+</div>

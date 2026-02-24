@@ -1,0 +1,29 @@
+<div class="min-h-screen bg-slate-50 text-slate-900">
+  <main class="mx-auto w-full max-w-3xl px-4 py-10">
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-semibold tracking-tight">User List</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        Recently active users fetched from the API
+      </p>
+    </header>
+
+    <section class="space-y-4">
+      <article
+        class="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        *ngFor="let user of users"
+      >
+        <img
+          class="h-12 w-12 rounded-full border border-slate-200 object-cover"
+          [src]="user.avatarUrl"
+          [alt]="user.email"
+        />
+        <div class="flex-1">
+          <p class="text-base font-medium text-slate-900">{{ user.email }}</p>
+          <p class="text-xs text-slate-500">
+            Last login: {{ formatLastLoggedIn(user.lastLoggedInAt) }}
+          </p>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>

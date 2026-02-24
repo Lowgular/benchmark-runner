@@ -1,0 +1,520 @@
+{
+  "id": "f8dfa7b1-fddd-4c9a-9820-8461c08e3a26",
+  "group": "a90dfd037e76e5d44d8ff6fd4691dd174844a101b26ac6abd648e02deb7b6480",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "user-list",
+        "prompt": "# User List\n\nThe purpose of this application is to show a simple list of users from stubbed json file and present it using Tailwind and Angular framework.\n\n## File system\n\nYou are in greenfield Angular starter app and here are the files\n\n\n---\n\n## Endpoints\n\nYou must use this endpoint in order to fetch the product detail model:\n`GET https://storage.googleapis.com/lowgular-platform/mocks/users.json`\n\nThe endpoint will respond with the json looking similar to this type:\n\n```ts\n  {\n    id: number,\n    email: string,\n    avatarUrl: string,\n    lastLoggedInAt: number, // epoch timestamp since last login\n  }[];\n```\n\n## Functional Requirements\n\n```gherkin\nGiven the application fetches users data from the API endpoint\nWhen I navigate to the \"/\" route\nThen I should see the list of users\n```\n\n### Out of Functional Scope\n\nThe following are explicitly NOT part of this task so DO NOT attempt to develp these features:\n\n- Error handling (assume the API always succeeds)\n- Loading states (no need to show loading indicators)\n- Empty state (no need to show info that list is empty)\n\n## Technical Requirements\n\nIMPORTANT: for this task you do not need to setup routing - simply use a single `App` component.\n\nUse the simple CMS (Component Model Service) architecture:\n\n- Component - Do not write your own component, simply use app.ts and app.html to finish the task\n- Model - you are required to create own model file\n- Service - you are required to create own service file\n- HttpClient - you must use HttpClient to fetch data from the specified endpoint\n\n## UI Requirements\n\nYou MUST create the valid HTML that will represent a list with items representing user data.\n\nIt is important that you bind the correct data into HTML tags.\n\nYou must bind the following product properties:\n\n- avatarUrl (small rounded image)\n- email (main text showing the user's email)\n- lastLoggedInAt (tiny text showing last login in European format: day-month-year 24h time without second, e.g. \"02.02.2025, 14:30\")\n\nIMPORTANT: The tailwind css is already added to the project so use its default utility classes.\n\nWe do not evaluate the visuals for this task, however as professional frontend developer you should take care that the app looks nice and is functional.\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.config.ts",
+          "code": "import {\n  ApplicationConfig,\n  provideBrowserGlobalErrorListeners,\n  provideZoneChangeDetection,\n} from \"@angular/core\";\nimport { provideRouter } from \"@angular/router\";\nimport { provideHttpClient } from \"@angular/common/http\";\n\nimport { routes } from \"./app.routes\";\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n    provideHttpClient(),\n  ],\n};\n"
+        },
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { Component, OnInit } from \"@angular/core\";\nimport { CommonModule, DatePipe } from \"@angular/common\";\nimport { UserService } from \"./services/user.service\";\nimport { User } from \"./models/user.model\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [CommonModule],\n  providers: [DatePipe],\n})\nexport class App implements OnInit {\n  users: User[] = [];\n\n  constructor(\n    private userService: UserService,\n    private datePipe: DatePipe\n  ) {}\n\n  ngOnInit(): void {\n    this.userService.getUsers().subscribe((users) => {\n      this.users = users;\n    });\n  }\n\n  formatLastLoggedIn(timestamp: number): string {\n    return this.datePipe.transform(timestamp, \"dd.MM.yyyy, HH:mm\") ?? \"\";\n  }\n}\n"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 text-slate-900\">\n  <main class=\"mx-auto w-full max-w-3xl px-4 py-10\">\n    <header class=\"mb-8 text-center\">\n      <h1 class=\"text-3xl font-semibold tracking-tight\">User List</h1>\n      <p class=\"mt-2 text-sm text-slate-600\">\n        Recently active users fetched from the API\n      </p>\n    </header>\n\n    <section class=\"space-y-4\">\n      <article\n        class=\"flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm\"\n        *ngFor=\"let user of users\"\n      >\n        <img\n          class=\"h-12 w-12 rounded-full border border-slate-200 object-cover\"\n          [src]=\"user.avatarUrl\"\n          [alt]=\"user.email\"\n        />\n        <div class=\"flex-1\">\n          <p class=\"text-base font-medium text-slate-900\">{{ user.email }}</p>\n          <p class=\"text-xs text-slate-500\">\n            Last login: {{ formatLastLoggedIn(user.lastLoggedInAt) }}\n          </p>\n        </div>\n      </article>\n    </section>\n  </main>\n</div>\n"
+        },
+        {
+          "filePath": "src/app/app.css",
+          "code": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
+        },
+        {
+          "filePath": "src/app/models/user.model.ts",
+          "code": "export interface User {\n  id: number;\n  email: string;\n  avatarUrl: string;\n  lastLoggedInAt: number;\n}\n"
+        },
+        {
+          "filePath": "src/app/services/user.service.ts",
+          "code": "import { Injectable } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { User } from \"../models/user.model\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class UserService {\n  private readonly usersUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/users.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getUsers(): Observable<User[]> {\n    return this.http.get<User[]>(this.usersUrl);\n  }\n}\n"
+        }
+      ],
+      "finalAttempt": {
+        "buildResult": {
+          "status": "success",
+          "message": "Application built successfully!",
+          "safetyWebReportJson": [
+            {
+              "summaryVersion": "0.1.0",
+              "packageName": "app",
+              "packageVersion": "0.0.0",
+              "packagePath": ".",
+              "violations": []
+            }
+          ]
+        },
+        "serveTestingResult": {
+          "runtimeErrors": "",
+          "userJourneyAgentOutput": null
+        },
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.config.ts",
+            "code": "import {\n  ApplicationConfig,\n  provideBrowserGlobalErrorListeners,\n  provideZoneChangeDetection,\n} from \"@angular/core\";\nimport { provideRouter } from \"@angular/router\";\nimport { provideHttpClient } from \"@angular/common/http\";\n\nimport { routes } from \"./app.routes\";\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n    provideHttpClient(),\n  ],\n};\n"
+          },
+          {
+            "filePath": "src/app/app.ts",
+            "code": "import { Component, OnInit } from \"@angular/core\";\nimport { CommonModule, DatePipe } from \"@angular/common\";\nimport { UserService } from \"./services/user.service\";\nimport { User } from \"./models/user.model\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [CommonModule],\n  providers: [DatePipe],\n})\nexport class App implements OnInit {\n  users: User[] = [];\n\n  constructor(\n    private userService: UserService,\n    private datePipe: DatePipe\n  ) {}\n\n  ngOnInit(): void {\n    this.userService.getUsers().subscribe((users) => {\n      this.users = users;\n    });\n  }\n\n  formatLastLoggedIn(timestamp: number): string {\n    return this.datePipe.transform(timestamp, \"dd.MM.yyyy, HH:mm\") ?? \"\";\n  }\n}\n"
+          },
+          {
+            "filePath": "src/app/app.html",
+            "code": "<div class=\"min-h-screen bg-slate-50 text-slate-900\">\n  <main class=\"mx-auto w-full max-w-3xl px-4 py-10\">\n    <header class=\"mb-8 text-center\">\n      <h1 class=\"text-3xl font-semibold tracking-tight\">User List</h1>\n      <p class=\"mt-2 text-sm text-slate-600\">\n        Recently active users fetched from the API\n      </p>\n    </header>\n\n    <section class=\"space-y-4\">\n      <article\n        class=\"flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm\"\n        *ngFor=\"let user of users\"\n      >\n        <img\n          class=\"h-12 w-12 rounded-full border border-slate-200 object-cover\"\n          [src]=\"user.avatarUrl\"\n          [alt]=\"user.email\"\n        />\n        <div class=\"flex-1\">\n          <p class=\"text-base font-medium text-slate-900\">{{ user.email }}</p>\n          <p class=\"text-xs text-slate-500\">\n            Last login: {{ formatLastLoggedIn(user.lastLoggedInAt) }}\n          </p>\n        </div>\n      </article>\n    </section>\n  </main>\n</div>\n"
+          },
+          {
+            "filePath": "src/app/app.css",
+            "code": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
+          },
+          {
+            "filePath": "src/app/models/user.model.ts",
+            "code": "export interface User {\n  id: number;\n  email: string;\n  avatarUrl: string;\n  lastLoggedInAt: number;\n}\n"
+          },
+          {
+            "filePath": "src/app/services/user.service.ts",
+            "code": "import { Injectable } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { User } from \"../models/user.model\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class UserService {\n  private readonly usersUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/users.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getUsers(): Observable<User[]> {\n    return this.http.get<User[]>(this.usersUrl);\n  }\n}\n"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 70,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 35,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Change Detection Strategy",
+                "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+                "id": "change-detection-strategy",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Pass\nsrc/app/app.ts.5.0.11.2"
+              },
+              {
+                "state": 0,
+                "name": "Dependency Injection",
+                "description": "Use the inject() function for dependency injection in components, directives, pipes, and injectable services. Do not use constructor parameters for injection.",
+                "id": "dependency-injection",
+                "scoreReduction": "10%",
+                "successPercentage": 0,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Dependency Injection"
+                ],
+                "message": "Fail\nsrc/app/app.ts.16.4.16.36,src/app/app.ts.17.4.17.30,src/app/services/user.service.ts.12.14.12.38"
+              },
+              {
+                "state": 1,
+                "name": "Input and Output",
+                "description": "Use input() and output() functions for component inputs and outputs. Do not use @Input() or @Output() decorators.",
+                "id": "input-output",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Analysis: found 0 properties related to input or output"
+              },
+              {
+                "state": 1,
+                "name": "No Mutate on Signals",
+                "description": "For writable signals, use set() or update() to change values. Do not use mutate().",
+                "id": "no-mutate-on-signals",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Analysis: no mutate() calls on signals found"
+              },
+              {
+                "state": 1,
+                "name": "No NgModules",
+                "description": "Do not use NgModules. Use standalone components only.",
+                "id": "no-ng-module",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "Analysis: found 0 NgModules"
+              },
+              {
+                "state": 0,
+                "name": "Standalone Components",
+                "description": "Do not set the standalone property on @Component, @Directive, or @Pipe (standalone is true by default). You may set standalone: true; never set standalone: false.",
+                "id": "standalone",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "Pass\nsrc/app/app.ts.5.0.11.2"
+              },
+              {
+                "state": 1,
+                "name": "Pure State Transformations",
+                "description": "Inside computed() and update() callbacks, keep transformations pure: no standalone function calls and no this.property = ... assignments.",
+                "id": "pure-state-transformations",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Analysis: no update() or computed() callbacks found"
+              },
+              {
+                "state": 0,
+                "name": "Component Decorator Paths",
+                "description": "Component decorator paths must be set on correct property and the values should be paths relative to the component TS file",
+                "id": "component-paths",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Pass\nsrc/app/app.ts.7.2.7.27,src/app/app.ts.8.2.8.23"
+              },
+              {
+                "state": 1,
+                "name": "Template Cognitive Load",
+                "description": "Keep templates simple. Prefer flat conditionals; deep nesting of @if hurts readability. Use native control flow (@if, @for); avoid nesting conditionals more than two levels.",
+                "id": "template-cognitive-load",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 component templates"
+              },
+              {
+                "state": 0,
+                "name": "Template Properties",
+                "description": "For component state used in templates, use signals (preferred) or RxJS observables. Do not use plain class properties for template-bound state.",
+                "id": "template-properties",
+                "scoreReduction": "10%",
+                "successPercentage": 0,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Fail\nsrc/app/app.ts.13.2.13.21"
+              },
+              {
+                "state": 0,
+                "name": "Subscription Management",
+                "description": "Make sure to to ALWAYS unsubscribe from observables. Use takeUntilDestroyed(), take(), takeUntil() or async pipe - avoid manual unsubscribe() calls.",
+                "id": "subscription-management",
+                "scoreReduction": "10%",
+                "successPercentage": 0,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "Fail\nsrc/app/app.ts.21.4.21.41"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 15,
+            "assessments": [
+              {
+                "state": 1,
+                "name": "No Derived State in Wrong Context",
+                "description": "For derived state that reads signals, use computed(). Do not read signals inside property initializers or getters; that breaks reactivity.",
+                "id": "no-derived-state-in-wrong-context",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Analysis: no signal reads in wrong context (property initializer or getter) found"
+              },
+              {
+                "state": 1,
+                "name": "Host Bindings",
+                "description": "Do not use @HostBinding or @HostListener. Put host bindings and listeners in the host object of the @Component or @Directive decorator.",
+                "id": "host-bindings",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Analysis: found 0 host bindings"
+              },
+              {
+                "state": 1,
+                "name": "Class Binding",
+                "description": "Use class bindings (e.g. [class.foo], [attr.class]) instead of ngClass in templates.",
+                "id": "class-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 class bindings"
+              },
+              {
+                "state": 1,
+                "name": "Style Binding",
+                "description": "Use style bindings ([style.foo], [attr.style]) instead of ngStyle in templates.",
+                "id": "style-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 style bindings"
+              },
+              {
+                "state": 0,
+                "name": "Only Provided in Root",
+                "description": "For singleton services, use providedIn: 'root' in the @Injectable decorator.",
+                "id": "only-provided-in-root",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Services"
+                ],
+                "message": "Pass\nsrc/app/services/user.service.ts.6.2.6.20"
+              },
+              {
+                "state": 1,
+                "name": "Form Binding",
+                "description": "Prefer Reactive forms (formControl, formGroup, formArray) over template-driven forms (ngModel, ngForm, ngModelGroup).",
+                "id": "form-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 form bindings"
+              },
+              {
+                "state": 0,
+                "name": "Template Flow",
+                "description": "Use native control flow (@if, @for, @switch) instead of *ngIf, *ngFor, *ngSwitch in templates.",
+                "id": "template-flow",
+                "scoreReduction": "20%",
+                "successPercentage": 0,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Fail\nsrc/app/app.html.10.6.25.16,src/app/app.html.10.6.25.16"
+              },
+              {
+                "state": 0,
+                "name": "Image Src Binding",
+                "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+                "id": "image-src-binding",
+                "scoreReduction": "20%",
+                "successPercentage": 0,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Fail\nsrc/app/app.html.16.10.16.32"
+              },
+              {
+                "state": 1,
+                "name": "Observable to Signal",
+                "description": "Prefer creating a signal from an RxJS Observable with toSignal() rather than subscribing and calling .set() inside the subscribe block.",
+                "id": "observable-to-signal",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "Analysis: found 0 relevant properties"
+              },
+              {
+                "state": 0,
+                "name": "Template Formatting",
+                "description": "Use built-in pipes (currency, number, date) or custom pure pipes for formatting. Do not put formatting logic or hardcoded symbols (e.g. $) in the template — that is hard to spot and breaks i18n. Prefer pipes; if formatting lives in the component (method, computed, or property), that is less bad but still penalized.",
+                "id": "template-formatting",
+                "scoreReduction": "20%",
+                "successPercentage": 0.5,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Partial Pass (50%)\nsrc/app/app.ts.26.2.28.3,src/app/app.ts.26.2.28.3"
+              },
+              {
+                "state": 1,
+                "name": "Form Submitting",
+                "description": "Use ngSubmit on form elements and avoid using click on input elements in order to submit the form.",
+                "id": "form-submitting",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 components with templates"
+              }
+            ]
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "No Any Type Definitions",
+                "description": "Avoid the any type; use unknown when the type is uncertain. Prefer strict typing for properties, methods, and their signatures.",
+                "id": "type-definition",
+                "scoreReduction": "50%",
+                "successPercentage": 1,
+                "category": "low-impact",
+                "groupingLabels": [
+                  "TypeScript Best Practices"
+                ],
+                "message": "Pass"
+              },
+              {
+                "state": 1,
+                "name": "No Globals in Templates",
+                "description": "Do not assume globals like new Date(), Math, window, or document are available in templates.",
+                "id": "no-globals-in-templates",
+                "category": "low-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Analysis: found 0 global object usages"
+              },
+              {
+                "state": 1,
+                "name": "Prefer Inline Templates",
+                "description": "Prefer inline templates for small components (under 20 lines). Use external HTML files only when the template is 20 or more lines.",
+                "id": "prefer-inline-templates",
+                "category": "low-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Analysis: no component templates found"
+              }
+            ]
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.config.ts",
+              "code": "import {\n  ApplicationConfig,\n  provideBrowserGlobalErrorListeners,\n  provideZoneChangeDetection,\n} from \"@angular/core\";\nimport { provideRouter } from \"@angular/router\";\nimport { provideHttpClient } from \"@angular/common/http\";\n\nimport { routes } from \"./app.routes\";\n\nexport const appConfig: ApplicationConfig = {\n  providers: [\n    provideBrowserGlobalErrorListeners(),\n    provideZoneChangeDetection({ eventCoalescing: true }),\n    provideRouter(routes),\n    provideHttpClient(),\n  ],\n};\n"
+            },
+            {
+              "filePath": "src/app/app.ts",
+              "code": "import { Component, OnInit } from \"@angular/core\";\nimport { CommonModule, DatePipe } from \"@angular/common\";\nimport { UserService } from \"./services/user.service\";\nimport { User } from \"./models/user.model\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  imports: [CommonModule],\n  providers: [DatePipe],\n})\nexport class App implements OnInit {\n  users: User[] = [];\n\n  constructor(\n    private userService: UserService,\n    private datePipe: DatePipe\n  ) {}\n\n  ngOnInit(): void {\n    this.userService.getUsers().subscribe((users) => {\n      this.users = users;\n    });\n  }\n\n  formatLastLoggedIn(timestamp: number): string {\n    return this.datePipe.transform(timestamp, \"dd.MM.yyyy, HH:mm\") ?? \"\";\n  }\n}\n"
+            },
+            {
+              "filePath": "src/app/app.html",
+              "code": "<div class=\"min-h-screen bg-slate-50 text-slate-900\">\n  <main class=\"mx-auto w-full max-w-3xl px-4 py-10\">\n    <header class=\"mb-8 text-center\">\n      <h1 class=\"text-3xl font-semibold tracking-tight\">User List</h1>\n      <p class=\"mt-2 text-sm text-slate-600\">\n        Recently active users fetched from the API\n      </p>\n    </header>\n\n    <section class=\"space-y-4\">\n      <article\n        class=\"flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm\"\n        *ngFor=\"let user of users\"\n      >\n        <img\n          class=\"h-12 w-12 rounded-full border border-slate-200 object-cover\"\n          [src]=\"user.avatarUrl\"\n          [alt]=\"user.email\"\n        />\n        <div class=\"flex-1\">\n          <p class=\"text-base font-medium text-slate-900\">{{ user.email }}</p>\n          <p class=\"text-xs text-slate-500\">\n            Last login: {{ formatLastLoggedIn(user.lastLoggedInAt) }}\n          </p>\n        </div>\n      </article>\n    </section>\n  </main>\n</div>\n"
+            },
+            {
+              "filePath": "src/app/app.css",
+              "code": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
+            },
+            {
+              "filePath": "src/app/models/user.model.ts",
+              "code": "export interface User {\n  id: number;\n  email: string;\n  avatarUrl: string;\n  lastLoggedInAt: number;\n}\n"
+            },
+            {
+              "filePath": "src/app/services/user.service.ts",
+              "code": "import { Injectable } from \"@angular/core\";\nimport { HttpClient } from \"@angular/common/http\";\nimport { Observable } from \"rxjs\";\nimport { User } from \"../models/user.model\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class UserService {\n  private readonly usersUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/users.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getUsers(): Observable<User[]> {\n    return this.http.get<User[]>(this.usersUrl);\n  }\n}\n"
+            }
+          ],
+          "usage": {
+            "inputTokens": 1227,
+            "outputTokens": 1445,
+            "totalTokens": 2672,
+            "thinkingTokens": 448,
+            "cost": 0.02237725
+          },
+          "reasoning": "**Planning date handling and dependencies**\n\nI'm deciding to add HttpClient via app config and include CommonModule and AsyncPipe for template support. For date formatting, I'll avoid using `new Date()` explicitly and instead rely on Angular's DatePipe for safe formatting without direct global Date instantiation.**Finalizing date formatting and app structure**\n\nI'm implementing DatePipe with a European format method to format epoch timestamps without using `new Date()`. I'm adding proper user model and service files with HttpClient fetched via app config, updating the component to subscribe on init, and adjusting template and styles for user list display.\n[REDACTED]",
+          "buildResult": {
+            "status": "success",
+            "message": "Application built successfully!",
+            "safetyWebReportJson": [
+              {
+                "summaryVersion": "0.1.0",
+                "packageName": "app",
+                "packageVersion": "0.0.0",
+                "packagePath": ".",
+                "violations": []
+              }
+            ]
+          },
+          "serveTestingResult": {
+            "runtimeErrors": "",
+            "userJourneyAgentOutput": null
+          },
+          "attempt": 0
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "toolLogs": [],
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "openai/gpt-5.2-codex",
+      "environmentId": "f3b7cde2-8776-4998-b970-72c1670db50f",
+      "displayName": "Angular 20 Greenfield Hard",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 1227,
+        "outputTokens": 1445,
+        "thinkingTokens": 448,
+        "totalTokens": 2672,
+        "cost": 0.02237725
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "f67d43834d6d96ac4a57fe40b0f5d9e00c1078ee04242b4644b0bbe561ffec52"
+    },
+    "timestamp": "2026-02-21T19:05:59.658Z",
+    "reportName": "2026-02-21T19-05-17-993Z",
+    "systemPromptGeneration": "Follow instructions below CAREFULLY:\n\n- Code MUST be implemented in Angular.\n- Put the component code inside `src/app/app.ts`\n- Component class MUST always be named `App`\n- Component's selector MUST always be \"app-root\" (the `selector: 'app-root'` MUST be present in the \"@Component\" decorator)\n- Generate the template code inside a separate HTML file and link it in the `template` field of the `App` component\n- Generate the styling code inside a separate CSS file and link it in the `styleUrl` field of the `App` component\n- Use Tailwind CSS\n- Completeness: include all necessary code to run independently\n- Use comments sparingly and only for complex parts of the code\n- Make sure the generated code is **complete** and **runnable**\n- Make sure the generated code contains a **complete** implementation of the `App` class\n- Do NOT generate `bootstrapApplication` calls\n- If the task requires to fetch data using `HttpClient` make sure to use `provideHttpClient()` in `bootstrapApplication` providers\n- Do not assume globals like (`new Date()`) are available.\n- Do not write arrow functions in templates (they are not supported).\n- Do not write Regular expressions in templates (they are not supported).\n\nYou are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.\n",
+    "systemPromptRepair": "Please fix the given errors and return the corrected code.",
+    "labels": []
+  }
+}

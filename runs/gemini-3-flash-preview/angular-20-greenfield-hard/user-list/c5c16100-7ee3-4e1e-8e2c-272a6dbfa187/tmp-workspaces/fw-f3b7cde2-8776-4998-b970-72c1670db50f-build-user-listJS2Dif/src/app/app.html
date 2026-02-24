@@ -1,0 +1,29 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-4xl mx-auto">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 text-center">Team Directory</h1>
+      <p class="text-gray-500 text-center mt-2">Overview of all registered users</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div 
+        *ngFor="let user of users$ | async" 
+        class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition duration-200 hover:shadow-md flex items-center space-x-4"
+      >
+        <img 
+          [src]="user.avatarUrl" 
+          alt="User Avatar" 
+          class="w-14 h-14 rounded-full object-cover border-2 border-indigo-100 flex-shrink-0"
+        />
+        <div class="flex-1 min-w-0">
+          <p class="text-lg font-semibold text-gray-900 truncate">
+            {{ user.email }}
+          </p>
+          <p class="text-xs text-gray-400 mt-1 uppercase tracking-wider">
+            Last login: <span class="font-medium">{{ user.lastLoggedInAt | date: 'dd.MM.yyyy, HH:mm' }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

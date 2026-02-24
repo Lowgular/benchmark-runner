@@ -1,0 +1,4 @@
+/* Custom styles handled via Tailwind CSS utility classes in current setup */
+:host {
+  display: block;
+}

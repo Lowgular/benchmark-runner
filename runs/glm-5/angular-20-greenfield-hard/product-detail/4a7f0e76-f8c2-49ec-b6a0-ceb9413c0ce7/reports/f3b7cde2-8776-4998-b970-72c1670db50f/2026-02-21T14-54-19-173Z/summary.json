@@ -1,0 +1,60 @@
+{
+  "id": "9c51039d-cbea-48c9-a58b-6235a1440d31",
+  "group": "fcb3cf011502bb4ce1603ef3b3c4fe1ceda147a22b5f0d0ea0f5bfe0fd43492e",
+  "version": 3,
+  "results": [],
+  "details": {
+    "summary": {
+      "model": "gemini-2.5-pro",
+      "environmentId": "f3b7cde2-8776-4998-b970-72c1670db50f",
+      "displayName": "Angular 20 Greenfield Hard",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 3,
+        "failedPrompts": [
+          {
+            "promptName": "user-list",
+            "error": "Error: Could not find pre-existing files in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/glm-5/angular-20-greenfield-hard/product-detail/4a7f0e76-f8c2-49ec-b6a0-ceb9413c0ce7/f3b7cde2-8776-4998-b970-72c1670db50f/user-list",
+            "stack": "Error: Could not find pre-existing files in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/glm-5/angular-20-greenfield-hard/product-detail/4a7f0e76-f8c2-49ec-b6a0-ceb9413c0ce7/f3b7cde2-8776-4998-b970-72c1670db50f/user-list\n    at generateInitialFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-initial-files.js:24:19)\n    at startEvaluationTask (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-eval-task.js:34:39)\n    at async callWithTimeout (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/utils/timeout.js:17:16)\n    at async evaluate (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:125:35)\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:145:41\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/p-queue@9.1.0/node_modules/p-queue/dist/index.js:394:36"
+          },
+          {
+            "promptName": "product-detail",
+            "error": "Error: Could not find pre-existing files in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/glm-5/angular-20-greenfield-hard/product-detail/4a7f0e76-f8c2-49ec-b6a0-ceb9413c0ce7/f3b7cde2-8776-4998-b970-72c1670db50f/product-detail",
+            "stack": "Error: Could not find pre-existing files in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/glm-5/angular-20-greenfield-hard/product-detail/4a7f0e76-f8c2-49ec-b6a0-ceb9413c0ce7/f3b7cde2-8776-4998-b970-72c1670db50f/product-detail\n    at generateInitialFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-initial-files.js:24:19)\n    at startEvaluationTask (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-eval-task.js:34:39)\n    at async callWithTimeout (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/utils/timeout.js:17:16)\n    at async evaluate (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:125:35)\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:145:41\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/p-queue@9.1.0/node_modules/p-queue/dist/index.js:394:36"
+          },
+          {
+            "promptName": "login-form",
+            "error": "Error: Could not find pre-existing files in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/glm-5/angular-20-greenfield-hard/product-detail/4a7f0e76-f8c2-49ec-b6a0-ceb9413c0ce7/f3b7cde2-8776-4998-b970-72c1670db50f/login-form",
+            "stack": "Error: Could not find pre-existing files in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/glm-5/angular-20-greenfield-hard/product-detail/4a7f0e76-f8c2-49ec-b6a0-ceb9413c0ce7/f3b7cde2-8776-4998-b970-72c1670db50f/login-form\n    at generateInitialFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-initial-files.js:24:19)\n    at startEvaluationTask (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-eval-task.js:34:39)\n    at async callWithTimeout (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/utils/timeout.js:17:16)\n    at async evaluate (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:125:35)\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:145:41\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/p-queue@9.1.0/node_modules/p-queue/dist/index.js:394:36"
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "thinkingTokens": 0,
+        "totalTokens": 0
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "f67d43834d6d96ac4a57fe40b0f5d9e00c1078ee04242b4644b0bbe561ffec52"
+    },
+    "timestamp": "2026-02-21T14:54:24.382Z",
+    "reportName": "2026-02-21T14-54-19-173Z",
+    "systemPromptGeneration": "Follow instructions below CAREFULLY:\n\n- Code MUST be implemented in Angular.\n- Put the component code inside `src/app/app.ts`\n- Component class MUST always be named `App`\n- Component's selector MUST always be \"app-root\" (the `selector: 'app-root'` MUST be present in the \"@Component\" decorator)\n- Generate the template code inside a separate HTML file and link it in the `template` field of the `App` component\n- Generate the styling code inside a separate CSS file and link it in the `styleUrl` field of the `App` component\n- Use Tailwind CSS\n- Completeness: include all necessary code to run independently\n- Use comments sparingly and only for complex parts of the code\n- Make sure the generated code is **complete** and **runnable**\n- Make sure the generated code contains a **complete** implementation of the `App` class\n- Do NOT generate `bootstrapApplication` calls\n- If the task requires to fetch data using `HttpClient` make sure to use `provideHttpClient()` in `bootstrapApplication` providers\n- Do not assume globals like (`new Date()`) are available.\n- Do not write arrow functions in templates (they are not supported).\n- Do not write Regular expressions in templates (they are not supported).\n\nYou are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.\n",
+    "systemPromptRepair": "Please fix the given errors and return the corrected code.",
+    "labels": []
+  }
+}
