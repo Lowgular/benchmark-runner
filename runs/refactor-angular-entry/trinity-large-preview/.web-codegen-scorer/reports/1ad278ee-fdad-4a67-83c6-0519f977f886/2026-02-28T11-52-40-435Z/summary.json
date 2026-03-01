@@ -1,0 +1,227 @@
+{
+  "id": "b9c37a77-cd6d-428f-8a98-224ef00f265b",
+  "group": "4086b6d46f9ed8573254be2280122535ff024cd20fec85b1faea9ccd577492b6",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.change-detection.default",
+        "prompt": "# angular.change-detection.default\n\n# changeDetection: Default → none (remove)\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.Default` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\n```typescript\nimport { Component, ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class UserComponent {}\n```\n\n**TO**\n\n```typescript\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n})\nexport class UserComponent {}\n```\n\n---\n\n### Directive with explicit Default\n\n**FROM**\n\n```typescript\nimport { Directive, ChangeDetectionStrategy } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class TestDirective {}\n```\n\n**TO**\n\n```typescript\nimport { Directive } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n})\nexport class TestDirective {}\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 5-11\n\n### Full File Content\n\n```\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"/src/app/app.html\",\n  styleUrl: \"/src/app/app.css\",\n  standalone: false,\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n\n```"
+      },
+      "outputFiles": [],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "success",
+          "message": "Application passed linting!",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.change-detection.none",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.change-detection.none",
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.ts"
+                          },
+                          "region": {
+                            "startLine": 5,
+                            "startColumn": 1,
+                            "endLine": 10,
+                            "endColumn": 3
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "error",
+          "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.976 seconds]\n\n\n✘ [ERROR] NG2008: Could not find template file '/src/app/app.html'. [plugin angular-compiler]\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"/src/app/app.html\",\n        ╵                ~~~~~~~~~~~~~~~~~~~\n\n\n",
+          "errorType": "Angular Diagnostic"
+        },
+        "serveTestingResult": null,
+        "outputFiles": [],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": [
+              {
+                "state": 1,
+                "name": "Change Detection Strategy",
+                "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+                "id": "change-detection-strategy",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "No change-detection rule results in lint output"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": []
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [],
+          "usage": {
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "totalTokens": 0,
+            "thinkingTokens": 0,
+            "cost": 0
+          },
+          "reasoning": "",
+          "buildResult": {
+            "status": "error",
+            "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.976 seconds]\n\n\n✘ [ERROR] NG2008: Could not find template file '/src/app/app.html'. [plugin angular-compiler]\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"/src/app/app.html\",\n        ╵                ~~~~~~~~~~~~~~~~~~~\n\n\n",
+            "errorType": "Angular Diagnostic"
+          },
+          "serveTestingResult": null,
+          "attempt": 0,
+          "lintResult": {
+            "status": "success",
+            "message": "Application passed linting!",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.change-detection.none",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.change-detection.none",
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.ts"
+                            },
+                            "region": {
+                              "startLine": 5,
+                              "startColumn": 1,
+                              "endLine": 10,
+                              "endColumn": 3
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "arcee-ai/trinity-large-preview:free",
+      "environmentId": "1ad278ee-fdad-4a67-83c6-0519f977f886",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "thinkingTokens": 0,
+        "totalTokens": 0,
+        "cost": 0
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "c87811b633b3e7c8968a65a49ba40fe48fc926a1675a4425308e636ba4ff36ee"
+    },
+    "timestamp": "2026-02-28T11:52:55.655Z",
+    "reportName": "2026-02-28T11-52-40-435Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

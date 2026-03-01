@@ -1,0 +1,99 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "lowgular-static-analysis",
+          "version": "0.0.0",
+          "rules": [
+            {
+              "id": "angular.change-detection.on-push",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "fullDescription": {
+                "markdown": "# change-detection_on-push_none\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.OnPush` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit OnPush\n\n**FROM**\n\n```typescript\nimport { ChangeDetectionStrategy, Component } from '@angular/core';\n\n@Component({\n  selector: 'app-on-push',\n  [Include not found: /Users/greg/Desktop/projects/lowgular/lowgular-internal/apps/static-analysis/src/rules/change-detection/skip/src/app/component.ts]plate: `<p>OnPush</p>`,\n})\nexport class OnPushComponent {}\n\n```\n\n**TO**\n\n```typescript\n[Include not found: /Users/greg/Desktop/projects/lowgular/lowgular-internal/apps/static-analysis/src/rules/change-detection/skip/src/app/component.ts]\n```"
+              }
+            },
+            {
+              "id": "angular.change-detection.default",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "fullDescription": {
+                "markdown": "# change-detection_default_none\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.Default` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\n```typescript\nimport { ChangeDetectionStrategy, Component } from '@angular/core';\n\n@Component({\n  selector: 'app-default',\n  [Include not found: /Users/greg/Desktop/projects/lowgular/lowgular-internal/apps/static-analysis/src/rules/change-detection/skip/src/app/component.ts]mplate: `<p>Default</p>`,\n})\nexport class DefaultComponent {}\n\n```\n\n**TO**\n\n```typescript\n[Include not found: /Users/greg/Desktop/projects/lowgular/lowgular-internal/apps/static-analysis/src/rules/change-detection/skip/src/app/component.ts]\n```"
+              }
+            },
+            {
+              "id": "angular.observable-to-signal.subscribe-set",
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "fullDescription": {
+                "markdown": "# observable-to-signal_subscribe-set_to-signal\n\n## Refactor Steps\n\n1. **Import** `toSignal` from `@angular/core/rxjs-interop` (or the appropriate package for your Angular version).\n2. **Replace** the pattern: remove the subscription (e.g. in constructor or lifecycle hook), and initialize the property with `toSignal(theObservable$)`.\n3. **Remove** any manual `subscribe()` that only called `this.<prop>.set(...)`; ensure the Observable is passed to `toSignal()` instead.\n4. **Inject** `DestroyRef` if you need a custom injector for `toSignal()` (e.g. `toSignal(obs$, { injector: inject(DestroyRef) })`); otherwise the default context is usually sufficient.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component: subscribe + .set() on a signal\n\n**FROM**\n\n```typescript\nimport { CommonModule } from '@angular/common';\nimport { Component, inject, OnInit, signal } from '@angular/core';\nimportimport { Component } from '@angular/core';\nimport { toSignal } from '@angular/core/rxjs-interop';\nimport { DataService } from './data.service';\n\n@Component({\n  selector: 'app-user',\n  templimport { signal } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\n\nexport class MyService {\n  import { HttpClient } from '@angular/common/http';\nimport { inject } from '@angular/core';\nimport { toSignal } from '@angular/core/rxjs-interop';\nimport { Item } from './item.model';\n\nexport class MyService {\n  private http = inject(HttpClient);\n  readonly data = toSignal(this.http.get<Item[]>('/api/items'), {\n    initialValue: null,\n  });\n}\n() {\n    this.http.get<Item[]>('/api/items').subscribe((res) => {\n      this.data.set(res);\n    });\n  }\n}\nervice;\n\n  protected readonly items = toSignal(this.data.getItems(), {\n    initialValue: null,\n  });\n}\n `{{ items().length }}`,\n  imports: [CommonModule],\n})\nexport class UserComponent implements OnInit {\n  readonly items = signal<string[]>([]);\n\n  private readonly data = inject(DataService);\n\n  ngOnInit(): void {\n    this.data.getItems().subscribe((list) => {\n      this.items.set(list);\n    });\n  }\n}\n\n```\n\n**TO**\n\n```typescript\nimport { Component } from '@angular/core';\nimport { toSignal } from '@angular/core/rxjs-interop';\nimport { DataService } from './data.service';\n\n@Component({\n  selector: 'app-user',\n  templimport { signal } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\n\nexport class MyService {\n  import { HttpClient } from '@angular/common/http';\nimport { inject } from '@angular/core';\nimport { toSignal } from '@angular/core/rxjs-interop';\nimport { Item } from './item.model';\n\nexport class MyService {\n  private http = inject(HttpClient);\n  readonly data = toSignal(this.http.get<Item[]>('/api/items'), {\n    initialValue: null,\n  });\n}\n() {\n    this.http.get<Item[]>('/api/items').subscribe((res) => {\n      this.data.set(res);\n    });\n  }\n}\nervice;\n\n  protected readonly items = toSignal(this.data.getItems(), {\n    initialValue: null,\n  });\n}\n\n```\n\n---\n\n### Service or class: observable stored in signal via subscribe\n\n**FROM**\n\n```typescript\nimport { signal } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\n\nexport class MyService {\n  import { HttpClient } from '@angular/common/http';\nimport { inject } from '@angular/core';\nimport { toSignal } from '@angular/core/rxjs-interop';\nimport { Item } from './item.model';\n\nexport class MyService {\n  private http = inject(HttpClient);\n  readonly data = toSignal(this.http.get<Item[]>('/api/items'), {\n    initialValue: null,\n  });\n}\n() {\n    this.http.get<Item[]>('/api/items').subscribe((res) => {\n      this.data.set(res);\n    });\n  }\n}\n\n```\n\n**TO**\n\n```typescript\n<!-- @@inject: ../src/rules/observable-to-signal/stubs/to-signal/src/app/service.ts -->\n```"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "angular.change-detection.on-push",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/app/product-card.ts"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 1,
+                  "endLine": 16,
+                  "endColumn": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "angular.change-detection.default",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/app/app.ts"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 1,
+                  "endLine": 11,
+                  "endColumn": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "angular.observable-to-signal.subscribe-set",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/app/product-card.ts"
+                },
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 3,
+                  "endLine": 18,
+                  "endColumn": 42
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

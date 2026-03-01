@@ -3,14 +3,13 @@ import { RatingCategory } from "web-codegen-scorer";
 
 // my-project/eval-config.js
 export default {
-  id: "1ad278ee-fdad-4a67-83c6-0519f977f886",
-  displayName: "Angular 20 Legacy",
+  id: "f3b7cde2-8776-4998-b970-72c1670db50f",
+  displayName: "Angular 20 Greenfield Hard",
   clientSideFramework: "angular",
-  sourceDirectory: "../../init-states/angular-20-legacy",
-  ratings: [RATINGS.changeDetectionStrategyRating],
+  sourceDirectory: "../../init-states/angular-20-fresh-hard",
+  ratings: [...Object.values(RATINGS)],
   generationSystemPrompt: "./system-instructions.md",
-  repairSystemPrompt: "./system-instructions.md",
-  executablePrompts: ["../../prompt-rules/**/*.md"],
+  executablePrompts: ["../../prompts/**/*.md"],
   packageManager: "npm",
   categoryOverrides: {
     [RatingCategory.HIGH_IMPACT]: { maxPoints: 50, name: "High" },

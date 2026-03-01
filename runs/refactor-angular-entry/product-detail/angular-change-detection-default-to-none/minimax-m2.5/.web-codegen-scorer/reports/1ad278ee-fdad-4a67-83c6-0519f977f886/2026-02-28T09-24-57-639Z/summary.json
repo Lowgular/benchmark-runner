@@ -1,0 +1,314 @@
+{
+  "id": "f5543890-c6ba-4860-90e3-ee5caa2fa3ca",
+  "group": "4086b6d46f9ed8573254be2280122535ff024cd20fec85b1faea9ccd577492b6",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "none",
+        "prompt": ""
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { Component, ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class UserComponent {}"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "error",
+          "message": "Linting found errors or warnings",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.change-detection.default",
+                        "defaultConfiguration": {
+                          "level": "error"
+                        },
+                        "fullDescription": {
+                          "markdown": "# changeDetection: Default → none (remove)\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.Default` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\n```typescript\nimport { Component, ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class UserComponent {}\n```\n\n**TO**\n\n```typescript\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n})\nexport class UserComponent {}\n```\n\n---\n\n### Directive with explicit Default\n\n**FROM**\n\n```typescript\nimport { Directive, ChangeDetectionStrategy } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class TestDirective {}\n```\n\n**TO**\n\n```typescript\nimport { Directive } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n})\nexport class TestDirective {}\n```"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.change-detection.default",
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.ts"
+                          },
+                          "region": {
+                            "startLine": 3,
+                            "startColumn": 1,
+                            "endLine": 7,
+                            "endColumn": 3
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "success",
+          "message": "Initial build succeeded"
+        },
+        "serveTestingResult": null,
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.ts",
+            "code": "import { Component, ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class UserComponent {}"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0,
+        "lintAttempts": 1
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": [
+              {
+                "state": 1,
+                "name": "Change Detection Strategy",
+                "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+                "id": "change-detection-strategy",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "No change-detection rule results in lint output"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": []
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "lintAttempts": 0,
+          "outputFiles": [],
+          "usage": {
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "totalTokens": 0,
+            "thinkingTokens": 0,
+            "cost": 0
+          },
+          "reasoning": "",
+          "buildResult": {
+            "status": "success",
+            "message": "Initial build succeeded"
+          },
+          "serveTestingResult": null,
+          "attempt": 0,
+          "lintResult": {
+            "status": "error",
+            "message": "Linting found errors or warnings",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.change-detection.default",
+                          "defaultConfiguration": {
+                            "level": "error"
+                          },
+                          "fullDescription": {
+                            "markdown": "# changeDetection: Default → none (remove)\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.Default` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\n```typescript\nimport { Component, ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class UserComponent {}\n```\n\n**TO**\n\n```typescript\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n})\nexport class UserComponent {}\n```\n\n---\n\n### Directive with explicit Default\n\n**FROM**\n\n```typescript\nimport { Directive, ChangeDetectionStrategy } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class TestDirective {}\n```\n\n**TO**\n\n```typescript\nimport { Directive } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n})\nexport class TestDirective {}\n```"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.change-detection.default",
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.ts"
+                            },
+                            "region": {
+                              "startLine": 5,
+                              "startColumn": 1,
+                              "endLine": 11,
+                              "endColumn": 3
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.ts",
+              "code": "import { Component, ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class UserComponent {}"
+            }
+          ],
+          "usage": {
+            "inputTokens": 564,
+            "outputTokens": 89,
+            "totalTokens": 653,
+            "thinkingTokens": 0,
+            "cost": 0
+          },
+          "reasoning": "",
+          "buildResult": {
+            "status": "success",
+            "message": "Initial build succeeded"
+          },
+          "serveTestingResult": null,
+          "attempt": 1,
+          "lintResult": {
+            "status": "error",
+            "message": "Linting found errors or warnings",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.change-detection.default",
+                          "defaultConfiguration": {
+                            "level": "error"
+                          },
+                          "fullDescription": {
+                            "markdown": "# changeDetection: Default → none (remove)\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.Default` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\n```typescript\nimport { Component, ChangeDetectionStrategy } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class UserComponent {}\n```\n\n**TO**\n\n```typescript\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-user',\n  template: '<div>Hello</div>',\n})\nexport class UserComponent {}\n```\n\n---\n\n### Directive with explicit Default\n\n**FROM**\n\n```typescript\nimport { Directive, ChangeDetectionStrategy } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class TestDirective {}\n```\n\n**TO**\n\n```typescript\nimport { Directive } from '@angular/core';\n\n@Directive({\n  selector: '[test]',\n})\nexport class TestDirective {}\n```"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.change-detection.default",
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.ts"
+                            },
+                            "region": {
+                              "startLine": 3,
+                              "startColumn": 1,
+                              "endLine": 7,
+                              "endColumn": 3
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "arcee-ai/trinity-large-preview:free",
+      "environmentId": "1ad278ee-fdad-4a67-83c6-0519f977f886",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 564,
+        "outputTokens": 89,
+        "thinkingTokens": 0,
+        "totalTokens": 653,
+        "cost": 0
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "c87811b633b3e7c8968a65a49ba40fe48fc926a1675a4425308e636ba4ff36ee"
+    },
+    "timestamp": "2026-02-28T09:25:07.470Z",
+    "reportName": "2026-02-28T09-24-57-639Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

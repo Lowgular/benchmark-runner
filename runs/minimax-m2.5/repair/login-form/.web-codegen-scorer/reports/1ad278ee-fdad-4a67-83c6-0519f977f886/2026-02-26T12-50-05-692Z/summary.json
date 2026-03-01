@@ -1,0 +1,305 @@
+{
+  "id": "21956417-a4a7-4b25-83b7-7c5c8621a6f1",
+  "group": "49298d335870c5835a6e134a146d2bb06d447ef794c15da34292812eba0f028b",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "product-detail",
+        "prompt": "# Product Detail\n\nThe purpose of this application is to show a simple product from stubbed endpoint from json file and present it using Tailwind and Angular framework.\n\n## File system\n\nYou are in greenfield Angular starter app and here are the files\n\n\n---\n\n## Endpoints\n\nYou must use this endpoint in order to fetch the product detail model:\n`GET https://storage.googleapis.com/lowgular-platform/mocks/product.json`\n\nThe endpoint will respond with the json looking similar to this one:\n\n```json\n{\n  \"id\": 1,\n  \"name\": \"Product 1\",\n  \"description\": \"This is a beautiful and high-quality product. It comes in several color variants. Choose your favorite color below to preview the product variant.\",\n  \"price\": 100,\n  \"image\": \"https://dummyimage.com/150x150/cccccc/888888&text=Product+1\"\n}\n```\n\n## Functional Requirements\n\n```gherkin\nGiven the application fetches product data from the API endpoint\nWhen I navigate to the \"/\" route\nThen I should see the product card\n```\n\n### Out of Functional Scope\n\nThe following are explicitly NOT part of this task so DO NOT attempt to develp these features:\n\n- Error handling (assume the API always succeeds)\n- Loading states (no need to show loading indicators)\n\n## Technical Requirements\n\nIMPORTANT: for this task you do not need to setup routing - simply use a single `App` component.\n\nUse the simple CMS (Component Model Service) architecture:\n\n- Component - Do not write your own component, simply use app.ts and app.html to finish the task\n- Model - you are required to create own model file\n- Service - you are required to create own service file\n- HttpClient - you must use HttpClient to fetch data from the specified endpoint\n\n## UI Requirements\n\nYou MUST create the valid HTML that will represent a card with data. It is important that you bind the correct data into HTML tags.\n\nYou must bind the following product properties:\n\n- name (bigger text)\n- description (smaller text)\n- image (img)\n- price in following format: \"$100.00\"\n\nIMPORTANT: The tailwind css is already added to the project so use its default utility classes.\n\nWe do not evaluate the visuals for this task, however as professional frontend developer you should take care that the app looks nice and is functional.\n"
+      },
+      "outputFiles": [],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "success",
+          "message": "[\n  {\n    \"ruleId\": \"angular.change-detection.none\",\n    \"locations\": [\n      {\n        \"physicalLocation\": {\n          \"artifactLocation\": {\n            \"uri\": \"src/app/app.ts\"\n          },\n          \"region\": {\n            \"startLine\": 3,\n            \"startColumn\": 1,\n            \"endLine\": 7,\n            \"endColumn\": 3\n          }\n        }\n      }\n    ]\n  }\n]",
+          "violatedRules": [],
+          "fileViolations": {}
+        },
+        "buildResult": {
+          "status": "success",
+          "message": "Initial build succeeded"
+        },
+        "serveTestingResult": null,
+        "outputFiles": [],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0,
+        "lintAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Change Detection Strategy",
+                "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+                "id": "change-detection-strategy",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Pass\nundefined.undefined.undefined.."
+              },
+              {
+                "state": 1,
+                "name": "Dependency Injection",
+                "description": "Use the inject() function for dependency injection in components, directives, pipes, and injectable services. Do not use constructor parameters for injection.",
+                "id": "dependency-injection",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Dependency Injection"
+                ],
+                "message": "No dependency-injection rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "No NgModules",
+                "description": "Do not use NgModules. Use standalone components only.",
+                "id": "no-ng-module",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "No NgModule usages found in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Standalone Components",
+                "description": "Do not set the standalone property on @Component, @Directive, or @Pipe (standalone is true by default). You may set standalone: true; never set standalone: false.",
+                "id": "standalone",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "No standalone rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Component Decorator Paths",
+                "description": "Component decorator paths must be set on correct property and the values should be paths relative to the component TS file",
+                "id": "component-paths",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "No component-paths rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Template Properties",
+                "description": "For component state used in templates, use signals (preferred) or RxJS observables. Do not use plain class properties for template-bound state.",
+                "id": "template-properties",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "No template-properties rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Subscription Management",
+                "description": "Make sure to to ALWAYS unsubscribe from observables. Use takeUntilDestroyed(), take(), takeUntil() or async pipe - avoid manual unsubscribe() calls.",
+                "id": "subscription-management",
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "No subscription-management rule results in lint output"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": [
+              {
+                "state": 1,
+                "name": "Only Provided in Root",
+                "description": "For singleton services, use providedIn: 'root' in the @Injectable decorator.",
+                "id": "only-provided-in-root",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Services"
+                ],
+                "message": "No provided-in-root rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Form Binding",
+                "description": "Prefer Reactive forms (formControl, formGroup, formArray) over template-driven forms (ngModel, ngForm, ngModelGroup).",
+                "id": "form-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "No form-binding rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Template Flow",
+                "description": "Use native control flow (@if, @for, @switch) instead of *ngIf, *ngFor, *ngSwitch in templates.",
+                "id": "template-flow",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "No template-flow rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Image Src Binding",
+                "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+                "id": "image-src-binding",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "No image src binding rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Observable to Signal",
+                "description": "Prefer creating a signal from an RxJS Observable with toSignal() rather than subscribing and calling .set() inside the subscribe block.",
+                "id": "observable-to-signal",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "State Management"
+                ],
+                "message": "No observable-to-signal rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Template Formatting",
+                "description": "Use built-in pipes (currency, number, date) or custom pure pipes for formatting. Do not put formatting logic or hardcoded symbols (e.g. $) in the template — that is hard to spot and breaks i18n. Prefer pipes; if formatting lives in the component (method, computed, or property), that is less bad but still penalized.",
+                "id": "template-formatting",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "No template-formatting rule results in lint output"
+              },
+              {
+                "state": 1,
+                "name": "Form Submitting",
+                "description": "Use ngSubmit on form elements and avoid using click on input elements in order to submit the form.",
+                "id": "form-submitting",
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "No form-submitting rule results in lint output"
+              }
+            ]
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": [
+              {
+                "state": 1,
+                "name": "Prefer Inline Templates",
+                "description": "Prefer inline templates for small components (under 20 lines). Use external HTML files only when the template is 20 or more lines.",
+                "id": "prefer-inline-templates",
+                "category": "low-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "No prefer-inline-templates rule results in lint output"
+              }
+            ]
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "lintAttempts": 0,
+          "outputFiles": [],
+          "usage": {
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "totalTokens": 0,
+            "thinkingTokens": 0,
+            "cost": 0
+          },
+          "reasoning": "",
+          "buildResult": {
+            "status": "success",
+            "message": "Initial build succeeded"
+          },
+          "serveTestingResult": null,
+          "attempt": 0,
+          "lintResult": {
+            "status": "success",
+            "message": "[\n  {\n    \"ruleId\": \"angular.change-detection.none\",\n    \"locations\": [\n      {\n        \"physicalLocation\": {\n          \"artifactLocation\": {\n            \"uri\": \"src/app/app.ts\"\n          },\n          \"region\": {\n            \"startLine\": 3,\n            \"startColumn\": 1,\n            \"endLine\": 7,\n            \"endColumn\": 3\n          }\n        }\n      }\n    ]\n  }\n]",
+            "violatedRules": [],
+            "fileViolations": {}
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "minimax/minimax-m2.5",
+      "environmentId": "1ad278ee-fdad-4a67-83c6-0519f977f886",
+      "displayName": "Angular 20 Greenfield",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "thinkingTokens": 0,
+        "totalTokens": 0,
+        "cost": 0
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "f4e965c4b96559f292ec24c40d0351e8fb7af261f6a937c0d597ccf95549c83a"
+    },
+    "timestamp": "2026-02-26T12:50:11.872Z",
+    "reportName": "2026-02-26T12-50-05-692Z",
+    "systemPromptGeneration": "Follow instructions below CAREFULLY:\n\n- Code MUST be implemented in Angular.\n- Put the component code inside `src/app/app.ts`\n- Component class MUST always be named `App`\n- Component's selector MUST always be \"app-root\" (the `selector: 'app-root'` MUST be present in the \"@Component\" decorator)\n- Use standalone components, do NOT generate NgModules\n- Generate the template code inside a separate HTML file and link it in the `template` field of the `App` component\n- Generate the styling code inside a separate CSS file and link it in the `styleUrl` field of the `App` component\n- Use Tailwind CSS\n- Completeness: include all necessary code to run independently\n- Use comments sparingly and only for complex parts of the code\n- Make sure the generated code is **complete** and **runnable**\n- Make sure the generated code contains a **complete** implementation of the `App` class\n- Do NOT generate `bootstrapApplication` calls\n- If the task requires to fetch data using `HttpClient` make sure to use `provideHttpClient()` in `bootstrapApplication` providers\n- Do not assume globals like (`new Date()`) are available.\n- Do not write arrow functions in templates (they are not supported).\n- Do not write Regular expressions in templates (they are not supported).\n- ALWAYS `unsubscribe`. If you use `toSignal` then you are fine, if you need to subscribe in template then ALWAYS use `async` pipe and if you need to send data to backend once ALWAYS use `take(1)` RxJs operator\n\nYou are an expert in TypeScript, Angular, and scalable web application development. You write functional, maintainable, performant, and accessible code following Angular and TypeScript best practices.\n\n### TypeScript Best Practices\n\n- Use strict type checking\n- Prefer type inference when the type is obvious\n- Avoid the `any` type; use `unknown` when type is uncertain\n\n### Angular Best Practices\n\n- Always use standalone components over NgModules\n- Must NOT set `standalone: true` inside Angular decorators. It's the default in Angular v20+.\n- Use signals for state management\n- Implement lazy loading for feature routes\n- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead\n- Use `NgOptimizedImage` for all static images.\n  - `NgOptimizedImage` does not work for inline base64 images.\n\n### Components\n\n- Keep components small and focused on a single responsibility\n- Use `input()` and `output()` functions instead of decorators\n- Use `computed()` for derived state\n- NEVER use `changeDetection` property in `@Component` decorator because by default it is set to `ChangeDetectionStrategy.OnPush`\n- Prefer inline templates for small components\n- Prefer Reactive forms instead of Template-driven ones\n- Do NOT use `ngModel` directive\n- Do NOT use `ngClass`, use `class` bindings instead\n- DO NOT use `ngStyle`, use `style` bindings instead\n- When using external templates/styles, use paths relative to the component TS file.\n- Formatting HTML templates MUST prioritize using built-in pipes (e.g. currency, number, date) or create custom pure pipe. Do NOT bloat your components with pure methods that are only responsible for formatting data and return formatted value\n\n### State Management\n\n- Use signals for local component state\n- Use `computed()` for derived state\n- Keep state transformations pure and predictable\n- Do NOT use `mutate` on signals, use `update` or `set` instead\n- Prefer to create a signal properties from an RxJs Observable with `toSignal` and avoid setting values manually with `.set()` inside a subscribe block\n\n### Templates\n\n- Keep templates simple and avoid complex logic\n- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`\n- Use the async pipe to handle observables\n\n### Services\n\n- Design services around a single responsibility\n- Use the `providedIn: 'root'` option for singleton services\n- ALWAYS use the `inject()` function and NEVER use constructor parameters for dependency injection\n",
+    "systemPromptRepair": "Please fix the given errors and return the corrected code.",
+    "labels": []
+  }
+}

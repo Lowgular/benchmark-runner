@@ -1,9 +1,0 @@
-{
-  "fileSize": 1011,
-  "buildResult": {
-    "status": "error",
-    "message": "✘ [ERROR] TS2304: Cannot find name 'src'. [plugin angular-compiler]\n\n    src/app/app.ts:0:0:\n      0 │ \n        ╵ ^\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:4:\n      1 │ src/app/app.ts\n        ╵     ~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:8:\n      1 │ src/app/app.ts\n        ╵         ~~~\n\n\n✘ [ERROR] TS2306: File '/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/tests/.web-codegen-scorer/tmp-workspaces/fw-1ad278ee-fdad-4a67-83c6-0519f977f886-build-all7pcC14/src/app/app.ts' is not a module. [plugin angular-compiler]\n\n    src/main.ts:2:20:\n      2 │ import { App } from \"./app/app\";\n        ╵                     ~~~~~~~~~~~\n\n\n",
-    "errorType": "TypeScript Error"
-  },
-  "serveTestingResult": null
-}

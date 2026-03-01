@@ -6,7 +6,7 @@ export default {
   id: "1ad278ee-fdad-4a67-83c6-0519f977f886",
   displayName: "Angular 20 Greenfield",
   clientSideFramework: "angular",
-  sourceDirectory: "./project",
+  sourceDirectory: "../../init-states/angular-20-fresh",
   ratings: [...Object.values(RATINGS)],
   generationSystemPrompt: "./system-instructions.md",
   executablePrompts: ["../../prompts/**/*.md"],
