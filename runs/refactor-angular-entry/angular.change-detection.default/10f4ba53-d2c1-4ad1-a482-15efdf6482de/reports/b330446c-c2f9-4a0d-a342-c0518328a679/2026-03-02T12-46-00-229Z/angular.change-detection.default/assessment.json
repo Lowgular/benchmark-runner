@@ -1,0 +1,220 @@
+{
+  "promptDef": {
+    "name": "angular.change-detection.default",
+    "prompt": "# angular.change-detection.default\n\n# change-detection_default_none\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.Default` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\n```typescript\nimport { ChangeDetectionStrategy, Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-default\",\n  standalone: true,\n  changeDetection: ChangeDetectionStrategy.Default,\n  template: `<p>Default</p>`,\n})\nexport class DefaultComponent {}\n```\n\n**TO**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-none\",\n  standalone: true,\n  template: `<p>No changeDetection</p>`,\n})\nexport class NoneComponent {}\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 9-9\n\n### Full File Content\n\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "success",
+      "message": "Application passed linting!",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.change-detection.none",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.change-detection.none",
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.ts"
+                      },
+                      "region": {
+                        "startLine": 5,
+                        "startColumn": 1,
+                        "endLine": 9,
+                        "endColumn": 3
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "success",
+      "message": "Application built successfully!",
+      "safetyWebReportJson": [
+        {
+          "summaryVersion": "0.1.0",
+          "packageName": "app",
+          "packageVersion": "0.0.0",
+          "packagePath": ".",
+          "violations": []
+        }
+      ]
+    },
+    "serveTestingResult": {
+      "runtimeErrors": "",
+      "userJourneyAgentOutput": null
+    },
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Change Detection Strategy",
+            "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+            "id": "change-detection-strategy",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Pass\nsrc/app/app.ts.4.0.8.2"
+          }
+        ]
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": []
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+        }
+      ],
+      "usage": {
+        "inputTokens": 711,
+        "outputTokens": 290,
+        "totalTokens": 1001,
+        "thinkingTokens": 64,
+        "cost": 0.00075775
+      },
+      "reasoning": "**Updating Angular Component**\n\nI need to remove the changeDetection property and ChangeDetectionStrategy import if it's not being used. In app.ts, I see that ChangeDetectionStrategy, Component, and OnInit are imported. Since ChangeDetectionStrategy isn't utilized, I’ll remove it from the import. I’m not sure if the styleUrl property exists; I’ll leave that alone for now. I’ll focus on modifying just the specified line where changeDetection is mentioned and then update the import line accordingly. Finally, I’ll return the full updated file.\n[REDACTED]",
+      "buildResult": {
+        "status": "success",
+        "message": "Application built successfully!",
+        "safetyWebReportJson": [
+          {
+            "summaryVersion": "0.1.0",
+            "packageName": "app",
+            "packageVersion": "0.0.0",
+            "packagePath": ".",
+            "violations": []
+          }
+        ]
+      },
+      "serveTestingResult": {
+        "runtimeErrors": "",
+        "userJourneyAgentOutput": null
+      },
+      "attempt": 0,
+      "lintResult": {
+        "status": "success",
+        "message": "Application passed linting!",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.change-detection.none",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.change-detection.none",
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.ts"
+                        },
+                        "region": {
+                          "startLine": 5,
+                          "startColumn": 1,
+                          "endLine": 9,
+                          "endColumn": 3
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

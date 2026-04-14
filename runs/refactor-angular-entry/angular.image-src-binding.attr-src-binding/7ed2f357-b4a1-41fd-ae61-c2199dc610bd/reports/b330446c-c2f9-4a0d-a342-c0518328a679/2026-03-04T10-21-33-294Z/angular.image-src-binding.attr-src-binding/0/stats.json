@@ -1,0 +1,9 @@
+{
+  "fileSize": 1577,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.752 seconds]\n\n\n✘ [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.\n  Value is a reference to 'Component'. [plugin angular-compiler]\n\n    src/app/app.ts:11:30:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                               ~~~~~~~~~\n\n  Reference is declared here.\n\n    ../../../../../../init-states/angular-20-legacy/node_modules/@angular/core/discovery.d.d.ts:5204:14:\n      5204 │ declare const Component: ComponentDecorator;\n           ╵               ~~~~~~~~~\n\n\n✘ [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.\n  Value is of type '{ OnPush: ChangeDetectionStrategy; Default: ChangeDetectionStrategy }'. [plugin angular-compiler]\n\n    src/app/app.ts:11:41:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                                          ~~~~~~~~~~~~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2322: Type 'typeof ChangeDetectionStrategy' is not assignable to type 'readonly any[] | Type<any>'. [plugin angular-compiler]\n\n    src/app/app.ts:11:41:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                                          ~~~~~~~~~~~~~~~~~~~~~~~\n\n\n",
+    "errorType": "Angular Diagnostic"
+  },
+  "serveTestingResult": null
+}

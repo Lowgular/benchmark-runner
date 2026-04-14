@@ -1,0 +1,9 @@
+{
+  "fileSize": 648,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.682 seconds]\n\n\n✘ [ERROR] TS2339: Property 'formatPrice' does not exist on type 'App'. [plugin angular-compiler]\n\n    src/app/app.html:15:13:\n      15 │           {{ formatPrice(product?.price || 0) }}\n         ╵              ~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

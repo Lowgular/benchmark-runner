@@ -1,0 +1,216 @@
+{
+  "promptDef": {
+    "name": "angular.image-src-binding.attr-src-binding",
+    "prompt": "# angular.image-src-binding.attr-src-binding\n\n## Refactor Steps\n\n1. Add `NgOptimizedImage` to the component's `imports` (standalone) or the NgModule that declares the component.\n2. Replace **`[attr.src]`** with **`[ngSrc]`** (or `ngSrc` for a static value) on the `<img>` tag.\n3. Keep the same expression; NgOptimizedImage will use it for the optimized image source.\n4. Double check the context because `ngSrc` attribute binding does not accept `nullish` values so to prevent build errors you can consider wrapping a block with `@if` control flow (at the top level where property is accessed)\n\n## Use-case examples (FROM → TO)\n\n---\n\n### Bound attr.src in Component decorator\n\n**_IMPORTANT_**: This example requires changes only in a Typescript file!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  template: `<img [attr.src]=\"url\" alt=\"\" />`,\n})\nexport class InlineComponent {}\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-src\",\n  template: `<img [ngSrc]=\"a.jpg\" alt=\"\" />`,\n  imports: [NgOptimizedImage],\n})\nexport class InlineComponent {}\n```\n\n---\n\n### Bound attr.src in Component template\n\n**_IMPORTANT_**: This example requires changes in:\n\n- HTML file (main change just like before)\n- Typescript file because you need to add `NgOptimizedImage` to imports in component decorator!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  templateUrl: \"./html.component.html\",\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [attr.src]=\"url\" alt=\"\" />\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  templateUrl: \"./html.component.html\",\n  imports: [NgOptimizedImage],\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [ngSrc]=\"url\" alt=\"\" />\n```\n\n## Files\n\n### src/app/app.html\n\nLocation: 5-5\n\n### Full File Content\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { NgOptimizedImage, CommonModule } from \"@angular/common\";\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n  imports: [NgOptimizedImage],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+    },
+    {
+      "filePath": "src/app/app.html",
+      "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        @if (product?.image) {\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [ngSrc]=\"product.image\"\n            [alt]=\"product?.name\"\n          />\n        }\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "success",
+      "message": "Application passed linting!",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.image-ng-src-binding.ng-src-binding",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                "message": {
+                  "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 10,
+                        "startColumn": 414,
+                        "endLine": 10,
+                        "endColumn": 437
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "error",
+      "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.769 seconds]\n\n\n✘ [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]\n\n    src/app/app.html:10:29:\n      10 │             [ngSrc]=\"product.image\"\n         ╵                              ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+      "errorType": "TypeScript Error"
+    },
+    "serveTestingResult": null,
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { NgOptimizedImage, CommonModule } from \"@angular/common\";\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n  imports: [NgOptimizedImage],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+      },
+      {
+        "filePath": "src/app/app.html",
+        "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        @if (product?.image) {\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [ngSrc]=\"product.image\"\n            [alt]=\"product?.name\"\n          />\n        }\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": []
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Image Src Binding",
+            "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+            "id": "image-src-binding",
+            "scoreReduction": "20%",
+            "successPercentage": 1,
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Pass\nsrc/app/app.html.9.413.9.436"
+          }
+        ]
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { NgOptimizedImage, CommonModule } from \"@angular/common\";\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n  imports: [NgOptimizedImage],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        @if (product?.image) {\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [ngSrc]=\"product.image\"\n            [alt]=\"product?.name\"\n          />\n        }\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1336,
+        "outputTokens": 3071,
+        "totalTokens": 4407,
+        "thinkingTokens": 2513,
+        "cost": 0.0052745
+      },
+      "reasoning": "We are given a violation in src/app/app.html at line 5-5. The rule is about replacing [attr.src] with [ngSrc] and adding NgOptimizedImage to the component's imports.\n Steps:\n 1. We need to update the component (App) to import NgOptimizedImage and add it to the imports array in the @Component decorator.\n    The component is in src/app/app.ts. We must add the import and update the decorator.\n\n 2. In the template (src/app/app.html), we need to replace [attr.src] with [ngSrc]. However, note that the rule says ngSrc does not accept nullish values.\n    The current expression is [attr.src]=\"product?.image\". Since product might be null, we are at risk of passing null to ngSrc.\n    According to the rule, we might need to wrap the img tag in an @if block to avoid null. But note: the rule says \"consider\" and it's to prevent build errors.\n    However, in the provided example for the rule, they did not handle null. They just changed the binding.\n\n    Let's check the rule description again: \"Double check the context because `ngSrc` attribute binding does not accept `nullish` values so to prevent build errors you can consider wrapping a block with `@if` control flow (at the top level where property is accessed)\"\n\n    In the current template, the entire block is inside a div that is conditionally shown? Actually, the template uses `product?.image`. If product is null, then the image source would be null.\n\n    We have two options:\n      a. Keep the same binding and hope that when product is null, the image is not shown? But note that the `img` tag will still be present and try to load null.\n      b. Wrap the img tag in an @if block that checks for product and product.image.\n\n    However, the rule says to apply minimal change. The rule's example didn't add an @if block, they just changed the binding and added the import.\n\n    But note: the example in the rule had a non-nullable string. In our case, we have a nullable product.\n\n    Let's look at the template again. We are already using safe navigation operator, but the binding [attr.src] would set the src attribute to null (or undefined) which is allowed in HTML.\n    However, ngSrc does not allow null. So we must avoid setting ngSrc to null.\n\n    The minimal change to fix the violation and avoid the build error would be to conditionally render the image only when product?.image is defined.\n\n    Alternatively, we can change the binding to a non-null value by using a fallback. But the rule says to keep the same expression. We are changing the binding to ngSrc, but we are not changing the expression.\n\n    However, the rule's note about nullish values is a warning. If we leave it as is, the Angular compiler might complain.\n\n    Considering the minimal change, we are required to change only the reported location (line 5 in app.html). But note that the rule requires adding NgOptimizedImage to the component.\n\n    The rule says: \"Apply the minimal change required to resolve the violation.\"\n\n    We have to change:\n      - In app.ts: import NgOptimizedImage and add it to imports.\n      - In app.html: change [attr.src] to [ngSrc].\n\n    However, to avoid the null issue, we should also conditionally render the image. But that would be a change beyond the reported line? Actually, the reported line is the line with [attr.src]. We are only required to change that line.\n\n    But note: the rule says we can consider wrapping with @if. It's not mandatory? The examples didn't do it.\n\n    Let's check the provided examples: the first example changed a static string. The second example had a non-nullable 'url' property.\n\n    Since we are required to fix the violation, and the violation is about using [attr.src] instead of [ngSrc], we will change that and add the import.\n\n    However, if we don't handle the null, the build might break. But the rule says we can consider wrapping with @if. It's up to us.\n\n    Given the minimal change, we will do exactly what the example did: change the binding and add the import.\n\n    But note: the rule says to keep the same expression. We are keeping the same expression.\n\n    However, the expression is `product?.image` which might be null. We can change it to `product?.image ?? ''` but that would change the expression.\n\n    Let me re-read the rule: \"Double check the context because `ngSrc` attribute binding does not accept `nullish` values so to prevent build errors you can consider wrapping a block with `@if` control flow (at the top level where property is accessed)\"\n\n    We are allowed to consider wrapping with @if. Since the rule says \"consider\", and we are to fix the violation, I think we should handle the null.\n\n    However, the rule's examples didn't show handling null. They just changed the binding.\n\n    Let's look at the provided files: we have the full file content. We are going to change app.ts and app.html.\n\n    Plan for app.ts:\n      - Import NgOptimizedImage from \"@angular/common\".\n      - Add NgOptimizedImage to the imports array in the @Component decorator.\n\n    Plan for app.html:\n      - Change the line with [attr.src] to [ngSrc] and keep the same expression.\n\n    But note: the template currently has two bindings on the img tag: [attr.src] and [alt]. We are only changing the src.\n\n    However, the alt binding is using [alt] and not [attr.alt]. That's okay.\n\n    Let's write the changes.\n\n    However, the component is standalone? It doesn't have an imports array. We need to add one.\n\n    Looking at the component decorator in app.ts, it doesn't have an imports array. Since it's standalone (implied by having templateUrl and styleUrl without a module), we can add the imports array.\n\n    So we will change:\n\n      @Component({\n        selector: \"app-root\",\n        templateUrl: \"./app.html\",\n        styleUrl: \"./app.css\",\n        changeDetection: ChangeDetectionStrategy.Default,\n      })\n\n    to:\n\n      @Component({\n        selector: \"app-root\",\n        templateUrl: \"./app.html\",\n        styleUrl: \"./app.css\",\n        changeDetection: ChangeDetectionStrategy.Default,\n        imports: [NgOptimizedImage]\n      })\n\n    But note: the example in the rule for the inline component added imports. The example for the separate HTML file also added imports.\n\n    Now, what about the template? We change:\n\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n\n    to:\n\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n\n    But wait, the rule says that if the value is static, we can use ngSrc without brackets. But in our case, it's dynamic.\n\n    However, the rule note about nullish values is a concern. We are keeping the same expression, so if product is null, then ngSrc will be null.\n\n    To avoid this, we can conditionally render the image only when product?.image is truthy. We can wrap the img tag with an @if block.\n\n    But note: the rule says we can consider wrapping with @if. Since the rule doesn't mandate it, and we are to apply minimal change, we will not add the @if block.\n\n    However, the build might break. But let's assume that the product?.image will always be a string when product exists. If product is null, the entire div might not be shown? Actually, the template uses product in multiple places.\n\n    Alternatively, we can change the expression to a non-null by using a fallback image. But that would change the behavior.\n\n    Given the instruction to preserve existing behavior, we should not change the behavior. The existing behavior when product?.image is null is to set src to null (or remove the attribute). In the case of ngSrc, it will throw an error.\n\n    Therefore, to preserve behavior and avoid the error, we must conditionally render the image only when product?.image is defined.\n\n    But note: the rule says we are allowed to consider wrapping with @if. So we will do that.\n\n    We are to change only the reported location (line 5-5). But adding an @if block would change more than one line.\n\n    However, the rule says we can consider it. Since the build would break without it, I think we should.\n\n    Let's look at the template lines around the img tag:\n\n        <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [attr.src]=\"product?.image\"\n            [alt]=\"product?.name\"\n          />\n        </div>\n\n    We can wrap the img tag in an @if block:\n\n        @if (product?.image) {\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [ngSrc]=\"product?.image\"\n            [alt]=\"product?.name\"\n          />\n        }\n\n    But note: we are using product?.image for the condition and for the src. Also, note that the alt attribute uses product?.name.\n\n    However, if product is null, then the condition is false and the img is not rendered. That's acceptable because without an image, we don't want to show a broken image.\n\n    But what if product.image is an empty string? Then the condition is false. That might be acceptable.\n\n    However, the existing behavior when product?.image is null or empty string is to set src to that empty string (or null). The browser would try to load the current page or nothing. With the condition, we avoid that.\n\n    This is a behavior change, but it's acceptable because we are avoiding an error and not showing a broken image.\n\n    Alternatively, we can condition on product and product.image. Let's keep it as product?.image.\n\n    Now, we are changing more than one line. But the rule says we can consider wrapping with @if.\n\n    Since the rule says to fix the violation and the violation is about the binding, we are allowed to change the structure to avoid the null.\n\n    However, the minimal change would be to just change the binding and add the import. But that would break the build.\n\n    We are going to do:\n\n      app.ts: add import and add NgOptimizedImage to imports.\n      app.html: replace the img tag with a conditional block that uses ngSrc.\n\n    But note: the condition should be at the top level where the property is accessed. We are accessing product?.image. We are conditionally rendering the entire img.\n\n    Let's write the code.\n\n    We are to return the full updated files.\n\n    We have two files: app.ts and app.html.\n\n    We will output both.\n\n    However, note: the violation is only in app.html, but we are required to change app.ts as per the rule.\n\n    We are going to change:\n\n      app.ts: add import and update component decorator.\n\n      app.html: change the img tag to an @if block.\n\n    Let's write the code accordingly.\n\n    But note: the condition might be too restrictive. We are only showing the image when product?.image is truthy. What if we want to show a placeholder? The existing code didn't have a placeholder.\n\n    We are preserving the behavior as much as possible: the image is only shown when there is an image source.\n\n    Let's proceed.",
+      "buildResult": {
+        "status": "error",
+        "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.769 seconds]\n\n\n✘ [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]\n\n    src/app/app.html:10:29:\n      10 │             [ngSrc]=\"product.image\"\n         ╵                              ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+        "errorType": "TypeScript Error"
+      },
+      "serveTestingResult": null,
+      "attempt": 0,
+      "lintResult": {
+        "status": "success",
+        "message": "Application passed linting!",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.image-ng-src-binding.ng-src-binding",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                  "message": {
+                    "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 10,
+                          "startColumn": 414,
+                          "endLine": 10,
+                          "endColumn": 437
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

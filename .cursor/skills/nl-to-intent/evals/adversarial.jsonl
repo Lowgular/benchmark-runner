@@ -1,0 +1,35 @@
+{
+  "level": 0,
+  "user": "find stuff that subscribes",
+  "expected": "Find PropertyAccessExpression with name 'subscribe'"
+}
+{
+  "level": 0,
+  "user": "ng module imports",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'NgModule' that has descendant ObjectLiteralExpression that has property with name 'imports'"
+}
+{
+  "level": 1,
+  "user": "comps with signals",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Component' that has member PropertyDeclaration that has initializer CallExpression that has expression Identifier with text 'signal'"
+}
+{
+  "level": 1,
+  "user": "services without providedIn",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Injectable' and optionally find this decorator that has descendant ObjectLiteralExpression that has property with name 'providedIn'"
+}
+{
+  "level": 1,
+  "user": "get me classes that dont have decorators",
+  "expected": "Find ClassDeclaration and optionally find this ClassDeclaration that has decorator"
+}
+{
+  "level": 1,
+  "user": "comps with signals",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Component' that has member PropertyDeclaration that has initializer CallExpression that has expression Identifier with text 'signal'"
+}
+{
+  "level": 3,
+  "user": "find all components that are declared in ng-module",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Component' and optionally find Decorator that has descendant ObjectLiteralExpression that has property with name 'declarations' that has initializer ArrayLiteralExpression that has element Identifier with text matching this ClassDeclaration name"
+}

@@ -1,0 +1,216 @@
+{
+  "promptDef": {
+    "name": "angular.image-src-binding.attr-src-binding",
+    "prompt": "# angular.image-src-binding.attr-src-binding\n\n## Refactor Steps\n\n1. Add `NgOptimizedImage` to the component's `imports` (standalone) or the NgModule that declares the component.\n2. Replace **`[attr.src]`** with **`[ngSrc]`** (or `ngSrc` for a static value) on the `<img>` tag.\n3. Keep the same expression; NgOptimizedImage will use it for the optimized image source.\n4. Double check the context because `ngSrc` attribute binding does not accept `nullish` values so to prevent build errors you can consider wrapping a block with `@if` control flow (at the top level where property is accessed)\n\n## Use-case examples (FROM → TO)\n\n---\n\n### Bound attr.src in Component decorator\n\n**_IMPORTANT_**: This example requires changes only in a Typescript file!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  template: `<img [attr.src]=\"url\" alt=\"\" />`,\n})\nexport class InlineComponent {}\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-src\",\n  template: `<img [ngSrc]=\"a.jpg\" alt=\"\" />`,\n  imports: [NgOptimizedImage],\n})\nexport class InlineComponent {}\n```\n\n---\n\n### Bound attr.src in Component template\n\n**_IMPORTANT_**: This example requires changes in:\n\n- HTML file (main change just like before)\n- Typescript file because you need to add `NgOptimizedImage` to imports in component decorator!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  templateUrl: \"./html.component.html\",\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [attr.src]=\"url\" alt=\"\" />\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  templateUrl: \"./html.component.html\",\n  imports: [NgOptimizedImage],\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [ngSrc]=\"url\" alt=\"\" />\n```\n\n## Files\n\n### src/app/app.html\n\nLocation: 5-5\n\n### Full File Content\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { Component, ChangeDetectionStrategy, OnInit } from \"@angular/core\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  standalone: true,\n  imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+    },
+    {
+      "filePath": "src/app/app.html",
+      "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "success",
+      "message": "Application passed linting!",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.image-ng-src-binding.ng-src-binding",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                "message": {
+                  "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 9,
+                        "startColumn": 377,
+                        "endLine": 9,
+                        "endColumn": 401
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "error",
+      "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.752 seconds]\n\n\n✘ [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.\n  Value is a reference to 'Component'. [plugin angular-compiler]\n\n    src/app/app.ts:11:30:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                               ~~~~~~~~~\n\n  Reference is declared here.\n\n    ../../../../../../init-states/angular-20-legacy/node_modules/@angular/core/discovery.d.d.ts:5204:14:\n      5204 │ declare const Component: ComponentDecorator;\n           ╵               ~~~~~~~~~\n\n\n✘ [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.\n  Value is of type '{ OnPush: ChangeDetectionStrategy; Default: ChangeDetectionStrategy }'. [plugin angular-compiler]\n\n    src/app/app.ts:11:41:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                                          ~~~~~~~~~~~~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2322: Type 'typeof ChangeDetectionStrategy' is not assignable to type 'readonly any[] | Type<any>'. [plugin angular-compiler]\n\n    src/app/app.ts:11:41:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                                          ~~~~~~~~~~~~~~~~~~~~~~~\n\n\n",
+      "errorType": "Angular Diagnostic"
+    },
+    "serveTestingResult": null,
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { Component, ChangeDetectionStrategy, OnInit } from \"@angular/core\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  standalone: true,\n  imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+      },
+      {
+        "filePath": "src/app/app.html",
+        "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": []
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Image Src Binding",
+            "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+            "id": "image-src-binding",
+            "scoreReduction": "20%",
+            "successPercentage": 1,
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Pass\nsrc/app/app.html.8.376.8.400"
+          }
+        ]
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { Component, ChangeDetectionStrategy, OnInit } from \"@angular/core\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  standalone: true,\n  imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1149,
+        "outputTokens": 4921,
+        "totalTokens": 6070,
+        "thinkingTokens": 4775,
+        "cost": 0.0020341400000128
+      },
+      "reasoning": "The user wants me to fix a static-analysis violation related to `angular.image-src-binding.attr-src-binding`.\n\n**Rule Analysis:**\n1.  **Add `NgOptimizedImage` to imports:** The rule says to add `NgOptimizedImage` to the component's `imports` (standalone) or NgModule.\n2.  **Replace `[attr.src]` with `[ngSrc]`:** I need to find `<img [attr.src]=\"...\"` and change it to `<img [ngSrc]=\"...\"`.\n3.  **Check context:** `ngSrc` doesn't accept nullish values, so I should wrap the property access in a block if necessary (specifically if it's optional like `product?.image`).\n\n**Files to analyze:**\n- `src/app/app.ts`: The component file.\n- `src/app/app.html`: The template file.\n\n**Current Code State:**\n\n*   **HTML (`src/app/app.html`, line 5):**\n    ```html\n    [attr.src]=\"product?.image\"\n    ```\n    The binding is `product?.image` (optional chaining).\n\n*   **TypeScript (`src/app/app.ts`):**\n    The component is `App`, selector `app-root`, standalone is not explicitly mentioned in the given snippet, but the `@Component` decorator syntax looks like a standard class decorator.\n    I need to check if it's standalone. Looking at the provided snippet:\n    ```typescript\n    @Component({\n      selector: \"app-root\",\n      templateUrl: \"./app.html\",\n      styleUrl: \"./app.css\",\n      changeDetection: ChangeDetectionStrategy.Default,\n    })\n    export class App implements OnInit {\n    ```\n    There is no `standalone: true`. So I need to add it to `standalone: true` and add `imports: [NgOptimizedImage]`.\n\n**Steps to perform:**\n\n1.  **Modify `src/app/app.ts`:**\n    - Add `standalone: true` to the `@Component` decorator.\n    - Add `imports: [NgOptimizedImage]` to the `@Component` decorator.\n    - Import `NgOptimizedImage` from \"@angular/common\".\n\n2.  **Modify `src/app/app.html`:**\n    - Replace `[attr.src]=\"product?.image\"` with `[ngSrc]=\"product?.image\"`.\n    - *Constraint Check:* The rule says \"ngSrc attribute binding does not accept nullish values\". The current code has `product?.image`. If `ngSrc` rejects `null`/`undefined`, this might throw a runtime error later or during SSR.\n    - However, the prompt says: \"Do not refactor unrelated code\" and \"Apply the minimal change required to resolve the violation\".\n    - The violation is specifically about using `[attr.src]` instead of `ngSrc` for image sources when `NgOptimizedImage` is added.\n    - If I change `product?.image` to `ngSrc` directly, and `product` becomes `null`, `ngSrc` receives `undefined` or `null`.\n    - The rule mentions: \"to prevent build errors you can consider wrapping a block with `@if` control flow\". But wait, `@if` is usually a structural directive syntax, or sometimes used in template expressions depending on context, but `ngSrc` binding *at the attribute level* simply takes a value.\n    - If I simply change `[attr.src]` to `[ngSrc]`, `undefined` passed to an attribute usually renders as `src=\"\"` (empty string). `ngSrc` in Angular implementation handles missing/null sources gracefully often by rendering an empty string or relying on the `img` tag behavior, but `NgOptimizedImage` might be stricter or specific.\n    - Let's look at the rule examples.\n    - Example 1: `[attr.src]=\"url\"` -> `[ngSrc]=\"a.jpg\"`. No null checking.\n    - Example 2: `[attr.src]=\"url\"` -> `[ngSrc]=\"url\"`. No null checking.\n    - The \"Refactor Step 4\" says \"you can consider wrapping a block with `@if` control flow\". This suggests it's optional or specific to preventing *build* errors if the config is strict. However, simply swapping the binding property is the primary requirement.\n    - Let's stick to the primary requirement: `[attr.src]` -> `[ngSrc]`.\n    - regarding nullish: Since the input provided in the violation has `product?.image`, strictly speaking, to be safe, I should handle it. But the instruction says \"minimal change required to resolve the violation\". The violation is the attribute binding.\n    - If I change `product?.image` to `ngSrc`, I might get an error later if the rule implies `ngSrc` strictly needs a non-null string. But standard Angular `ngSrc` works with undefined (it sets src to empty).\n    - Actually, the warning likely comes from the fact that `NgOptimizedImage` *assumes* this is for an image. If I want to be safe, I can use a pipe or a ternary, or just leave it.\n    - Let's look closely at Step 4: \"to prevent build errors you can consider wrapping a block with `@if` control flow (at the top level where property is accessed)\".\n    - If I change the HTML, changing `product?.image` to `ngSrc` is the direct fix.\n    - However, to be robust against the null check warning mentioned in step 4:\n        `[ngSrc]=\"product?.image\"`\n        If `product` is null, `product?.image` is undefined. `ngSrc` on the img element with `undefined` results in `src=\"\"`.\n        If the tooling is strict, it might complain.\n    - Let's try to follow the exact pattern in the example. The example didn't use nulls.\n    - I will just replace `[attr.src]` with `[ngSrc]`. This resolves the violation that `img` is using `[attr.src]`.\n    - Wait, if I just do that, the prompt for step 4 says \"you can consider wrapping...\". It doesn't explicitly force me to do it, but it's a good practice.\n    - Let's look at the provided input again.\n    - The code `product?.image` has optional chaining.\n    - If I simply swap, it becomes `[ngSrc]=\"product?.image\"`.\n    - Let's check if I need to change the TS file significantly. Yes, I need to add `imports` and `standalone`.\n    - I will provide the full updated files.\n\n**Detailed Plan:**\n\n1.  **`src/app/app.ts`**:\n    - Add `import { NgOptimizedImage } from '@angular/common';`\n    - Update `@Component`:\n        - Add `standalone: true`\n        - Update `imports` property (default imports exist implicitly or shouldn't exist? The snippet shows `import { ChangeDetectionStrategy...` etc. If standalone is true, we explicitly list imports. If not, we use `providers` etc. The snippet looks like it might be a migration to standalone or just missing it. I will assume standard standalone migration).\n        - Wait, the existing imports include standard Angular stuff. If I set `standalone: true`, I must move those imports to the `imports` array.\n        - Existing imports in snippet: `ChangeDetectionStrategy`, `Component`, `OnInit`.\n        - I will move `Component` to `imports`.\n        - Add `NgOptimizedImage` to `imports`.\n\n2.  **`src/app/app.html`**:\n    - Change `<img ... [attr.src]=\"product?.image\" ... />` to `<img ... [ngSrc]=\"product?.image\" ... />`.\n\n**Refining the TS Change:**\nCurrent:\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit { ... }\n```\n\nNew:\n```typescript\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { Component, ChangeDetectionStrategy } from \"@angular/core\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  standalone: true,\n  imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit { ... }\n```\n\n**Refining the HTML Change:**\nCurrent:\n```html\n<img\n  class=\"h-40 w-40 object-contain\"\n  [attr.src]=\"product?.image\"\n  [alt]=\"product?.name\"\n/>\n```\n\nNew:\n```html\n<img\n  class=\"h-40 w-40 object-contain\"\n  [ngSrc]=\"product?.image\"\n  [alt]=\"product?.name\"\n/>\n```\n\n**Constraint Check:** \"ngSrc attribute binding does not accept nullish values\".\nIf I change `product?.image` to `ngSrc`, and `product` is null, the value passed to `ngSrc` is `undefined`.\nThe warning might be a linter suggestion.\nIf I want to be strictly compliant with \"minimal change\", I change `[attr.src]` to `[ngSrc]`.\nHowever, to be safe and follow the instruction \"to prevent build errors\", I *could* wrap it. But the instruction says \"you can consider\", implying it's optional based on the immediate fix.\nAlso, changing `product?.image` to `ngSrc` is a direct property binding replacement. If the framework supports optional chaining on attributes, it usually handles it.\nLet's stick to the swap. It resolves the specific violation \"angular.image-src-binding.attr-src-binding\".\n\n**Final Code Construction:**\n\nFile: `src/app/app.ts`\n- Move imports to imports array.\n- Add `NgOptimizedImage`.\n- Add `standalone: true`.\n\nFile: `src/app/app.html`\n- Swap `[attr.src]` for `[ngSrc]`.\n\nOne edge case: Does `standalone` need to be added? The rule says \"Add `NgOptimizedImage` to the component's `imports` (standalone) or the NgModule\". Since the current code looks like a Class component, and the fix requires `imports`, converting to Standalone is the standard Angular way to fix this specific linting rule (since you can't add `imports` to an NgModule easily without knowing the module file). The prompt doesn't explicitly give the module file, so assuming Standalone or adding to an NgModule is the choice. Given the constraint \"Modify ONLY the reported location\", modifying the TS file is the correct approach. I will assume standalone.\n\nWait, looking at the \"Files\" section, it lists `src/app/app.ts` as a file block but the description says `Location: 5-5` which corresponds to the HTML line. The TS file block provided is just context. The error is in `src/app/app.html` line 5.\nBut I must fix the TS file too to import `NgOptimizedImage`.\n\nLet's review the rule \"Double check the context because `ngSrc` attribute binding does not accept `nullish` values\".\nIn the HTML:\n`[ngSrc]=\"product?.image\"`\nIf I leave it like that, `undefined` is passed. Some browsers/engines might complain or it might look weird.\nHowever, the prompt explicitly asks to \"Replace `[attr.src]` with `[ngSrc]`\".\nI will do exactly that.\n\n**One detail on `standalone`**:\nIf I add `standalone: true`, I must handle imports.\nThe original code imports `ChangeDetectionStrategy`, `Component`, `OnInit` from `@angular/core`.\nI must move them to `imports: [NgOptimizedImage, Component, ChangeDetectionStrategy]`.\nI keep `Product` and `ProductService` as normal imports.\n\n**One detail on the HTML**:\nLine 5 in `src/app/app.html`.\n`[attr.src]=\"product?.image\"` -> `[ngSrc]=\"product?.image\"`\n\nLet's write the solution.\n\n**File 1: src/app/app.ts**\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\n**Fix for app.ts:**\nNeed `standalone: true` and `imports`.\nAlso need to import `NgOptimizedImage`.\n\n```typescript\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { Component, ChangeDetectionStrategy, OnInit } from \"@angular/core\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  standalone: true,\n  imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  // ... rest same\n}\n```\n\n**File 2: src/app/app.html**\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n\n**Final check on constraints:**\n\"Modify ONLY the reported location.\" - I am modifying the TS file to add the necessary import and config, and the HTML file to change the binding. This is required to fix the violation (you can't use `ngSrc` without the module setup).\n\"Preserve existing behavior.\" - Yes.\n\"Apply the minimal change required.\" - Yes.\n\nOne thought: The rule mentions \"ngSrc attribute binding does not accept nullish values\".\nIf I leave it as `[ngSrc]=\"product?.image\"`, and `product` becomes null, `undefined` is passed.\nAngular's `NgOptimizedImage` might throw an error or warning if input is undefined.\nHowever, changing the HTML to `[ngSrc]=\"product.image\" && product.image\"` is a change to the expression logic, which might be considered refactoring unrelated logic (preserving the nullish nature).\nGiven the instruction \"Replace [attr.src] with [ngSrc]\", the minimal change is the replacement of the attribute name.\nI will proceed with the direct replacement.\n\nWait, is there any chance the user expects me to fix the TS file inline where it imports?\nThe prompt provides:\n```\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\nsrc/app/app.ts\n<content>\n```\nThis structure usually implies that there might be an issue listed, but the prompt says \"Location: 5-5\" which is clearly HTML. But wait, usually the \"Full File Content\" block might only contain the code where the violation is if it's a violation detection. Here it shows `src/app/app.ts` then `src/app/app.html`.\nThe violation is on HTML line 5.\nBut I cannot fix the HTML binding `[attr.src]` without importing `NgOptimizedImage` in TS.\nSo I must output both files.\n\nAlso, regarding the imports in TS:\nI need to be careful about `standalone`.\nIf the component is NOT standalone (legacy), I can't just add `imports` to `@Component` without the module.\nHowever, given the context of this specific lint rule (\"Angular Image Src Binding\"), it's part of the migration to using `ngSrc` which implies using the library `NgOptimizedImage`.\nIf the file were legacy, I would need to add it to the NgModule, but I don't have the NgModule file content.\nTherefore, I must assume the file is intended to be updated to standalone (or just adding `imports` works if the wrapper handles it, but `imports` is strictly Standalone).\nWait, standard `@Component` *can* have `imports`? No, that's a Standalone feature.\nThe provided TS code has `selector`, `templateUrl`, `styleUrl`. This is the classic class-based component. It lacks `standalone: true`.\nIf I add `standalone: true`, I am changing the paradigm of the file from Module-based to Standalone.\nDoes \"Preserve existing behavior\" allow a paradigm shift?\nYes, \"Preserve existing behavior\" usually means the app still works. A TS file conversion to standalone is necessary to add `imports` to the component decorator directly without touching a separate `.module.ts` file (which is not provided). The rule implies \"Add NgOptimizedImage to the imports... or the NgModule\".\nSince I don't have the NgModule, and this is a \"code repair\" task, assuming migration to standalone is the standard assumption for these types of prompts unless a .module file is provided. Or, perhaps I should assume there IS a `standalone` support I'm unaware of? No.\nActually, looking at the provided TS code again.\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\n...\n```\nThis is the classic syntax.\nI will add `standalone: true`.\n\nRegarding the import list in TS:\nI must move `ChangeDetectionStrategy`, `Component` to the `imports` array to make it valid standalone.\nThis is the minimal change to fix the TS side of the equation.\n\nResult generation.\nFile 1: `src/app/app.ts`\nFile 2: `src/app/app.html`\n\nOne final check on the `[ngSrc]` attribute.\nThe rule mentions: \"ngSrc attribute binding does not accept nullish values\".\nIf I look at the HTML line:\n`[attr.src]=\"product?.image\"`\n`ngSrc` might fail if I don't handle the null.\nShould I change `product?.image` to `product.image`?\nIf I change `?.` to `.`, then if `product` is null, I pass `null` to `ngSrc`.\nAngular's `NgOptimizedImage` source code checks for `nullish` and ignores it? Or throws?\nUsually, `ngSrc` behaves like `src`.\nBut the rule says \"ngSrc attribute binding does not accept nullish values\".\nThis phrasing usually comes from a linter like `angular-template-compat` or similar where the check `ngSrcBinding` fails if the bound value is potentially null/undefined.\nHowever, since I am replacing `[attr.src]` with `[ngSrc]`, the linter change is primarily the attribute name.\nIf I change `product?.image` to `product.image`, I might be ignoring the original intent (the product might be null).\nBut if I leave `?.image`, I might violate \"ngSrc does not accept nullish values\".\nLet's look at the examples provided in the rule.\nExample 1: `[ngSrc]=\"a.jpg\"` (constant, safe).\nExample 2: `[ngSrc]=\"url\"` (variable, safe).\nNeither example handles nulls.\nGiven \"Apply the minimal change required to resolve the violation\", the violation is `[attr.src]`.\nChanging it to `[ngSrc]` resolves the violation.\nThe \"nullish\" warning is a secondary consideration mentioned in \"Refactor Steps\" as something \"to prevent build errors you can consider\".\nI will stick to the attribute swap.\n\nFinal plan confirmed.\n1. TS: Add imports, standalone, move components to imports.\n2. HTML: Swap `[attr.src]` to `[ngSrc]`.",
+      "buildResult": {
+        "status": "error",
+        "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.752 seconds]\n\n\n✘ [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.\n  Value is a reference to 'Component'. [plugin angular-compiler]\n\n    src/app/app.ts:11:30:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                               ~~~~~~~~~\n\n  Reference is declared here.\n\n    ../../../../../../init-states/angular-20-legacy/node_modules/@angular/core/discovery.d.d.ts:5204:14:\n      5204 │ declare const Component: ComponentDecorator;\n           ╵               ~~~~~~~~~\n\n\n✘ [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.\n  Value is of type '{ OnPush: ChangeDetectionStrategy; Default: ChangeDetectionStrategy }'. [plugin angular-compiler]\n\n    src/app/app.ts:11:41:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                                          ~~~~~~~~~~~~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2322: Type 'typeof ChangeDetectionStrategy' is not assignable to type 'readonly any[] | Type<any>'. [plugin angular-compiler]\n\n    src/app/app.ts:11:41:\n      11 │   imports: [NgOptimizedImage, Component, ChangeDetectionStrategy],\n         ╵                                          ~~~~~~~~~~~~~~~~~~~~~~~\n\n\n",
+        "errorType": "Angular Diagnostic"
+      },
+      "serveTestingResult": null,
+      "attempt": 0,
+      "lintResult": {
+        "status": "success",
+        "message": "Application passed linting!",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.image-ng-src-binding.ng-src-binding",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                  "message": {
+                    "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 9,
+                          "startColumn": 377,
+                          "endLine": 9,
+                          "endColumn": 401
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

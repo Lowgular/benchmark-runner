@@ -1,0 +1,9 @@
+{
+  "fileSize": 30,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.652 seconds]\n\n\n✘ [ERROR] TS2304: Cannot find name 'src'. [plugin angular-compiler]\n\n    src/app/app.ts:0:0:\n      0 │ \n        ╵ ^\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:4:\n      1 │ src/app/app.ts\n        ╵     ~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'app'. [plugin angular-compiler]\n\n    src/app/app.ts:1:8:\n      1 │ src/app/app.ts\n        ╵         ~~~\n\n\n✘ [ERROR] TS2306: File '/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-formatting.component-format-method/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-formatting.component-format-methodz4cJls/src/app/app.ts' is not a module. [plugin angular-compiler]\n\n    src/main.ts:2:20:\n      2 │ import { App } from \"./app/app\";\n        ╵                     ~~~~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

@@ -1,0 +1,430 @@
+{
+  "id": "44cb3270-769b-42f4-98ea-43f932fb9063",
+  "group": "ec73b9e33d7b2238306319006e9266a4b645a0568b7035d699b28853d57ffcea",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.subscription-management.unsafe",
+        "prompt": "# angular-subscription-management-unsafe\n\n**Important:** This refactor always involves **two places**: the **component TypeScript file** (`.ts`) and the **template**. If the component uses `templateUrl: './app.html'`, you must edit **both** `app.ts` and `app.html`. If it uses inline `template: \\`...\\``, you edit the template string inside the `.ts`file. Do not change only the`.ts` file and leave the template still reading from the old property.\n\n## Refactor Steps\n\n1. **Remove the manual subscription**  \n   Delete the `.subscribe(...)` call from the constructor or `ngOnInit` (and from any other lifecycle or method where it's used for this data).\n\n2. **Expose the observable**  \n   Add a class property that holds the observable (e.g. `items$ = this.data.getItems()`). Remove any property that only stored the subscribed value (e.g. `items: string[] = []`).\n\n3. **Add `AsyncPipe` to the component's `imports`**\n   **In the component decorator** add the `AsyncPipe` if it is not there yet, if you need to add it - make sure to also add / modify import to `@angular/common` to contain `AsyncPipe` as well e.g. `import { AsyncPipe } from \"@angular/commmon\";`\n\n4. **Use the async pipe in the template**  \n   **In the template file** (the `.html` file, or the inline template string in the `.ts` file), use the observable with the async pipe (e.g. `(items$ | async)`). Use optional chaining if the value can be null/undefined (e.g. `(items$ | async)?.length`). **You must update the template** — the refactor is incomplete if only the `.ts` file is changed.\n\n5. **Tidy the class**  \n   If `ngOnInit` or the constructor is now empty (or only has other code you're removing), remove `implements OnInit` and/or the constructor, or switch to `inject()` if you keep the constructor for other reasons.\n\n### Before finishing — checklist\n\n- [ ] No `.subscribe()` in the component for this data (rule targets unsafe subscribe: no `take`, `takeUntil`, or `takeUntilDestroyed`).\n- [ ] The observable is exposed as a class property (e.g. `items$ = this.service.getItems()`).\n- [ ] **Both the `.ts` and the template (`.html` or inline) were updated:** the template uses the async pipe (e.g. `{{ (items$ | async)?.length \\}}`) instead of a property that was set inside `.subscribe()`.\n- [ ] There is import for `AsyncPipe` in component decorator\n- [ ] No leftover properties that only held the result of the removed subscription.\n- [ ] Component still compiles and the UI shows the same data (fix any typo like `lenght` → `length` in the template).\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO). **When the component uses an external `templateUrl`, show and edit both the `.ts` and the `.html` file in FROM and TO.**\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject } from \"@angular/core\";\nimport { DataService } from \"./data.service\";\n\n@Component({\n  selector: \"app-user\",\n  templateUrl: \"./app.html\",\n})\nexport class App {\n  private readonly data = inject(DataService);\n  items: string[] = [];\n\n  constructor() {\n    this.data.getItems().subscribe((items) => {\n      this.items = items;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ items.length \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject } from \"@angular/core\";\nimport { DataService } from \"./data.service\";\nimport { AsyncPipe } from \"@angular/commmon\";\n\n@Component({\n  selector: \"app-user\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class UserComponent {\n  private readonly data = inject(DataService);\n  items$ = this.data.getItems();\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ (items$ | async)?.lenght \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 17-17\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App implements OnInit {\n  private productService = inject(ProductService);\n  product: Product | null = null;\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ product?.price \\}}</div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { AsyncPipe } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class App {\n  private productService = inject(ProductService);\n  product$ = this.productService.getProduct();\n}"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"(product$ | async)?.image\"\n          [alt]=\"(product$ | async)?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ (product$ | async)?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ (product$ | async)?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "warning",
+          "message": "Linting did not find any results",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.subscription-management.async",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.subscription-management.async",
+                    "message": {
+                      "text": "Rule angular.subscription-management.async found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.html"
+                          },
+                          "region": {
+                            "startLine": 9,
+                            "startColumn": 390,
+                            "endLine": 9,
+                            "endColumn": 406
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "ruleId": "angular.subscription-management.async",
+                    "message": {
+                      "text": "Rule angular.subscription-management.async found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.html"
+                          },
+                          "region": {
+                            "startLine": 10,
+                            "startColumn": 434,
+                            "endLine": 10,
+                            "endColumn": 450
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "ruleId": "angular.subscription-management.async",
+                    "message": {
+                      "text": "Rule angular.subscription-management.async found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.html"
+                          },
+                          "region": {
+                            "startLine": 15,
+                            "startColumn": 589,
+                            "endLine": 15,
+                            "endColumn": 605
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "ruleId": "angular.subscription-management.async",
+                    "message": {
+                      "text": "Rule angular.subscription-management.async found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.html"
+                          },
+                          "region": {
+                            "startLine": 18,
+                            "startColumn": 703,
+                            "endLine": 18,
+                            "endColumn": 719
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "ruleId": "angular.subscription-management.async",
+                    "message": {
+                      "text": "Rule angular.subscription-management.async found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.html"
+                          },
+                          "region": {
+                            "startLine": 20,
+                            "startColumn": 818,
+                            "endLine": 20,
+                            "endColumn": 834
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "error",
+          "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.980 seconds]\n\n\n✘ [ERROR] TS2339: Property 'image' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:9:42:\n      9 │           [attr.src]=\"(product$ | async)?.image\"\n        ╵                                           ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'name' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:10:37:\n      10 │           [alt]=\"(product$ | async)?.name\"\n         ╵                                      ~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'name' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:15:33:\n      15 │           {{ (product$ | async)?.name }}\n         ╵                                  ~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'description' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:18:33:\n      18 │           {{ (product$ | async)?.description }}\n         ╵                                  ~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'price' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:20:77:\n      20 │ ...lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n         ╵                                                        ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:12:27:\n      12 │   private productService = inject(ProductService);\n         ╵                            ~~~~~~\n\n\n",
+          "errorType": "TypeScript Error"
+        },
+        "serveTestingResult": null,
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.ts",
+            "code": "import { ChangeDetectionStrategy, Component } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { AsyncPipe } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class App {\n  private productService = inject(ProductService);\n  product$ = this.productService.getProduct();\n}"
+          },
+          {
+            "filePath": "src/app/app.html",
+            "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"(product$ | async)?.image\"\n          [alt]=\"(product$ | async)?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ (product$ | async)?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ (product$ | async)?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Subscription Management",
+                "description": "Make sure to to ALWAYS unsubscribe from observables. Use takeUntilDestroyed(), take(), takeUntil() or async pipe - avoid manual unsubscribe() calls.",
+                "id": "subscription-management",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Angular Best Practices"
+                ],
+                "message": "Pass\nsrc/app/app.html.8.389.8.405,src/app/app.html.9.433.9.449,src/app/app.html.14.588.14.604,src/app/app.html.17.702.17.718,src/app/app.html.19.817.19.833"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": []
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.ts",
+              "code": "import { ChangeDetectionStrategy, Component } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { AsyncPipe } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class App {\n  private productService = inject(ProductService);\n  product$ = this.productService.getProduct();\n}"
+            },
+            {
+              "filePath": "src/app/app.html",
+              "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"(product$ | async)?.image\"\n          [alt]=\"(product$ | async)?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ (product$ | async)?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ (product$ | async)?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+            }
+          ],
+          "usage": {
+            "inputTokens": 1599,
+            "outputTokens": 2046,
+            "totalTokens": 3645,
+            "thinkingTokens": 1671,
+            "cost": 0.0009111400000128
+          },
+          "reasoning": "1.  **Analyze the Request**:\n    *   **Rule**: `angular-subscription-management-unsafe`.\n    *   **Problem**: The component has unsafe subscription (`this.productService.getProduct().subscribe(...)`) without `take`/`takeUntil`/etc. It assigns the value to a local property (`product`).\n    *   **Required Fix**: Remove subscription, expose observable as `product$`, use `AsyncPipe` in the template.\n\n2.  **Analyze the File Content**:\n    *   **File**: `src/app/app.ts`\n    *   **Current State**:\n        *   Imports: `ChangeDetectionStrategy`, `Component`, `OnInit`, `Product` (model), `ProductService`.\n        *   `@Component`: selector `\"app-root\"`, template `\"./app.html\"`. NO `imports` property yet (needs `AsyncPipe`).\n        *   Class: `App implements OnInit`.\n        *   Injected: `productService`.\n        *   State: `product: Product | null = null`.\n        *   Constructor/Init: `ngOnInit` subscribes to `this.productService.getProduct()` and assigns to `this.product`.\n\n    *   **Refactor Steps**:\n        1.  **Remove subscription**: Delete the `ngOnInit` method entirely (it only does the subscription).\n        2.  **Expose observable**: Change `product: Product | null = null` to `product$ = this.productService.getProduct()`. Also remove `implements OnInit` since `ngOnInit` is gone.\n        3.  **Add imports**: Import `AsyncPipe` from `@angular/common`.\n        4.  **Update Component Decorator**: Add `imports: [AsyncPipe]`.\n        5.  **Update Template** (`src/app/app.html`):\n            *   Replace `product?.image` with `(product$ | async)?.image`.\n            *   Replace `product?.name` with `(product$ | async)?.name`.\n            *   Replace `product?.description` with `(product$ | async)?.description`.\n            *   Replace `product?.price` with `(product$ | async)?.price`.\n\n3.  **Step-by-Step Execution**:\n\n    *   *Step 1: Remove `ngOnInit`*\n        ```typescript\n        export class App { // removed implements OnInit\n           // removed ngOnInit method\n        }\n        ```\n\n    *   *Step 2: Change property*\n        ```typescript\n        product: Product | null = null; // remove this\n        // add this:\n        product$ = this.productService.getProduct();\n        ```\n\n    *   *Step 3: Add Imports*\n        ```typescript\n        import { AsyncPipe } from \"@angular/common\";\n        ```\n\n    *   *Step 4: Update Decorator*\n        ```typescript\n        @Component({\n           selector: \"app-root\",\n           templateUrl: \"./app.html\",\n           imports: [AsyncPipe],\n        })\n        ```\n\n    *   *Step 5: Update Template*\n        *   Old: `[attr.src]=\"product?.image\"` -> New: `(product$ | async)?.image`\n        *   Old: `[alt]=\"product?.name\"` -> New: `(product$ | async)?.name`\n        *   Old: `{{ product?.name }}` -> New: `{{ (product$ | async)?.name }}`\n        *   Old: `{{ product?.description }}` -> New: `{{ (product$ | async)?.description }}`\n        *   Old: `{{ product?.price }}` -> New: `{{ (product$ | async)?.price }}`\n\n4.  **Constructing the Output**:\n    *   Must return the FULL updated files.\n    *   Must return both `.ts` and `.html` files based on the `FROM` example provided in the prompt (which uses `templateUrl`).\n\n5.  **Final Code Check**:\n    *   Does `src/app/app.ts` look right?\n        *   Imports: `ChangeDetectionStrategy`, `Component`, `Product`, `ProductService`, `AsyncPipe`.\n        *   Decorator: `imports: [AsyncPipe]`.\n        *   Class: `App` (no `OnInit`).\n        *   State: `product$`.\n    *   Does `src/app/app.html` look right?\n        *   All references to `product` replaced with `(product$ | async)`.\n        *   Optional chaining preserved.\n\n6.  **Correction on Imports**: The prompt example shows `import { AsyncPipe } from \"@angular/commmon\";`. I should probably fix the typo in the import statement too to be helpful, although the rule focuses on the pipe usage. The prompt rule text says \"e.g. `import { AsyncPipe } from \"@angular/commmon\";`\". I will stick to `@angular/common` as that is correct, but I will verify the previous imports are preserved. Wait, the prompt example TO has `@angular/commmon` (typo), but I should produce correct code. I will use `@angular/common`.\n\n    Let's review the template changes carefully.\n    Input: `[attr.src]=\"product?.image\"`\n    Output: `[attr.src]=\"(product$ | async)?.image\"`\n    Input: `[alt]=\"product?.name\"`\n    Output: `[alt]=\"(product$ | async)?.name\"`\n    Input: `{{ product?.name }}`\n    Output: `{{ (product$ | async)?.name }}`\n    Input: `{{ product?.description }}`\n    Output: `{{ (product$ | async)?.description }}`\n    Input: `{{ product?.price }}`\n    Output: `{{ (product$ | async)?.price }}`\n\n7.  **Final Polish**: Ensure no extra code is added.\n\n    *   `src/app/app.ts`\n    ```typescript\n    import { ChangeDetectionStrategy, Component } from \"@angular/core\";\n    import { Product } from \"./product.model\";\n    import { ProductService } from \"./product.service\";\n    import { AsyncPipe } from \"@angular/common\";\n\n    @Component({\n      selector: \"app-root\",\n      templateUrl: \"./app.html\",\n      imports: [AsyncPipe],\n    })\n    export class App {\n      private productService = inject(ProductService);\n      product$ = this.productService.getProduct();\n    }\n    ```\n    *   `src/app/app.html`\n    ```html\n    <div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n      <div\n        class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n      >\n        <div class=\"flex flex-col md:flex-row\">\n          <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n            <img\n              class=\"h-40 w-40 object-contain\"\n              [attr.src]=\"(product$ | async)?.image\"\n              [alt]=\"(product$ | async)?.name\"\n            />\n          </div>\n          <div class=\"md:w-2/3 p-6 space-y-4\">\n            <h1 class=\"text-2xl font-semibold text-slate-900\">\n              {{ (product$ | async)?.name }}\n            </h1>\n            <p class=\"text-sm text-slate-600 leading-relaxed\">\n              {{ (product$ | async)?.description }}\n            </p>\n            <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n          </div>\n        </div>\n      </div>\n    </div>\n    ```",
+          "buildResult": {
+            "status": "error",
+            "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.980 seconds]\n\n\n✘ [ERROR] TS2339: Property 'image' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:9:42:\n      9 │           [attr.src]=\"(product$ | async)?.image\"\n        ╵                                           ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'name' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:10:37:\n      10 │           [alt]=\"(product$ | async)?.name\"\n         ╵                                      ~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'name' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:15:33:\n      15 │           {{ (product$ | async)?.name }}\n         ╵                                  ~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'description' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:18:33:\n      18 │           {{ (product$ | async)?.description }}\n         ╵                                  ~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2339: Property 'price' does not exist on type '{}'. [plugin angular-compiler]\n\n    src/app/app.html:20:77:\n      20 │ ...lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n         ╵                                                        ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'inject'. [plugin angular-compiler]\n\n    src/app/app.ts:12:27:\n      12 │   private productService = inject(ProductService);\n         ╵                            ~~~~~~\n\n\n",
+            "errorType": "TypeScript Error"
+          },
+          "serveTestingResult": null,
+          "attempt": 0,
+          "lintResult": {
+            "status": "warning",
+            "message": "Linting did not find any results",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.subscription-management.async",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.subscription-management.async",
+                      "message": {
+                        "text": "Rule angular.subscription-management.async found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.html"
+                            },
+                            "region": {
+                              "startLine": 9,
+                              "startColumn": 390,
+                              "endLine": 9,
+                              "endColumn": 406
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "ruleId": "angular.subscription-management.async",
+                      "message": {
+                        "text": "Rule angular.subscription-management.async found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.html"
+                            },
+                            "region": {
+                              "startLine": 10,
+                              "startColumn": 434,
+                              "endLine": 10,
+                              "endColumn": 450
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "ruleId": "angular.subscription-management.async",
+                      "message": {
+                        "text": "Rule angular.subscription-management.async found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.html"
+                            },
+                            "region": {
+                              "startLine": 15,
+                              "startColumn": 589,
+                              "endLine": 15,
+                              "endColumn": 605
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "ruleId": "angular.subscription-management.async",
+                      "message": {
+                        "text": "Rule angular.subscription-management.async found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.html"
+                            },
+                            "region": {
+                              "startLine": 18,
+                              "startColumn": 703,
+                              "endLine": 18,
+                              "endColumn": 719
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "ruleId": "angular.subscription-management.async",
+                      "message": {
+                        "text": "Rule angular.subscription-management.async found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.html"
+                            },
+                            "region": {
+                              "startLine": 20,
+                              "startColumn": 818,
+                              "endLine": 20,
+                              "endColumn": 834
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "z-ai/glm-4.7-flash",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 1599,
+        "outputTokens": 2046,
+        "thinkingTokens": 1671,
+        "totalTokens": 3645,
+        "cost": 0.0009111400000128
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "6051b0d8b8c6df13fb07f36abaca10974011fd9797b6f31f186f709cf3ee66de"
+    },
+    "timestamp": "2026-03-05T15:59:45.699Z",
+    "reportName": "2026-03-05T15-56-31-919Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

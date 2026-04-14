@@ -1,0 +1,272 @@
+{
+  "id": "5c852d95-1473-408d-bcdd-a8b2a527eeb2",
+  "group": "9c4f9a4c99894bb9aebd540c4e4c4e0d613a813824f8372d048c2d4bbc3f601d",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.provided-in-root.not-root",
+        "prompt": "# angular.provided-in-root.not-root\n\n# angular-provided-in-root-not-root-to-root\n\n## Refactor Steps\n\n1. Add or update the **`providedIn`** property in the `@Injectable()` config to **`'root'`**.\n2. If the service was previously provided in a module, remove it from that module’s `providers` (the root injector will provide it).\n3. Keep other `@Injectable()` options (e.g. `providedIn: 'root'` with other metadata) as needed.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n**FROM**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"platform\",\n})\nexport class Service {}\n```\n\n**TO**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class Service {}\n```\n\n---\n\n**FROM**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"any\",\n})\nexport class Service {}\n```\n\n**TO**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class Service {}\n```\n\n---\n\n**FROM**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable()\nexport class Service {}\n```\n\n**TO**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class Service {}\n```\n\n## Files\n\n### src/app/product.service.ts\n\nLocation: 6-6\n\n### Full File Content\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n```\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/product.service.ts",
+          "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({ providedIn: \"root\" })\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "success",
+          "message": "Application passed linting!",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.provided-in-root.root",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.provided-in-root.root",
+                    "message": {
+                      "text": "Rule angular.provided-in-root.root found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/product.service.ts"
+                          },
+                          "region": {
+                            "startLine": 6,
+                            "startColumn": 15,
+                            "endLine": 6,
+                            "endColumn": 33
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "success",
+          "message": "Application built successfully!",
+          "safetyWebReportJson": [
+            {
+              "summaryVersion": "0.1.0",
+              "packageName": "app",
+              "packageVersion": "0.0.0",
+              "packagePath": ".",
+              "violations": []
+            }
+          ]
+        },
+        "serveTestingResult": {
+          "runtimeErrors": "",
+          "userJourneyAgentOutput": null
+        },
+        "outputFiles": [
+          {
+            "filePath": "src/app/product.service.ts",
+            "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({ providedIn: \"root\" })\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": []
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Only Provided in Root",
+                "description": "For singleton services, use providedIn: 'root' in the @Injectable decorator.",
+                "id": "only-provided-in-root",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Services"
+                ],
+                "message": "Pass\nsrc/app/product.service.ts.5.14.5.32"
+              }
+            ]
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/product.service.ts",
+              "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({ providedIn: \"root\" })\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n"
+            }
+          ],
+          "usage": {
+            "inputTokens": 699,
+            "outputTokens": 745,
+            "totalTokens": 1444,
+            "thinkingTokens": 672,
+            "cost": 0.00039025
+          },
+          "reasoning": "The user wants me to fix a static analysis violation in the file `src/app/product.service.ts`.\n\n**The Rule:** `angular-provided-in-root-not-root-to-root`\n**The Violation:** ` providedIn: \"platform\"` (or other string value) -> needs to be changed to ` providedIn: \"root\"` OR an `@Injectable` without the decorator needs ` providedIn: \"root\"`.\n\n**The File Content:**\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n```\n\n**The Issue:**\nThe rule states: \"1. Add or update the **`providedIn`** property in the `@Injectable()` config to **`'root'`**.\"\n\nThe current code has:\n```typescript\n@Injectable()\n```\n\nAccording to the use cases:\n*   FROM: `@Injectable()` -> TO: `@Injectable({ providedIn: \"root\" })`\n\n**The Change:**\nI need to change `@Injectable()` to `@Injectable({ providedIn: \"root\" })` on line 6.\n\nLet's verify the location. The problem states:\n### src/app/product.service.ts\nLocation: 6-6\n\nLine 6 is:\n```typescript\n@Injectable()\n```\n\nI need to modify this line to:\n```typescript\n@Injectable({ providedIn: \"root\" })\n```\n\n**Plan:**\n1.  Locate line 6 in the file content.\n2.  Replace the single `@Injectable()` with `@Injectable({ providedIn: \"root\" })`.\n3.  Return the full file.\n\n**Refactoring:**\nOld: `@Injectable()`\nNew: `@Injectable({ providedIn: \"root\" })`\n\nThe rest of the file remains unchanged.\n\nLet's double check the import. It imports `Injectable` from `@angular/core`, which is correct.\nThe rest of the class logic is irrelevant to the decorator fix.\n\nThe result should be:\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({ providedIn: \"root\" })\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n```",
+          "buildResult": {
+            "status": "success",
+            "message": "Application built successfully!",
+            "safetyWebReportJson": [
+              {
+                "summaryVersion": "0.1.0",
+                "packageName": "app",
+                "packageVersion": "0.0.0",
+                "packagePath": ".",
+                "violations": []
+              }
+            ]
+          },
+          "serveTestingResult": {
+            "runtimeErrors": "",
+            "userJourneyAgentOutput": null
+          },
+          "attempt": 0,
+          "lintResult": {
+            "status": "success",
+            "message": "Application passed linting!",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.provided-in-root.root",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.provided-in-root.root",
+                      "message": {
+                        "text": "Rule angular.provided-in-root.root found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/product.service.ts"
+                            },
+                            "region": {
+                              "startLine": 6,
+                              "startColumn": 15,
+                              "endLine": 6,
+                              "endColumn": 33
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "z-ai/glm-4.7-flash",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 699,
+        "outputTokens": 745,
+        "thinkingTokens": 672,
+        "totalTokens": 1444,
+        "cost": 0.00039025
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "6e8ea0a29a5996b6894b97303d5fdff8a73d7bcf69e47bb33616838720a7dc80"
+    },
+    "timestamp": "2026-03-03T12:18:07.573Z",
+    "reportName": "2026-03-03T12-17-40-379Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

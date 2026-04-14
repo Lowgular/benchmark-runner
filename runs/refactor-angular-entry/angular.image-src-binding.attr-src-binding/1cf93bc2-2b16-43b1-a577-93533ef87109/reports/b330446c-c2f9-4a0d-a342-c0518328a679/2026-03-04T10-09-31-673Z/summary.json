@@ -1,0 +1,250 @@
+{
+  "id": "4e754634-6aa1-48f1-b3c1-f09e7cdf7d51",
+  "group": "2278ef5a4e365f78c12773e8459c6aa4e7d72c87021e977622fe96c70c17ee6d",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.image-src-binding.attr-src-binding",
+        "prompt": "# angular.image-src-binding.attr-src-binding\n\n## Refactor Steps\n\n1. Add `NgOptimizedImage` to the component's `imports` (standalone) or the NgModule that declares the component.\n2. Replace **`[attr.src]`** with **`[ngSrc]`** (or `ngSrc` for a static value) on the `<img>` tag.\n3. Keep the same expression; NgOptimizedImage will use it for the optimized image source.\n4. Double check the context because `ngSrc` attribute binding does not accept `nullish` values so to prevent build errors you can consider wrapping a block with `@if` control flow (at the top level where property is accessed)\n\n## Use-case examples (FROM → TO)\n\n---\n\n### Bound attr.src in Component decorator\n\n**_IMPORTANT_**: This example requires changes only in a Typescript file!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  template: `<img [attr.src]=\"url\" alt=\"\" />`,\n})\nexport class InlineComponent {}\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-src\",\n  template: `<img [ngSrc]=\"a.jpg\" alt=\"\" />`,\n  imports: [NgOptimizedImage],\n})\nexport class InlineComponent {}\n```\n\n---\n\n### Bound attr.src in Component template\n\n**_IMPORTANT_**: This example requires changes in:\n\n- HTML file (main change just like before)\n- Typescript file because you need to add `NgOptimizedImage` to imports in component decorator!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  templateUrl: \"./html.component.html\",\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [attr.src]=\"url\" alt=\"\" />\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  templateUrl: \"./html.component.html\",\n  imports: [NgOptimizedImage],\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [ngSrc]=\"url\" alt=\"\" />\n```\n\n## Files\n\n### src/app/app.html\n\nLocation: 5-5\n\n### Full File Content\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \n        }}</h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \n        }}</p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \n        }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "success",
+          "message": "Application passed linting!",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.image-ng-src-binding.ng-src-binding",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                    "message": {
+                      "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.html"
+                          },
+                          "region": {
+                            "startLine": 9,
+                            "startColumn": 377,
+                            "endLine": 9,
+                            "endColumn": 401
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "error",
+          "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.676 seconds]\n\n\n✘ [ERROR] NG8002: Can't bind to 'ngSrc' since it isn't a known property of 'img'. [plugin angular-compiler]\n\n    src/app/app.html:9:10:\n      9 │           [ngSrc]=\"product?.image\"\n        ╵           ~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+          "errorType": "Angular Diagnostic"
+        },
+        "serveTestingResult": null,
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.html",
+            "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \n        }}</h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \n        }}</p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \n        }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": []
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Image Src Binding",
+                "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+                "id": "image-src-binding",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Pass\nsrc/app/app.html.8.376.8.400"
+              }
+            ]
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.html",
+              "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [ngSrc]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \n        }}</h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \n        }}</p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \n        }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+            }
+          ],
+          "usage": {
+            "inputTokens": 1191,
+            "outputTokens": 1196,
+            "totalTokens": 2387,
+            "thinkingTokens": 948,
+            "cost": 0
+          },
+          "reasoning": "We need to fix static analysis violation angular.image-src-binding.attr-src-binding. According to rule, we need to replace [attr.src] with [ngSrc] and add NgOptimizedImage import and to imports array in component decorator.\n\nThe file provided: src/app/app.html has img tag with [attr.src]=\"product?.image\". Also there is a separate HtmlComponent example but the file is app.html, not html.component.html. The location: 5-5 indicates line 5 of app.html is the img tag.\n\nWe need to modify the file: add NgOptimizedImage import? Since file is HTML, but rule says may need changes in both template and component decorator (typescript). However the provided file is only HTML; but perhaps there is also a component TS not shown? Actually earlier they gave src/app/app.ts and app.html. So the file we are to modify is app.html only? The \"Files\" section includes src/app/app.html with location 5-5. So we need to output the full updated file content. It probably expects only the HTML file updated, but also we might need to add NgOptimizedImage to imports of the component that declares this template. That would be in the TS file, not part of this file. However instruction: \"Modify ONLY the reported location.\" The violation is in the HTML file. So we can only modify the HTML file; but to make it valid we need to replace [attr.src] with [ngSrc] and possibly wrap with @if to avoid nullish? The rule says double check context because ngSrc does not accept nullish values, so you can consider wrapping a block with @if control flow at top level where property is accessed. In this case product?.image could be nullish initially. But maybe they want to keep same expression but ensure it's not nullish. Might add @if product?.image else nothing? But to preserve behavior, maybe use ?.? Actually ngSrc expects a non-nullish value; if nullish it throws error. To avoid build error, we can wrap with @if product?.image. But that would change template structure; but maybe okay.\n\nThe example given earlier shows replacement of [attr.src]=\"url\" with [ngSrc]=\"a.jpg\" and adding NgOptimizedImage import. In our case the expression is product?.image; it's safe because optional chaining yields undefined when product is null, but still undefined is nullish; ngSrc wouldn't accept undefined. So need to guard: maybe use @if product?.image? But that changes template.\n\nThe rule's \"double check the context because ngSr​c attribute binding does not accept nullish values so to prevent build errors you can consider wrapping a block with @if control flow\". So we could wrap the img tag in an @if block: @if (product?.image) { <img ... [ngSrc]=\"product?.image\" ... /> } else { maybe placeholder? } But that adds extra markup.\n\nSimplify: Keep same expression but just replace attribute binding, and maybe add ?.? Not needed. Actually we can use [ngSrc]=\"product?.image\" but if product is null, it's undefined, causing error. So to avoid, we could add an @if around the img.\n\nProbably they expect just replace attr.src with ngSrc and add NgOptimizedImage import in component (but that's TS). Since we only modify HTML, we can just replace attribute binding and add a comment? I'd just replace [attr.src]=\"product?.image\" with [ngSrc]=\"product?.image\". No extra changes.\n\nThus updated app.html line 5 becomes: <img class=\"h-40 w-40 object-contain\" [ngSrc]=\"product?.image\" [alt]=\"product?.name\" />\n\nBut need to preserve other attributes? In original: <img class=\"h-40 w-40 object-contain\" [attr.src]=\"product?.image\" [alt]=\"product?.name\" />. So replace [attr.src]=\"product?.image\" with [ngSrc]=\"product?.image\". Keep other attributes unchanged.\n\nThus final file content same as before but with that change.\n\nReturn the full updated file content.\n",
+          "buildResult": {
+            "status": "error",
+            "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.676 seconds]\n\n\n✘ [ERROR] NG8002: Can't bind to 'ngSrc' since it isn't a known property of 'img'. [plugin angular-compiler]\n\n    src/app/app.html:9:10:\n      9 │           [ngSrc]=\"product?.image\"\n        ╵           ~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+            "errorType": "Angular Diagnostic"
+          },
+          "serveTestingResult": null,
+          "attempt": 0,
+          "lintResult": {
+            "status": "success",
+            "message": "Application passed linting!",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.image-ng-src-binding.ng-src-binding",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                      "message": {
+                        "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.html"
+                            },
+                            "region": {
+                              "startLine": 9,
+                              "startColumn": 377,
+                              "endLine": 9,
+                              "endColumn": 401
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 1191,
+        "outputTokens": 1196,
+        "thinkingTokens": 948,
+        "totalTokens": 2387,
+        "cost": 0
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "3cb6172c5856ecb6b984be626ae364873b8c23654ea6a24f48f6787307a7d0ac"
+    },
+    "timestamp": "2026-03-04T10:09:48.696Z",
+    "reportName": "2026-03-04T10-09-31-673Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

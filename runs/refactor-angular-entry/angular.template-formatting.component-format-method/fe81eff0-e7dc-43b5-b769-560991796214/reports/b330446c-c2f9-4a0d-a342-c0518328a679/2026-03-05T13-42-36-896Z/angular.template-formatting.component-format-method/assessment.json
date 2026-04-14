@@ -1,0 +1,216 @@
+{
+  "promptDef": {
+    "name": "angular.template-formatting.component-format-method",
+    "prompt": "# angular-template-formatting-component-format-method-to-pipe\n\n## What this rule flags:\n\nA component method is used in the template only to format a value (e.g. formatPrice(price) that returns price.toFixed(2) or similar). Prefer a built-in pipe in the template instead (e.g. number, currency, percent, date) and remove the format method.\n\nYou must edit both the component TypeScript file and the template. Prefer updating the template first, then cleaning up the TypeScript.\n\n## Refactor steps\n\nRule: Replace template calls to the format method with a built-in pipe. Then remove the format method from the component.\n\n1. Update the template (do this first)\n   Find every interpolation (or binding) that calls the format method, e.g.:\n\n   ```\n   {{ formatPrice(product?.price ?? 0) \\}}\n   ```\n\n   Replace it with the same value passed through the appropriate built-in pipe:\n   Currency / money: use the currency pipe, e.g.:\n\n   ```\n   {{ (product?.price ?? 0) | currency \\}}\n   ```\n\n   (optional args: 'USD', 'symbol', '1.2-2').\n   Plain number with decimals: use the number pipe, e.g.:\n\n   ```\n   {{ value | number:'1.2-2' \\}}\n   ```\n\n   Percent: use the percent pipe.\n   Date/time: use the date pipe with an optional format.\n   Ensure the expression before the pipe is the value that was previously passed into the method (e.g. product?.price ?? 0), not the method call.\n   If you do not change the template, the refactor is incomplete and the rule will still report the method.\n\n2. Component TypeScript file\n   Find the format method that is no longer used in the template (e.g. formatPrice(price: number): string { ... }).\n   Remove the entire method.\n   Remove unused imports if any (e.g. if nothing else uses them).\n3. Template — reminder\n   Every former call to the format method must be replaced by a pipe on the same value. Use value | pipeName (and optional pipe args), not formatMethod(value).\n\nBefore finishing — checklist\n[ ] Template uses a built-in pipe (e.g. number, currency, percent, date) instead of calling the format method.\n[ ] The format method has been removed from the component class.\n\n## Use-case examples (FROM → TO)\n\nSimplified examples showing the same pattern with minimal context.\n\n---\n\n### Currency formatting\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  price = 10;\n\n  formatPrice(): string {\n    return `$${this.price.toFixed(2)\\}}`;\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ formatPrice(product?.price || 0) \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  price = 10;\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ price | currency \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 22-24\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n\n  formatPrice(price: number): string {\n    return `$${price.toFixed(2)\\}}`;\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ formatPrice(product?.price || 0) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+    },
+    {
+      "filePath": "src/app/app.html",
+      "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ (product?.price || 0) | currency }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "warning",
+      "message": "Linting did not find any results",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.template-formatting.built-in-pipe",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.template-formatting.built-in-pipe",
+                "message": {
+                  "text": "Rule angular.template-formatting.built-in-pipe found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 21,
+                        "startColumn": 774,
+                        "endLine": 21,
+                        "endColumn": 806
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "error",
+      "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.919 seconds]\n\n\n✘ [ERROR] NG8004: No pipe found with name 'currency'.\nTo fix this, import the \"CurrencyPipe\" class from \"@angular/common\" and add it to the \"imports\" array of the component. [plugin angular-compiler]\n\n    src/app/app.html:21:37:\n      21 │           {{ (product?.price || 0) | currency }}\n         ╵                                      ~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+      "errorType": "Angular Diagnostic"
+    },
+    "serveTestingResult": null,
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+      },
+      {
+        "filePath": "src/app/app.html",
+        "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ (product?.price || 0) | currency }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": []
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Template Formatting",
+            "description": "Use built-in pipes (currency, number, date) or custom pure pipes for formatting. Do not put formatting logic or hardcoded symbols (e.g. $) in the template — that is hard to spot and breaks i18n. Prefer pipes; if formatting lives in the component (method, computed, or property), that is less bad but still penalized.",
+            "id": "template-formatting",
+            "scoreReduction": "20%",
+            "successPercentage": 1,
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Pass\nsrc/app/app.html.20.773.20.805"
+          }
+        ]
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ (product?.price || 0) | currency }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1490,
+        "outputTokens": 4272,
+        "totalTokens": 5762,
+        "thinkingTokens": 4246,
+        "cost": 0.0102428
+      },
+      "reasoning": "We are given a rule and a violation. The rule is about replacing a component method that is used for formatting a value in the template with a built-in pipe.\n\nThe violation is in the file `src/app/app.ts` at lines 22-24 (the `formatPrice` method) and also in the template `src/app/app.html` where the method is called.\n\nSteps to fix:\n1. Update the template: Replace the call to `formatPrice(product?.price || 0)` with `product?.price || 0 | currency`.\n   According to the example, the formatPrice method was returning `$${price.toFixed(2)}`, so we use the currency pipe without arguments to get the default currency formatting (which in the example was USD and two decimal places).\n\n2. Remove the `formatPrice` method from the component.\n\nLet's break down:\n\nIn `src/app/app.html`:\n  FROM: `{{ formatPrice(product?.price || 0) }}`\n  TO: `{{ (product?.price || 0) | currency }}`\n\nBut note: the example in the rule used `(product?.price ?? 0)` and then the pipe. However, in the provided code we have `product?.price || 0`. We can keep the same expression.\n\nHowever, note that `|| 0` is not the same as `?? 0`. But in this context, if `price` is 0, then `0 || 0` would be 0 (and then the pipe will show $0.00) so it's acceptable. But note: the rule example used `??` to handle null/undefined. We have `?` so `product?.price` might be undefined -> then `undefined || 0` is 0.\n\nBut in Angular templates, using `||` for fallback is common and acceptable.\n\nSo in the template we change:\n   `<div class=\"text-lg font-bold text-slate-900\">\n      {{ formatPrice(product?.price || 0) }}\n    </div>`\nto\n   `<div class=\"text-lg font-bold text-slate-900\">\n      {{ (product?.price || 0) | currency }}\n    </div>`\n\nNote: We wrap the expression in parentheses because the pipe operator has lower precedence than the `||` operator. Without parentheses, it would be interpreted as `product?.price || (0 | currency)`, which is incorrect.\n\nAlternatively, we can write: `{{ product?.price || 0 | currency }}` but that is ambiguous because of operator precedence. Actually, in Angular, the pipe operator is applied to the entire left-hand side expression? Actually, no: the expression before the pipe is the value to be piped. So without parentheses, it would be: `(product?.price) || (0 | currency)`. But `0 | currency` is invalid because `|` is the pipe operator, not the bitwise OR.\n\nWait: in Angular templates, the pipe operator `|` is a template operator and has very low precedence. The expression is parsed as: `[value] | [pipe] | [pipe] ...`. So the entire left part is the value until the `|` for the first pipe? Actually, it's a chain: `{{ a | b | c }}` is `c(b(a))`.\n\nBut in our case: `product?.price || 0 | currency` would be parsed as: `product?.price || (0 | currency)`. But `0 | currency` is not valid because `|` is the pipe operator and `0` is a number. The pipe expects an expression on the left. However, the Angular compiler is smart enough to parse the expression in the context of the template. Actually, the specification says that the pipe operator has lower precedence than logical OR? \n\nLooking at Angular documentation: \n  In Angular templates, the pipe operator has lower precedence than the ternary operator and logical operators? Actually, the exact precedence is not documented, but it's safer to use parentheses.\n\nTo avoid any ambiguity, and as shown in the example use case, we use parentheses.\n\nTherefore, we change to: `{{ (product?.price || 0) | currency }}`\n\nBut note: the example in the rule used `(product?.price ?? 0) | currency`. In our case, we are using `|| 0` which is functionally the same for number values (since if the price is 0, we still want 0 and not fallback to 0? Actually, 0 is a valid price and `0 || 0` is 0, so it's the same). However, note that `||` will also treat 0 as falsey and fallback to 0, so it's redundant. But it's harmless.\n\nAlternatively, we could write `{{ product?.price | number:'1.2-2' }}` but that doesn't format as currency (without the dollar sign). We want currency formatting.\n\nWe are using the `currency` pipe. By default, it uses 'USD' and the symbol '$'. So it will produce \"$10.00\", which matches the original method.\n\nSo step 1: fix the template.\n\nStep 2: remove the `formatPrice` method from the component class.\n\nNow, note the provided file content:\n\nWe are given the entire `src/app/app.ts` and `src/app/app.html`. We must update both.\n\nBut the violation report only shows the `app.ts` for location 22-24 (the formatPrice method) and the `app.html` has the call to `formatPrice`.\n\nWe are to return the FULL updated file for each file that we change.\n\nHowever, note the instruction: \"Modify ONLY the reported location.\" but the rule requires changes in two files.\n\nBut the problem says: \"You will be provided rule definition and places where this rule was violated.\"\n\nIn the \"Files\" section, it points to:\n\n### src/app/app.ts\nLocation: 22-24\n\nBut note: the violation also exists in the template. However, the rule says: \"Prefer updating the template first, then cleaning up the TypeScript.\"\n\nBut the provided report only points to the TypeScript file? Actually, the problem says: \"Location: 22-24\" for `src/app/app.ts`. But the rule requires two changes.\n\nLooking at the example use case, they showed both files.\n\nHowever, the current problem's \"Files\" section only lists `src/app/app.ts` and then shows the content of both files? Actually, the \"Full File Content\" section shows both files.\n\nWe are required to fix the violation. The violation is that a component method is used only for formatting and that usage exists in the template. So to fix, we must change the template and remove the method.\n\nBut the problem says: \"Modify ONLY the reported location.\" meaning we are only allowed to change the specific lines in the specific file? However, the rule requires two changes.\n\nWait, the problem statement says:\n\n\"Your task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\"\n\nAnd\n\n\"Modify ONLY the reported location.\"\n\nBut in this case, the reported location is in `app.ts` (lines 22-24). However, the violation also includes the template. But the problem might have only reported the component method because that's where the static analysis detected the method that is only a formatter.\n\nBut note: the rule description says: \"A component method is used in the template only to format a value\". So the violation is on the method, but the fix requires updating the template and then removing the method.\n\nHowever, the problem says: \"You will be provided ... places where this rule was violated.\" and in this case, it's the `app.ts` file at lines 22-24.\n\nBut the fix for the violation requires two changes: one in the template and one in the component. However, the problem says \"Modify ONLY the reported location\" meaning we can only change the reported lines (in app.ts). But then we cannot change the template? That would break the component because the template still calls the method.\n\nAlternatively, the problem might expect that we fix both? But it says \"Modify ONLY the reported location\".\n\nLooking at the example use case, they fixed both files.\n\nAlso, note that the rule says: \"You must edit both the component TypeScript file and the template.\"\n\nSo I think the intention is that we fix both. However, the problem states: \"Modify ONLY the reported location.\" and the reported location is only in `app.ts`.\n\nBut wait, the problem says: \"the violation that can appear multiple times in different files\" — meaning one violation might span two files? Or multiple violations (one in the template and one in the TS) but the rule is reported on the method because it's the one that is the problem.\n\nGiven the example use case, they fixed both. And the rule check requires both changes.\n\nMoreover, the problem says: \"Return the FULL updated file.\" and the example showed both files.\n\nTherefore, I will:\n\n1. Update the template file (`src/app/app.html`) by replacing the call to `formatPrice` with the appropriate pipe.\n2. Update the component file (`src/app/app.ts`) by removing the `formatPrice` method.\n\nBut note: the problem says \"Modify ONLY the reported location.\" — the reported location was the `app.ts` method. However, without changing the template, the fix is incomplete. And the rule says: \"Checklist: [ ] Template uses a built-in pipe ... [ ] The format method has been removed\".\n\nSo I think we are allowed to change the template because it's part of the same violation.\n\nGiven the example use case, they fixed both.\n\nTherefore, I will return both files fixed.\n\nBut the problem says: \"Return the FULL updated file.\" — so we return the entire content of `app.ts` and `app.html` with the changes.\n\nHowever, the problem structure says: \"Only one violation at a time\", but this violation requires two files. So we fix both.\n\nLet's do:\n\nFor `src/app/app.html`:\n\nOriginal:\n```html\n<div class=\"text-lg font-bold text-slate-900\">\n  {{ formatPrice(product?.price || 0) }}\n</div>\n```\n\nFixed:\n```html\n<div class=\"text-lg font-bold text-slate-900\">\n  {{ (product?.price || 0) | currency }}\n</div>\n```\n\nFor `src/app/app.ts`:\n\nOriginal:\n```typescript\n  formatPrice(price: number): string {\n    return `$${price.toFixed(2)}`;\n  }\n```\n\nRemove these lines.\n\nNow, note: the method was at lines 22-24 (as per the problem). We remove those three lines.\n\nLet's write the full fixed files.\n\nFixed `src/app/app.ts`:\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nFixed `src/app/app.html`:\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ (product?.price || 0) | currency }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n\nBut note: the problem says \"Do NOT refactor unrelated code\" and \"Apply the minimal change required\".\n\nWe are only changing the one call in the template and removing the one method.\n\nAlso, note: the problem says \"Preserve existing behavior\". The currency pipe by default uses 'USD' and format '1.2-2' (i.e., two decimal places) so it should produce exactly the same string as `$${price.toFixed(2)}`.\n\nHowever, note: the original method always returned a string with a dollar sign and two decimals. The default currency pipe uses the user's locale? Actually, by default, the currency code is 'USD' and the format is the system default. But in the rule example, they used just `currency` and it was acceptable.\n\nBut to be safe, we could specify the currency code and format. However, the original method didn't take any parameter and just returned dollars. So we can leave it as `currency` which defaults to 'USD'.\n\nAlternatively, we might write `currency:'USD':'symbol'` to be explicit, but the rule example did not. And the example use case just used `currency`.\n\nSo we'll keep it as `currency`.\n\nNow, note: the problem says \"Return the FULL updated file.\" and we are to output the entire file.\n\nBut the problem states: \"Only one violation at a time\", and we are to fix one violation. This violation (the formatPrice method) is fixed by two changes.\n\nWe are to return the corrected files.\n\nHowever, the problem says: \"Do not explain your changes.\"\n\nSo we output:\n\nFor `src/app/app.ts` (the full fixed content) and for `src/app/app.html` (the full fixed content).\n\nBut the problem structure says we are to return the file that was reported? The reported violation was in `app.ts`. However, we also fixed `app.html`.\n\nLooking at the example use case, they showed both files.\n\nTherefore, I think we are to return both files.\n\nBut note: the problem says \"Return the FULL updated file.\" (singular) but it might be that we have multiple files to return.\n\nGiven the input format, we are to output the fixed files.\n\nHow to format the answer?\n\nThe problem says: \"Return the FULL updated file.\"\n\nBut in the instruction: \"Return the FULL updated file.\" — and we have two files to update.\n\nGiven the example use case in the rule, they showed both.\n\nI think we output:\n\nFirst, the fixed `src/app/app.ts` as a code block.\n\nSecond, the fixed `src/app/app.html` as a code block.\n\nBut the problem says \"Only one violation at a time\", meaning one set of changes for one violation event. And this violation required two files.\n\nSo:\n\nWe output:\n\n```file:src/app/app.ts\n<full content of fixed app.ts>\n```\n\n```file:src/app/app.html\n<full content of fixed app.html>\n```\n\nHowever, the problem does not specify the format for multiple files. But the example use case showed two files.\n\nAlternatively, the problem might have intended for the violation to be reported on the template and the TS separately? But the problem only lists one file.\n\nGiven the ambiguity, note that the problem says: \"Location: <from line>-<to line>\" for a specific file. So the violation is reported on `app.ts`. But to fix, we must also fix the template.\n\nI think we are allowed to fix the template because it's necessary to remove the method. And the rule says to do so.\n\nTherefore, we output both files.\n\nBut the problem says: \"Only one violation at a time\", meaning one rule violation (which might require multiple file changes).\n\nSo I will output the two files.\n\nHowever, the problem says: \"Do not explain your changes.\"\n\nSo just the code.\n\nBut how to structure the output?\n\nLooking at similar problems, sometimes they return one file. But here we have two.\n\nGiven that the problem provided both files in the input, and the rule requires both to be changed, we output both.\n\nI will output:\n\n```file:src/app/app.ts\n... fixed content ...\n```\n\n```file:src/app/app.html\n... fixed content ...\n```\n\nBut to be safe, let's see the problem statement: \"Return the FULL updated file.\" — it says \"file\" (singular) but we have two.\n\nAlternatively, the problem might only expect the TS file because that's where the violation was reported? But then the template is broken.\n\nNo, that doesn't make sense.\n\nGiven the example use case, they showed both.\n\nSo I will return both.\n\nBut note: the problem says \"Modify ONLY the reported location.\" — meaning in the TS file we only change the location that was reported (remove the method) and we also change the template (which wasn't reported but required). However, the problem says \"the reported location\" is the TS method. So for the TS file we are only changing the reported lines (by removing them). And for the template, we are changing a line that was not reported? But the rule requires it.\n\nI think it's acceptable because without the template change, the TS method removal breaks the app, and the rule requires the template change.\n\nMoreover, the rule says: \"Every former call to the format method must be replaced by a pipe\".\n\nSo we must change the template.\n\nTherefore, I will output both files.\n\nLet's write the answer.\n",
+      "buildResult": {
+        "status": "error",
+        "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.919 seconds]\n\n\n✘ [ERROR] NG8004: No pipe found with name 'currency'.\nTo fix this, import the \"CurrencyPipe\" class from \"@angular/common\" and add it to the \"imports\" array of the component. [plugin angular-compiler]\n\n    src/app/app.html:21:37:\n      21 │           {{ (product?.price || 0) | currency }}\n         ╵                                      ~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+        "errorType": "Angular Diagnostic"
+      },
+      "serveTestingResult": null,
+      "attempt": 0,
+      "lintResult": {
+        "status": "warning",
+        "message": "Linting did not find any results",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.template-formatting.built-in-pipe",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.template-formatting.built-in-pipe",
+                  "message": {
+                    "text": "Rule angular.template-formatting.built-in-pipe found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 21,
+                          "startColumn": 774,
+                          "endLine": 21,
+                          "endColumn": 806
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

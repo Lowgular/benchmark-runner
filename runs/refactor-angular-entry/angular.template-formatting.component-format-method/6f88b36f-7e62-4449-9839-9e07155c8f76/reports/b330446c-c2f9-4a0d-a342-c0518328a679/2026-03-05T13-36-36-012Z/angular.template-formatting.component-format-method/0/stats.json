@@ -1,0 +1,9 @@
+{
+  "fileSize": 602,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.810 seconds]\n\n\n✘ [ERROR] TS1127: Invalid character. [plugin angular-compiler]\n\n    src/app/app.ts:1:59:\n      1 │ ...ategy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Pro...\n        ╵                                    ^\n\n\n✘ [ERROR] Syntax error '\"'\n\n    src/app/app.ts:1:60:\n      1 │ ...tegy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Prod...\n        ╵                                    ^\n\n\n✘ [ERROR] TS1002: Unterminated string literal. [plugin angular-compiler]\n\n    src/app/app.ts:1:602:\n      1 │ ...bscribe((data) => {\\n      this.product = data;\\n    });\\n  }\\n}\\n\n        ╵                                                                      ^\n\n\n✘ [ERROR] TS2305: Module '\"./app/app\"' has no exported member 'App'. [plugin angular-compiler]\n\n    src/main.ts:2:9:\n      2 │ import { App } from \"./app/app\";\n        ╵          ~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

@@ -1,0 +1,266 @@
+{
+  "id": "df83d7d3-0f9e-4e7e-bcc8-a08ddb22fcbc",
+  "group": "1d13645fd4f6e0856272ac0cf2243b21878f19a416f9eb56e10e358957188221",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.change-detection.default",
+        "prompt": "# angular.change-detection.default\n\n# change-detection_default_none\n\n## Refactor Steps\n\n1. Remove the `changeDetection: ChangeDetectionStrategy.Default` property from the decorator config object.\n2. If `ChangeDetectionStrategy` is no longer used in the file, remove it from the `@angular/core` import.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\n```typescript\nimport { ChangeDetectionStrategy, Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-default\",\n  standalone: true,\n  changeDetection: ChangeDetectionStrategy.Default,\n  template: `<p>Default</p>`,\n})\nexport class DefaultComponent {}\n```\n\n**TO**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-none\",\n  standalone: true,\n  template: `<p>No changeDetection</p>`,\n})\nexport class NoneComponent {}\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 9-9\n\n### Full File Content\n\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "success",
+          "message": "Application passed linting!",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.change-detection.none",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.change-detection.none",
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.ts"
+                          },
+                          "region": {
+                            "startLine": 5,
+                            "startColumn": 1,
+                            "endLine": 9,
+                            "endColumn": 3
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "success",
+          "message": "Application built successfully!",
+          "safetyWebReportJson": [
+            {
+              "summaryVersion": "0.1.0",
+              "packageName": "app",
+              "packageVersion": "0.0.0",
+              "packagePath": ".",
+              "violations": []
+            }
+          ]
+        },
+        "serveTestingResult": {
+          "runtimeErrors": "",
+          "userJourneyAgentOutput": null
+        },
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.ts",
+            "code": "import { Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Change Detection Strategy",
+                "description": "Do not set the changeDetection property on @Component or @Directive; OnPush is the default. If you set it explicitly, use ChangeDetectionStrategy.OnPush and never Default.",
+                "id": "change-detection-strategy",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Pass\nsrc/app/app.ts.4.0.8.2"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": []
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.ts",
+              "code": "import { Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+            }
+          ],
+          "usage": {
+            "inputTokens": 644,
+            "outputTokens": 1157,
+            "totalTokens": 1801,
+            "thinkingTokens": 1195,
+            "cost": 0.00284142
+          },
+          "reasoning": "We are given a rule that says to remove the `changeDetection: ChangeDetectionStrategy.Default` property from the component decorator.\n Additionally, if after removal the `ChangeDetectionStrategy` import is unused, we should remove it.\n\n Steps for the file:\n 1. In the `@Component` decorator, remove the line: `changeDetection: ChangeDetectionStrategy.Default,`\n 2. Check if `ChangeDetectionStrategy` is still used anywhere else in the file. Since we are removing its only usage, we can remove it from the import.\n\n Looking at the file:\n\n Original import:\n   `import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";`\n\n After removal, we won't need `ChangeDetectionStrategy` anymore, so the import becomes:\n   `import { Component, OnInit } from \"@angular/core\";`\n\n The file content we are given:\n\n ```import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n ```\n\n We are to remove the `changeDetection` line and adjust the import.\n\n According to the use-case example, the TO version also renames the class? \n But note: the use-case example is for a different component. In our case, we are only removing the property and adjusting the import.\n\n Important: We must not change anything else.\n\n How the file should look after:\n\n ```import { Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n ```\n\n But note: the rule says \"If `ChangeDetectionStrategy` is no longer used in the file, remove it from the import\". \n Since we are removing the only usage, we remove it from the import.\n\n However, the rule also says: \"Modify ONLY the reported location.\" and \"Apply the minimal change required\".\n\n The reported location is line 9 (which is the line with `changeDetection: ...`).\n\n But note: the import statement is also affected because it becomes unused. The rule says to remove the import if unused.\n\n The rule's refactor steps explicitly say:\n   1. Remove the property.\n   2. If no longer used, remove from import.\n\n So we do both.\n\n The problem states: \"Location: 9-9\", meaning the violation is at line 9.\n\n However, the removal of the unused import is part of the fix. The rule says to do both steps.\n\n Therefore, we will:\n   - Remove the line containing `changeDetection: ...` (line 9 in the original, but note: the file content we see has that on line 9? Let's count)\n\n Counting lines in the provided file content:\n\n Line 1: import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\n Line 2: import { Product } from \"./product.model\";\n Line 3: import { ProductService } from \"./product.service\";\n Line 4:\n Line 5: @Component({\n Line 6:   selector: \"app-root\",\n Line 7:   templateUrl: \"./app.html\",\n Line 8:   styleUrl: \"./app.css\",\n Line 9:   changeDetection: ChangeDetectionStrategy.Default,\n Line 10: })\n\n So we remove line 9.\n\n Then, we see that the import on line 1 uses `ChangeDetectionStrategy` which is now unused. We remove it from the import.\n\n The import becomes: `import { Component, OnInit } from \"@angular/core\";`\n\n We must not change anything else.\n\n Therefore, the fixed file is as above.\n\n But note: the rule example also changed the class name? \n In the example, they changed from `DefaultComponent` to `NoneComponent`? \n However, the rule description does not say to change the class name. \n The example is just showing two different components. \n\n We are not to change the class name of our component.\n\n So we leave `export class App implements OnInit { ... }` unchanged.\n\n Let's write the fixed file.\n",
+          "buildResult": {
+            "status": "success",
+            "message": "Application built successfully!",
+            "safetyWebReportJson": [
+              {
+                "summaryVersion": "0.1.0",
+                "packageName": "app",
+                "packageVersion": "0.0.0",
+                "packagePath": ".",
+                "violations": []
+              }
+            ]
+          },
+          "serveTestingResult": {
+            "runtimeErrors": "",
+            "userJourneyAgentOutput": null
+          },
+          "attempt": 0,
+          "lintResult": {
+            "status": "success",
+            "message": "Application passed linting!",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.change-detection.none",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.change-detection.none",
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.ts"
+                            },
+                            "region": {
+                              "startLine": 5,
+                              "startColumn": 1,
+                              "endLine": 9,
+                              "endColumn": 3
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "qwen/qwen3-235b-a22b-thinking-2507",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 644,
+        "outputTokens": 1157,
+        "thinkingTokens": 1195,
+        "totalTokens": 1801,
+        "cost": 0.00284142
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "c87811b633b3e7c8968a65a49ba40fe48fc926a1675a4425308e636ba4ff36ee"
+    },
+    "timestamp": "2026-03-02T12:09:44.925Z",
+    "reportName": "2026-03-02T12-09-03-452Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

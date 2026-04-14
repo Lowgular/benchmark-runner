@@ -1,0 +1,332 @@
+{
+  "id": "09ee9c16-0907-437b-8140-00ea49fa82fc",
+  "group": "afcc90b96eb582c423abd776e42e4ec2c22727e0991d8d5f91c3a57fd7dcb7d4",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.dependency-injection.constructor-params",
+        "prompt": "# angular.dependency-injection.constructor-params\n\n# constructor-params_inject-function\n\n## Refactor Steps\n\n1. **Import** `inject` from `@angular/core` (add to existing imports).\n2. **For each constructor parameter** that is an injected dependency:\n   - Remove the parameter from the constructor.\n   - Add a class property initialized with `inject(DependencyClass)`.\n3. **Constructor after migration:** If the constructor is empty, remove it entirely.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with router and service\n\nProfile component that injects `Router` and `AuthService` via constructor.\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\nimport { MyService } from \"./my.service\";\n\n@Component({\n  selector: \"app-constructor-params\",\n  template: `<p>ctor</p>`,\n})\nexport class ConstructorParamsComponent {\n  constructor(private readonly service: MyService) {}\n}\n```\n\n**TO**\n\n```typescript\nimport { Component, inject } from \"@angular/core\";\nimport { MyService } from \"./my.service\";\n\nclass MyService {}\n\n@Component({\n  selector: \"app-inject-function\",\n  template: `<p>inject</p>`,\n})\nexport class InjectFunctionComponent {\n  private readonly service = inject(MyService);\n}\n```\n\n---\n\n### Injectable service with HttpClient\n\nRoot-provided service that injects `HttpClient` in the constructor.\n\n**FROM**\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({ providedIn: \"root\" })\nexport class BadDataService {\n  constructor(private http: HttpClient) {}\n}\n```\n\n**TO**\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\n\n@Injectable({ providedIn: \"root\" })\nexport class DataService {\n  private http = inject(HttpClient);\n}\n```\n\n---\n\n### Directive with ElementRef and Renderer2\n\nAttribute directive that injects `ElementRef` and `Renderer2`.\n\n**FROM**\n\n```typescript\nimport { Directive, ElementRef, Renderer2 } from \"@angular/core\";\n\n@Directive({ selector: \"[appHighlight]\" })\nexport class BadHighlightDirective {\n  constructor(\n    private elementRef: ElementRef,\n    private renderer2: Renderer2,\n  ) {}\n}\n```\n\n**TO**\n\n```typescript\nimport { Directive, ElementRef, inject, Renderer2 } from \"@angular/core\";\n\n@Directive({ selector: \"[appHighlight]\" })\nexport class HighlightDirective {\n  private elementRef = inject(ElementRef);\n  private renderer2 = inject(Renderer2);\n}\n```\n\n---\n\n### Pipe with DatePipe\n\nPipe that uses `DatePipe` in its `transform` method.\n\n**FROM**\n\n```typescript\nimport { DatePipe } from \"@angular/common\";\nimport { Pipe, PipeTransform } from \"@angular/core\";\n\n@Pipe({ name: \"customDate\" })\nexport class BadCustomDatePipe implements PipeTransform {\n  constructor(private datePipe: DatePipe) {}\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || \"\";\n  }\n}\n```\n\n**TO**\n\n```typescript\nimport { DatePipe } from \"@angular/common\";\nimport { Pipe, PipeTransform, inject } from \"@angular/core\";\n\n@Pipe({ name: \"customDate\" })\nexport class CustomDatePipe implements PipeTransform {\n  private datePipe = inject(DatePipe);\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || \"\";\n  }\n}\n```\n\n## Files\n\n### src/app/product.service.ts\n\nLocation: 11-11\n\n### Full File Content\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n```\n\n---\n\n### src/app/app.ts\n\nLocation: 14-14\n\n### Full File Content\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/product.service.ts",
+          "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "error",
+          "message": "Linting found errors or warnings",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.dependency-injection.constructor-params",
+                        "defaultConfiguration": {
+                          "level": "error"
+                        },
+                        "fullDescription": {
+                          "markdown": "# constructor-params_inject-function\n\n## Refactor Steps\n\n1. **Import** `inject` from `@angular/core` (add to existing imports).\n2. **For each constructor parameter** that is an injected dependency:\n   - Remove the parameter from the constructor.\n   - Add a class property initialized with `inject(DependencyClass)`.\n3. **Constructor after migration:** If the constructor is empty, remove it entirely.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with router and service\n\nProfile component that injects `Router` and `AuthService` via constructor.\n\n**FROM**\n\n```typescript\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-constructor-params',\n  template: `<p>ctor</p>`,\n})\nexport class ConstructorParamsComponent {\n  constructor(private readonly service: unknown) {}\n}\n\n```\n\n**TO**\n\n```typescript\n\nimport { Component, inject } from '@angular/core';\n\nclass MyService {}\n\n@Component({\n  selector: 'app-inject-function',\n  template: `<p>inject</p>`,\n})\nexport class InjectFunctionComponent {\n  private readonly service = inject(MyService);\n}\n\n```\n\n---\n\n### Injectable service with HttpClient\n\nRoot-provided service that injects `HttpClient` in the constructor.\n\n**FROM**\n\n```typescript\nimport { HttpClient } from '@angular/common/http';\nimport { Injectable } from '@angular/core';\n\n@Injectable({ providedIn: 'root' })\nexport class BadDataService {\n  constructor(private http: HttpClient) {}\n}\n\n```\n\n**TO**\n\n```typescript\nimport { HttpClient } from '@angular/common/http';\nimport { Injectable, inject } from '@angular/core';\n\n@Injectable({ providedIn: 'root' })\nexport class DataService {\n  private http = inject(HttpClient);\n}\n\n```\n\n---\n\n### Directive with ElementRef and Renderer2\n\nAttribute directive that injects `ElementRef` and `Renderer2`.\n\n**FROM**\n\n```typescript\nimport { Directive, ElementRef, Renderer2 } from '@angular/core';\n\n@Directive({ selector: '[appHighlight]' })\nexport class BadHighlightDirective {\n  constructor(\n    private elementRef: ElementRef,\n    private renderer2: Renderer2,\n  ) {}\n}\n\n```\n\n**TO**\n\n```typescript\nimport { Directive, ElementRef, inject, Renderer2 } from '@angular/core';\n\n@Directive({ selector: '[appHighlight]' })\nexport class HighlightDirective {\n  private elementRef = inject(ElementRef);\n  private renderer2 = inject(Renderer2);\n}\n\n```\n\n---\n\n### Pipe with DatePipe\n\nPipe that uses `DatePipe` in its `transform` method.\n\n**FROM**\n\n```typescript\nimport { DatePipe } from '@angular/common';\nimport { Pipe, PipeTransform } from '@angular/core';\n\n@Pipe({ name: 'customDate' })\nexport class BadCustomDatePipe implements PipeTransform {\n  constructor(private datePipe: DatePipe) {}\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || '';\n  }\n}\n\n```\n\n**TO**\n\n```typescript\nimport { DatePipe } from '@angular/common';\nimport { Pipe, PipeTransform, inject } from '@angular/core';\n\n@Pipe({ name: 'customDate' })\nexport class CustomDatePipe implements PipeTransform {\n  private datePipe = inject(DatePipe);\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || '';\n  }\n}\n\n```"
+                        }
+                      },
+                      {
+                        "id": "angular.dependency-injection.inject-function",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.dependency-injection.constructor-params",
+                    "message": {
+                      "text": "Rule angular.dependency-injection.constructor-params found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.ts"
+                          },
+                          "region": {
+                            "startLine": 14,
+                            "startColumn": 15,
+                            "endLine": 14,
+                            "endColumn": 53
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "ruleId": "angular.dependency-injection.inject-function",
+                    "message": {
+                      "text": "Rule angular.dependency-injection.inject-function found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/product.service.ts"
+                          },
+                          "region": {
+                            "startLine": 11,
+                            "startColumn": 3,
+                            "endLine": 11,
+                            "endColumn": 37
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "success",
+          "message": "Application built successfully!",
+          "safetyWebReportJson": [
+            {
+              "summaryVersion": "0.1.0",
+              "packageName": "app",
+              "packageVersion": "0.0.0",
+              "packagePath": ".",
+              "violations": []
+            }
+          ]
+        },
+        "serveTestingResult": {
+          "runtimeErrors": "",
+          "userJourneyAgentOutput": null
+        },
+        "outputFiles": [
+          {
+            "filePath": "src/app/product.service.ts",
+            "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 97.5,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 47.5,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Dependency Injection",
+                "description": "Use the inject() function for dependency injection in components, directives, pipes, and injectable services. Do not use constructor parameters for injection.",
+                "id": "dependency-injection",
+                "scoreReduction": "10%",
+                "successPercentage": 0.5,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Dependency Injection"
+                ],
+                "message": "Partial Pass (50%)\nsrc/app/app.ts.13.14.13.52,src/app/product.service.ts.10.2.10.36"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": []
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/product.service.ts",
+              "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n"
+            }
+          ],
+          "usage": {
+            "inputTokens": 1353,
+            "outputTokens": 576,
+            "totalTokens": 1929,
+            "thinkingTokens": 384,
+            "cost": 0.00029805
+          },
+          "reasoning": "**Updating Angular component**\n\nI’m working on app.ts and looking to migrate the constructor to use `inject` from `@angular/core`. It seems I should remove the constructor entirely if productService is only used in `ngOnInit`. I'll create a private property `productService` and use `inject(ProductService)` for dependency injection. This way, references in `ngOnInit`, like `this.productService.getProduct()`, will work fine since they’re pointing to the injected instance. I’ll ensure imports reflect this change. Let’s implement!\n[REDACTED]",
+          "buildResult": {
+            "status": "success",
+            "message": "Application built successfully!",
+            "safetyWebReportJson": [
+              {
+                "summaryVersion": "0.1.0",
+                "packageName": "app",
+                "packageVersion": "0.0.0",
+                "packagePath": ".",
+                "violations": []
+              }
+            ]
+          },
+          "serveTestingResult": {
+            "runtimeErrors": "",
+            "userJourneyAgentOutput": null
+          },
+          "attempt": 0,
+          "lintResult": {
+            "status": "error",
+            "message": "Linting found errors or warnings",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.dependency-injection.constructor-params",
+                          "defaultConfiguration": {
+                            "level": "error"
+                          },
+                          "fullDescription": {
+                            "markdown": "# constructor-params_inject-function\n\n## Refactor Steps\n\n1. **Import** `inject` from `@angular/core` (add to existing imports).\n2. **For each constructor parameter** that is an injected dependency:\n   - Remove the parameter from the constructor.\n   - Add a class property initialized with `inject(DependencyClass)`.\n3. **Constructor after migration:** If the constructor is empty, remove it entirely.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with router and service\n\nProfile component that injects `Router` and `AuthService` via constructor.\n\n**FROM**\n\n```typescript\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-constructor-params',\n  template: `<p>ctor</p>`,\n})\nexport class ConstructorParamsComponent {\n  constructor(private readonly service: unknown) {}\n}\n\n```\n\n**TO**\n\n```typescript\n\nimport { Component, inject } from '@angular/core';\n\nclass MyService {}\n\n@Component({\n  selector: 'app-inject-function',\n  template: `<p>inject</p>`,\n})\nexport class InjectFunctionComponent {\n  private readonly service = inject(MyService);\n}\n\n```\n\n---\n\n### Injectable service with HttpClient\n\nRoot-provided service that injects `HttpClient` in the constructor.\n\n**FROM**\n\n```typescript\nimport { HttpClient } from '@angular/common/http';\nimport { Injectable } from '@angular/core';\n\n@Injectable({ providedIn: 'root' })\nexport class BadDataService {\n  constructor(private http: HttpClient) {}\n}\n\n```\n\n**TO**\n\n```typescript\nimport { HttpClient } from '@angular/common/http';\nimport { Injectable, inject } from '@angular/core';\n\n@Injectable({ providedIn: 'root' })\nexport class DataService {\n  private http = inject(HttpClient);\n}\n\n```\n\n---\n\n### Directive with ElementRef and Renderer2\n\nAttribute directive that injects `ElementRef` and `Renderer2`.\n\n**FROM**\n\n```typescript\nimport { Directive, ElementRef, Renderer2 } from '@angular/core';\n\n@Directive({ selector: '[appHighlight]' })\nexport class BadHighlightDirective {\n  constructor(\n    private elementRef: ElementRef,\n    private renderer2: Renderer2,\n  ) {}\n}\n\n```\n\n**TO**\n\n```typescript\nimport { Directive, ElementRef, inject, Renderer2 } from '@angular/core';\n\n@Directive({ selector: '[appHighlight]' })\nexport class HighlightDirective {\n  private elementRef = inject(ElementRef);\n  private renderer2 = inject(Renderer2);\n}\n\n```\n\n---\n\n### Pipe with DatePipe\n\nPipe that uses `DatePipe` in its `transform` method.\n\n**FROM**\n\n```typescript\nimport { DatePipe } from '@angular/common';\nimport { Pipe, PipeTransform } from '@angular/core';\n\n@Pipe({ name: 'customDate' })\nexport class BadCustomDatePipe implements PipeTransform {\n  constructor(private datePipe: DatePipe) {}\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || '';\n  }\n}\n\n```\n\n**TO**\n\n```typescript\nimport { DatePipe } from '@angular/common';\nimport { Pipe, PipeTransform, inject } from '@angular/core';\n\n@Pipe({ name: 'customDate' })\nexport class CustomDatePipe implements PipeTransform {\n  private datePipe = inject(DatePipe);\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || '';\n  }\n}\n\n```"
+                          }
+                        },
+                        {
+                          "id": "angular.dependency-injection.inject-function",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.dependency-injection.constructor-params",
+                      "message": {
+                        "text": "Rule angular.dependency-injection.constructor-params found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.ts"
+                            },
+                            "region": {
+                              "startLine": 14,
+                              "startColumn": 15,
+                              "endLine": 14,
+                              "endColumn": 53
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "ruleId": "angular.dependency-injection.inject-function",
+                      "message": {
+                        "text": "Rule angular.dependency-injection.inject-function found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/product.service.ts"
+                            },
+                            "region": {
+                              "startLine": 11,
+                              "startColumn": 3,
+                              "endLine": 11,
+                              "endColumn": 37
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "openai/gpt-5-nano",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 1353,
+        "outputTokens": 576,
+        "thinkingTokens": 384,
+        "totalTokens": 1929,
+        "cost": 0.00029805
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "cc1b1eaf414cab77c410ddd62d2746bea923de36e5db5d49c166dbe7ae9a020a"
+    },
+    "timestamp": "2026-03-03T10:09:48.882Z",
+    "reportName": "2026-03-03T10-09-26-302Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

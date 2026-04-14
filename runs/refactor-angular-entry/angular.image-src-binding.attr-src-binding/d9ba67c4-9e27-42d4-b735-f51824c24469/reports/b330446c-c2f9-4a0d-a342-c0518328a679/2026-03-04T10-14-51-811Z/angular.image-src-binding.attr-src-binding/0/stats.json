@@ -1,0 +1,9 @@
+{
+  "fileSize": 1519,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.794 seconds]\n\n\n✘ [ERROR] TS1005: 'from' expected. [plugin angular-compiler]\n\n    src/app/app.ts:3:19:\n      3 │ import { Product } } from \"./product.model\";\n        ╵                    ^\n\n\n✘ [ERROR] TS1434: Unexpected keyword or identifier. [plugin angular-compiler]\n\n    src/app/app.ts:3:21:\n      3 │ import { Product } } from \"./product.model\";\n        ╵                      ~~~~\n\n\n✘ [ERROR] TS2304: Cannot find name 'from'. [plugin angular-compiler]\n\n    src/app/app.ts:3:21:\n      3 │ import { Product } } from \"./product.model\";\n        ╵                      ~~~~\n\n\n✘ [ERROR] Expected string but found \";\"\n\n    src/app/app.ts:3:24:\n      3 │ import { Product } from ;\n        ╵                         ^\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

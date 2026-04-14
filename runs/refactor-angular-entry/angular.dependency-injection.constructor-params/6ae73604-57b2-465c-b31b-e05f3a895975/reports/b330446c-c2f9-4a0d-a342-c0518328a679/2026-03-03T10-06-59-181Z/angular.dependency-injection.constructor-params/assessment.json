@@ -1,0 +1,280 @@
+{
+  "promptDef": {
+    "name": "angular.dependency-injection.constructor-params",
+    "prompt": "# angular.dependency-injection.constructor-params\n\n# constructor-params_inject-function\n\n## Refactor Steps\n\n1. **Import** `inject` from `@angular/core` (add to existing imports).\n2. **For each constructor parameter** that is an injected dependency:\n   - Remove the parameter from the constructor.\n   - Add a class property initialized with `inject(DependencyClass)`.\n3. **Constructor after migration:** If the constructor is empty, remove it entirely.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with router and service\n\nProfile component that injects `Router` and `AuthService` via constructor.\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\nimport { MyService } from \"./my.service\";\n\n@Component({\n  selector: \"app-constructor-params\",\n  template: `<p>ctor</p>`,\n})\nexport class ConstructorParamsComponent {\n  constructor(private readonly service: MyService) {}\n}\n```\n\n**TO**\n\n```typescript\nimport { Component, inject } from \"@angular/core\";\nimport { MyService } from \"./my.service\";\n\nclass MyService {}\n\n@Component({\n  selector: \"app-inject-function\",\n  template: `<p>inject</p>`,\n})\nexport class InjectFunctionComponent {\n  private readonly service = inject(MyService);\n}\n```\n\n---\n\n### Injectable service with HttpClient\n\nRoot-provided service that injects `HttpClient` in the constructor.\n\n**FROM**\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({ providedIn: \"root\" })\nexport class BadDataService {\n  constructor(private http: HttpClient) {}\n}\n```\n\n**TO**\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\n\n@Injectable({ providedIn: \"root\" })\nexport class DataService {\n  private http = inject(HttpClient);\n}\n```\n\n---\n\n### Directive with ElementRef and Renderer2\n\nAttribute directive that injects `ElementRef` and `Renderer2`.\n\n**FROM**\n\n```typescript\nimport { Directive, ElementRef, Renderer2 } from \"@angular/core\";\n\n@Directive({ selector: \"[appHighlight]\" })\nexport class BadHighlightDirective {\n  constructor(\n    private elementRef: ElementRef,\n    private renderer2: Renderer2,\n  ) {}\n}\n```\n\n**TO**\n\n```typescript\nimport { Directive, ElementRef, inject, Renderer2 } from \"@angular/core\";\n\n@Directive({ selector: \"[appHighlight]\" })\nexport class HighlightDirective {\n  private elementRef = inject(ElementRef);\n  private renderer2 = inject(Renderer2);\n}\n```\n\n---\n\n### Pipe with DatePipe\n\nPipe that uses `DatePipe` in its `transform` method.\n\n**FROM**\n\n```typescript\nimport { DatePipe } from \"@angular/common\";\nimport { Pipe, PipeTransform } from \"@angular/core\";\n\n@Pipe({ name: \"customDate\" })\nexport class BadCustomDatePipe implements PipeTransform {\n  constructor(private datePipe: DatePipe) {}\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || \"\";\n  }\n}\n```\n\n**TO**\n\n```typescript\nimport { DatePipe } from \"@angular/common\";\nimport { Pipe, PipeTransform, inject } from \"@angular/core\";\n\n@Pipe({ name: \"customDate\" })\nexport class CustomDatePipe implements PipeTransform {\n  private datePipe = inject(DatePipe);\n\n  transform(value: any): string {\n    return this.datePipe.transform(value) || \"\";\n  }\n}\n```\n\n## Files\n\n### src/app/product.service.ts\n\nLocation: 11-11\n\n### Full File Content\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n```\n\n---\n\n### src/app/app.ts\n\nLocation: 14-14\n\n### Full File Content\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/product.service.ts",
+      "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private readonly http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+    },
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { ChangeDetectionStrategy, Component, inject, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n  private readonly productService = inject(ProductService);\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "success",
+      "message": "Application passed linting!",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.dependency-injection.inject-function",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.dependency-injection.inject-function",
+                "message": {
+                  "text": "Rule angular.dependency-injection.inject-function found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/product.service.ts"
+                      },
+                      "region": {
+                        "startLine": 11,
+                        "startColumn": 3,
+                        "endLine": 11,
+                        "endColumn": 46
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "ruleId": "angular.dependency-injection.inject-function",
+                "message": {
+                  "text": "Rule angular.dependency-injection.inject-function found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.ts"
+                      },
+                      "region": {
+                        "startLine": 13,
+                        "startColumn": 3,
+                        "endLine": 13,
+                        "endColumn": 60
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "success",
+      "message": "Application built successfully!",
+      "safetyWebReportJson": [
+        {
+          "summaryVersion": "0.1.0",
+          "packageName": "app",
+          "packageVersion": "0.0.0",
+          "packagePath": ".",
+          "violations": []
+        }
+      ]
+    },
+    "serveTestingResult": {
+      "runtimeErrors": "",
+      "userJourneyAgentOutput": null
+    },
+    "outputFiles": [
+      {
+        "filePath": "src/app/product.service.ts",
+        "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private readonly http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+      },
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { ChangeDetectionStrategy, Component, inject, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n  private readonly productService = inject(ProductService);\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Dependency Injection",
+            "description": "Use the inject() function for dependency injection in components, directives, pipes, and injectable services. Do not use constructor parameters for injection.",
+            "id": "dependency-injection",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Dependency Injection"
+            ],
+            "message": "Pass\nsrc/app/product.service.ts.10.2.10.45,src/app/app.ts.12.2.12.59"
+          }
+        ]
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": []
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/product.service.ts",
+          "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  private readonly http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+        },
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, inject, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n  private readonly productService = inject(ProductService);\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1306,
+        "outputTokens": 1432,
+        "totalTokens": 2738,
+        "thinkingTokens": 1423,
+        "cost": 0
+      },
+      "reasoning": "We need to apply the refactor to the static-analysis violation. The rule is about constructor injection, replace with inject() function and class properties. Two files given: src/app/product.service.ts and src/app/app.ts. Need to modify only the reported location(s), minimal changes, preserve behavior.\n\nFor product.service.ts: Constructor has private readonly service: MyService? Actually the provided code is a ProductService that injects HttpClient. The rule example shows injecting HttpClient replaced via inject(HttpClient) property. So we need to add import of inject from @angular/core, add class property using inject(HttpClient). Remove the constructor parameter usage, and possibly remove constructor if empty.\n\nCurrent code:\n\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl = \"...\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n\nWe should add import { inject } from \"@angular/core\"; at top. Then define a private readonly http = inject(HttpClient); and remove constructor and its parameter. Since constructor had only that, after removal it becomes empty; rule says remove empty constructor entirely. So final code will have class with just the property and getProduct method. Should we keep @Injectable? Yes.\n\nThus updated ProductService:\n\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable, inject } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl = \"...\";\n  private readonly http = inject(HttpClient);\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n\nNow app.ts: It injects ProductService via constructor. Need to add import { inject } from \"@angular/core\". Then add private readonly productService = inject(ProductService); Or more precisely the code uses private productService: ProductService; Actually the current code: constructor(private productService: ProductService) {} Then field is accessible as this.productService. After migration, we should replace constructor injection with class property using inject(ProductService). Since the class has other properties (product: Product | null = null;). The rule: For each constructor parameter that is injected dependency, remove the parameter, add a class property initialized with inject(DependencyClass). So we have private readonly productService = inject(ProductService); but we need to preserve that it is accessible as this.productService. So we can add a property productService = inject(ProductService); But they used private readonly service earlier; In this case it's not readonly? The constructor parameter was private readonly? Actually it's constructor(private productService: ProductService) {} This creates a private readonly property automatically? In TypeScript, a constructor parameter with access modifier creates a class property with that visibility and type, but not readonly automatically. Actually if you write private readonly productService: ProductService? No. But with private productService: ProductService, it's private but not readonly. However, the rule says \"add a class property initialized with inject(DependencyClass)\". Could be just a property, not necessarily readonly. So we can define private productService = inject(ProductService); This will be accessible throughout class.\n\nWe also need to remove the constructor if it becomes empty after removing parameter and other logic? The class also has other fields: product: Product | null = null; and methods. Constructor currently only has that injection. After migration, the constructor becomes empty, so we should remove it entirely.\n\nThus updated app.ts: Add import { inject } from '@angular/core'; Add property using inject(ProductService). Then remove constructor. Also need to keep the class implements OnInit, etc. So final code:\n\nimport { ChangeDetectionStrategy, Component, OnInit, inject } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n  private readonly productService = inject(ProductService);\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n\nBut note we also need to import ProductService (already imported). Also we added inject import. The rule says add import of inject from @angular/core if not present. So we add it to existing imports. So we have ... OnInit, inject } from '@angular/core'.\n\nNow final answer: we need to return the FULL updated file for each file with modifications. The prompt says \"Return the FULL updated file.\" But there are multiple files. Usually we need to output each updated file contents. Possibly in markdown code fences with file names.\n\nThus produce two updated files: src/app/product.service.ts and src/app/app.ts with their full content.\n\nMake sure we only modify those files.\n\nLet's write them.\n",
+      "buildResult": {
+        "status": "success",
+        "message": "Application built successfully!",
+        "safetyWebReportJson": [
+          {
+            "summaryVersion": "0.1.0",
+            "packageName": "app",
+            "packageVersion": "0.0.0",
+            "packagePath": ".",
+            "violations": []
+          }
+        ]
+      },
+      "serveTestingResult": {
+        "runtimeErrors": "",
+        "userJourneyAgentOutput": null
+      },
+      "attempt": 0,
+      "lintResult": {
+        "status": "success",
+        "message": "Application passed linting!",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.dependency-injection.inject-function",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.dependency-injection.inject-function",
+                  "message": {
+                    "text": "Rule angular.dependency-injection.inject-function found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/product.service.ts"
+                        },
+                        "region": {
+                          "startLine": 11,
+                          "startColumn": 3,
+                          "endLine": 11,
+                          "endColumn": 46
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ruleId": "angular.dependency-injection.inject-function",
+                  "message": {
+                    "text": "Rule angular.dependency-injection.inject-function found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.ts"
+                        },
+                        "region": {
+                          "startLine": 13,
+                          "startColumn": 3,
+                          "endLine": 13,
+                          "endColumn": 60
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

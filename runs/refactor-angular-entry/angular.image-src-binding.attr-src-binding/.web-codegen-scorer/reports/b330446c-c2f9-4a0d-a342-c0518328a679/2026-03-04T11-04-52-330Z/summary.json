@@ -1,0 +1,51 @@
+{
+  "id": "03678df1-0b43-4def-a95d-8ed7cd0f8011",
+  "group": "cfa3d512b4220c6aae45cdbaba70d26db244e6bd19f129afed0037df8f977d30",
+  "version": 3,
+  "results": [],
+  "details": {
+    "summary": {
+      "model": "z-ai/glm-4.6",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": [
+          {
+            "promptName": "angular.image-src-binding.attr-src-binding",
+            "error": "Error: Initial file generation failed: AI_NoObjectGeneratedError: No object generated: could not parse the response.\nStack: AI_NoObjectGeneratedError: No object generated: could not parse the response.\n    at Object.parseCompleteOutput (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:3089:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async fn (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:4244:28)\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:2124:24\n    at async generateText (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:3805:12)\n    at async AiSdkRunner._wrapRequestWithTimeoutAndRateLimiting (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/codegen/ai-sdk/ai-sdk-runner.js:125:20)\n    at async AiSdkRunner.generateConstrained (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/codegen/ai-sdk/ai-sdk-runner.js:54:26)\n    at async AiSdkRunner.generateFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/codegen/ai-sdk/ai-sdk-runner.js:70:26)\n    at async generateCodeWithAI (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/codegen.js:15:26)\n    at async LocalExecutor.generateInitialFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/executors/local-executor.js:27:16)",
+            "stack": "Error: Initial file generation failed: AI_NoObjectGeneratedError: No object generated: could not parse the response.\nStack: AI_NoObjectGeneratedError: No object generated: could not parse the response.\n    at Object.parseCompleteOutput (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:3089:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async fn (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:4244:28)\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:2124:24\n    at async generateText (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/ai@6.0.59_zod@3.25.76/node_modules/ai/dist/index.mjs:3805:12)\n    at async AiSdkRunner._wrapRequestWithTimeoutAndRateLimiting (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/codegen/ai-sdk/ai-sdk-runner.js:125:20)\n    at async AiSdkRunner.generateConstrained (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/codegen/ai-sdk/ai-sdk-runner.js:54:26)\n    at async AiSdkRunner.generateFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/codegen/ai-sdk/ai-sdk-runner.js:70:26)\n    at async generateCodeWithAI (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/codegen.js:15:26)\n    at async LocalExecutor.generateInitialFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/executors/local-executor.js:27:16)\n    at generateInitialFiles (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-initial-files.js:52:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async startEvaluationTask (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate-eval-task.js:32:33)\n    at async callWithTimeout (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/utils/timeout.js:17:16)\n    at async evaluate (file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:125:35)\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/dist/runner/orchestration/generate.js:145:41\n    at async file:///Users/greg/Desktop/projects/playground/web-codegen-scorer/node_modules/.pnpm/p-queue@9.1.0/node_modules/p-queue/dist/index.js:394:36"
+          }
+        ]
+      },
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "thinkingTokens": 0,
+        "totalTokens": 0,
+        "cost": 0
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "3cb6172c5856ecb6b984be626ae364873b8c23654ea6a24f48f6787307a7d0ac"
+    },
+    "timestamp": "2026-03-04T11:05:03.517Z",
+    "reportName": "2026-03-04T11-04-52-330Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

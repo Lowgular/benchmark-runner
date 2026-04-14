@@ -1,18 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { Product } from "./product.model";
 import { ProductService } from "./product.service";
 
 @Component({
   selector: "app-root",
   templateUrl: "./app.html",
-  styleUrl: "./app.css",
-  standalone: false,
-  changeDetection: ChangeDetectionStrategy.Default,
 })
 export class App implements OnInit {
+  private productService = inject(ProductService);
   product: Product | null = null;
-
-  constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
     this.productService.getProduct().subscribe((data) => {

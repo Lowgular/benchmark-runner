@@ -1,0 +1,120 @@
+{
+  "level": 0,
+  "user": "find all classes",
+  "expected": "Find ClassDeclaration"
+}
+{
+  "level": 0,
+  "user": "get all interfaces",
+  "expected": "Find InterfaceDeclaration"
+}
+{
+  "level": 0,
+  "user": "find all type aliases",
+  "expected": "Find TypeAliasDeclaration"
+}
+{
+  "level": 0,
+  "user": "get all components",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Component'"
+}
+{
+  "level": 0,
+  "user": "find all services",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Injectable'"
+}
+{
+  "level": 0,
+  "user": "get all ng modules",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'NgModule'"
+}
+{
+  "level": 0,
+  "user": "find all signal properties",
+  "expected": "Find PropertyDeclaration that has initializer CallExpression that has expression Identifier with text 'signal'"
+}
+{
+  "level": 0,
+  "user": "get type aliases that contain Model in their name",
+  "expected": "Find TypeAliasDeclaration where name contains 'Model'"
+}
+{
+  "level": 0,
+  "user": "find services ending in Service",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Injectable' where ClassDeclaration name ends with 'Service'"
+}
+{
+  "level": 0,
+  "user": "find all subscribe calls",
+  "expected": "Find PropertyAccessExpression with name 'subscribe'"
+}
+{
+  "level": 1,
+  "user": "find all classes with their properties",
+  "expected": "Find ClassDeclaration that has member PropertyDeclaration"
+}
+{
+  "level": 1,
+  "user": "get components and their standalone setting",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Component' that has descendant ObjectLiteralExpression and optionally find this ObjectLiteralExpression that has property with name 'standalone'"
+}
+{
+  "level": 1,
+  "user": "find all classes with readonly properties",
+  "expected": "Find ClassDeclaration that has member PropertyDeclaration that has modifier ReadonlyKeyword"
+}
+{
+  "level": 1,
+  "user": "find classes or interfaces with properties and whether they are readonly",
+  "expected": "Find ClassDeclaration or InterfaceDeclaration that has member PropertyDeclaration and optionally find this PropertyDeclaration that has modifier ReadonlyKeyword"
+}
+{
+  "level": 1,
+  "user": "get all services and check if they have providedIn",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Injectable' that has descendant ObjectLiteralExpression and optionally find this ObjectLiteralExpression that has property with name 'providedIn'"
+}
+{
+  "level": 1,
+  "user": "find ng modules that have empty declarations",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'NgModule' that has descendant ObjectLiteralExpression that has property with name 'declarations' that has initializer ArrayLiteralExpression with text '[]'"
+}
+{
+  "level": 1,
+  "user": "find classes whose property names start with underscore",
+  "expected": "Find ClassDeclaration that has member PropertyDeclaration where PropertyDeclaration name starts with '_'"
+}
+{
+  "level": 1,
+  "user": "get components with their template or templateUrl",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Component' that has descendant ObjectLiteralExpression and optionally find this ObjectLiteralExpression that has property with name 'template' and optionally find this ObjectLiteralExpression that has property with name 'templateUrl'"
+}
+{
+  "level": 2,
+  "user": "find all angular classes and show me how they inject dependencies — both old and new style",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier is ['Component', 'Directive', 'Pipe', 'Injectable'] and optionally find this ClassDeclaration that has member Constructor that has parameter and optionally find this ClassDeclaration that has member PropertyDeclaration that has initializer CallExpression that has expression Identifier with text 'inject'"
+}
+{
+  "level": 2,
+  "user": "find components and check their members for return statements and arrow functions",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'Component' and also find this ClassDeclaration that has member either MethodDeclaration or PropertyDeclaration or GetAccessor and optionally find this member that has descendant ReturnStatement and optionally find this member that has descendant ArrowFunction"
+}
+{
+  "level": 2,
+  "user": "get angular classes with constructor injection and their inject properties",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier is ['Component', 'Directive', 'Pipe', 'Injectable'] and also find this ClassDeclaration that has member Constructor that has parameter and optionally find this ClassDeclaration that has member PropertyDeclaration that has initializer CallExpression that has expression Identifier with text 'inject'"
+}
+{
+  "level": 3,
+  "user": "find ng modules and who imports them",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'NgModule' and optionally find Decorator that has descendant ObjectLiteralExpression that has property with name 'imports' that has initializer ArrayLiteralExpression that has element Identifier with text matching this ClassDeclaration name"
+}
+{
+  "level": 3,
+  "user": "find ng modules and the classes they declare",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'NgModule' and also find this decorator that has descendant ObjectLiteralExpression that has property with name 'declarations' that has initializer ArrayLiteralExpression that has element Identifier and also find ClassDeclaration with name matching this Identifier text"
+}
+{
+  "level": 3,
+  "user": "find ng modules, their declared classes, and which other modules import them",
+  "expected": "Find ClassDeclaration that has decorator with firstIdentifier 'NgModule' and also find this decorator that has descendant ObjectLiteralExpression that has property with name 'declarations' that has initializer ArrayLiteralExpression that has element Identifier and also find ClassDeclaration with name matching this Identifier text and optionally find Decorator that has descendant ObjectLiteralExpression that has property with name 'imports' that has element Identifier with text matching this NgModule ClassDeclaration name"
+}

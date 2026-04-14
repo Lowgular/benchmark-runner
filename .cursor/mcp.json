@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "code-graph": {
+      "command": "node",
+      "args": [
+        "/Users/greg/Desktop/projects/lowgular/lowgular-internal/dist/apps/mcp/code-graph/main.js"
+      ]
+    }
+  }
+}

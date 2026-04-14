@@ -1,0 +1,144 @@
+{
+  "promptDef": {
+    "name": "angular.template-formatting.component-format-method",
+    "prompt": "# angular-template-formatting-component-format-method-to-pipe\n\n## What this rule flags:\n\nA component method is used in the template only to format a value (e.g. formatPrice(price) that returns price.toFixed(2) or similar). Prefer a built-in pipe in the template instead (e.g. number, currency, percent, date) and remove the format method.\n\nYou must edit both the component TypeScript file and the template. Prefer updating the template first, then cleaning up the TypeScript.\n\n## Refactor steps\n\nRule: Replace template calls to the format method with a built-in pipe. Then remove the format method from the component.\n\n1. Update the template (do this first)\n   Find every interpolation (or binding) that calls the format method, e.g.:\n\n   ```\n   {{ formatPrice(product?.price ?? 0) \\}}\n   ```\n\n   Replace it with the same value passed through the appropriate built-in pipe:\n   Currency / money: use the currency pipe, e.g.:\n\n   ```\n   {{ (product?.price ?? 0) | currency \\}}\n   ```\n\n   (optional args: 'USD', 'symbol', '1.2-2').\n   Plain number with decimals: use the number pipe, e.g.:\n\n   ```\n   {{ value | number:'1.2-2' \\}}\n   ```\n\n   Percent: use the percent pipe.\n   Date/time: use the date pipe with an optional format.\n   Ensure the expression before the pipe is the value that was previously passed into the method (e.g. product?.price ?? 0), not the method call.\n   If you do not change the template, the refactor is incomplete and the rule will still report the method.\n\n2. Component TypeScript file\n   Find the format method that is no longer used in the template (e.g. formatPrice(price: number): string { ... }).\n   Remove the entire method.\n   Remove unused imports if any (e.g. if nothing else uses them).\n3. Template — reminder\n   Every former call to the format method must be replaced by a pipe on the same value. Use value | pipeName (and optional pipe args), not formatMethod(value).\n\nBefore finishing — checklist\n[ ] Template uses a built-in pipe (e.g. number, currency, percent, date) instead of calling the format method.\n[ ] The format method has been removed from the component class.\n\n## Use-case examples (FROM → TO)\n\nSimplified examples showing the same pattern with minimal context.\n\n---\n\n### Currency formatting\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  price = 10;\n\n  formatPrice(): string {\n    return `$${this.price.toFixed(2)\\}}`;\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ formatPrice(product?.price || 0) \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  price = 10;\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ price | currency \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 22-24\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n\n  formatPrice(price: number): string {\n    return `$${price.toFixed(2)\\}}`;\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ formatPrice(product?.price || 0) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { ChangeDetectionStrategy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Product } from \\\"./product.model\\\";\\nimport { ProductService } from \\\"./product.service\\\";\\n\\n@Component({\\n  selector: \\\"app-root\\\",\\n  templateUrl: \\\"./app.html\\\",\\n  styleUrl: \\\"./app.css\\\",\\n  changeDetection: ChangeDetectionStrategy.Default,\\n})\\nexport class App implements OnInit {\\n  product: Product | null = null;\\n\\n  constructor(private productService: ProductService) {}\\n\\n  ngOnInit(): void {\\n    this.productService.getProduct().subscribe((data) => {\\n      this.product = data;\\n    });\\n  }\\n}\\n"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "success",
+      "message": "Application passed linting with 0 results",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": []
+              }
+            },
+            "results": []
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "error",
+      "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.810 seconds]\n\n\n✘ [ERROR] TS1127: Invalid character. [plugin angular-compiler]\n\n    src/app/app.ts:1:59:\n      1 │ ...ategy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Pro...\n        ╵                                    ^\n\n\n✘ [ERROR] Syntax error '\"'\n\n    src/app/app.ts:1:60:\n      1 │ ...tegy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Prod...\n        ╵                                    ^\n\n\n✘ [ERROR] TS1002: Unterminated string literal. [plugin angular-compiler]\n\n    src/app/app.ts:1:602:\n      1 │ ...bscribe((data) => {\\n      this.product = data;\\n    });\\n  }\\n}\\n\n        ╵                                                                      ^\n\n\n✘ [ERROR] TS2305: Module '\"./app/app\"' has no exported member 'App'. [plugin angular-compiler]\n\n    src/main.ts:2:9:\n      2 │ import { App } from \"./app/app\";\n        ╵          ~~~\n\n\n",
+      "errorType": "TypeScript Error"
+    },
+    "serveTestingResult": null,
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { ChangeDetectionStrategy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Product } from \\\"./product.model\\\";\\nimport { ProductService } from \\\"./product.service\\\";\\n\\n@Component({\\n  selector: \\\"app-root\\\",\\n  templateUrl: \\\"./app.html\\\",\\n  styleUrl: \\\"./app.css\\\",\\n  changeDetection: ChangeDetectionStrategy.Default,\\n})\\nexport class App implements OnInit {\\n  product: Product | null = null;\\n\\n  constructor(private productService: ProductService) {}\\n\\n  ngOnInit(): void {\\n    this.productService.getProduct().subscribe((data) => {\\n      this.product = data;\\n    });\\n  }\\n}\\n"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": []
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": [
+          {
+            "state": 1,
+            "name": "Template Formatting",
+            "description": "Use built-in pipes (currency, number, date) or custom pure pipes for formatting. Do not put formatting logic or hardcoded symbols (e.g. $) in the template — that is hard to spot and breaks i18n. Prefer pipes; if formatting lives in the component (method, computed, or property), that is less bad but still penalized.",
+            "id": "template-formatting",
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "No template-formatting rule results in lint output"
+          }
+        ]
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Product } from \\\"./product.model\\\";\\nimport { ProductService } from \\\"./product.service\\\";\\n\\n@Component({\\n  selector: \\\"app-root\\\",\\n  templateUrl: \\\"./app.html\\\",\\n  styleUrl: \\\"./app.css\\\",\\n  changeDetection: ChangeDetectionStrategy.Default,\\n})\\nexport class App implements OnInit {\\n  product: Product | null = null;\\n\\n  constructor(private productService: ProductService) {}\\n\\n  ngOnInit(): void {\\n    this.productService.getProduct().subscribe((data) => {\\n      this.product = data;\\n    });\\n  }\\n}\\n"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1518,
+        "outputTokens": 1789,
+        "totalTokens": 3307,
+        "thinkingTokens": 1877,
+        "cost": 0
+      },
+      "reasoning": "We need to produce updated file content: fix the violation by replacing formatPrice call with currency pipe and remove formatPrice method.\n\nFile location: src/app/app.ts, lines 22-24? Actually the violation occurs at formatPrice call in template. But rule says modify only reported location? Actually we need to edit both component TypeScript and template, but must modify only the reported location? The instruction: \"Modify ONLY the reported location.\" Possibly they define location as the file and lines where violation occurs. We must edit that file (both TS and HTML?). The reported location might be the component file? Actually they gave location: 22-24. That's in the TS file? Wait they said Location: 22-24 but then they show full file content includes both TS and HTML? In the example they listed both files? The \"Files\" section includes src/app/app.ts and src/app/app.html? In the provided example they only gave one file? Actually they gave \"Files\" with \"### src/app/app.ts\" and then \"Location: 22-24\" and \"Full File Content\". Then they show FROM content which includes TS code and also includes app.html snippet within the TS? Actually they included app.html code inside the FROM block after TS? It seems they combined both files but location refers to TS lines 22-24 which are the formatPrice method? Let's check lines: In FROM code, after constructor, there is ngOnInit, then formatPrice method lines 22-24? Let's count: import lines 1-3, @Component lines 4-9, export class lines 10, then properties, constructor 13-14, ngOnInit 15-17, then formatPrice method starting 18? Might be lines 22-24 correspond to formatPrice method? Actually they say location 22-24, likely the formatPrice method body? Let's not overthink; we need to output full updated file content with changes: remove formatPrice method, replace template call with currency pipe.\n\nBut we don't have the template file content separate? The provided \"Full File Content\" includes both TS and HTML. We need to return full updated file content including both TS and HTML with modifications. The rule says modify both component TS and template. The location given is in TS, but they also need to modify the template. However the instruction: \"Modify ONLY the reported location.\" Perhaps they only want to modify the file mentioned (src/app/app.ts), but also need to edit template? In example they show template modifications too. They likely want to output updated file content for the file with violation (maybe the template file?). Actually they gave location: 22-24, which are lines in TS file where formatPrice method is. So we need to edit that file: remove method, but also need to edit template (maybe separate file?). The \"Files\" only list src/app/app.ts, not the html. But the FROM includes HTML snippet within the same block? This seems ambiguous.\n\nGiven typical tasks, we need to output updated content of the file mentioned (src/app/app.ts) only, but also need to reflect template changes? The rule says \"You must edit both the component TypeScript file and the template.\" But \"Modify ONLY the reported location.\" Could refer to the location of violation which includes both files? Might be the location includes both TS and HTML? In example they gave location 22-24, but that is only TS. However they also showed template snippet with formatPrice call; maybe that is elsewhere not counted.\n\nGiven limited instruction, I think we should output the full updated file content for the file mentioned (src/app/app.ts) with removal of formatPrice method, and also we need to modify the template file (maybe they consider it part of same file?). In example they output both TS and HTML in the \"Full File Content\"? Actually they show FROM includes both TS and HTML (embedding HTML after TS). That's weird.\n\nProbably they want us to output the entire updated source for the file that contains the violation, which is the component file, but also need to update the template, which might be a separate file not listed. However they said \"Return the FULL updated file.\" So we only return the file indicated (src/app/app.ts) with modifications.\n\nThus we should remove formatPrice method from the component and also remove any unused import? Not needed.\n\nAlso ensure template is updated? But we cannot modify a different file. So maybe they expect us to output both files? The \"Files\" list might contain multiple entries; only one entry present. So we output updated content of that file (src/app/app.ts). However they also need template changes but maybe they consider the template part of same file? Actually the given FROM includes HTML snippet after TS; So maybe they treat that as part of same file's content? That's odd.\n\nI think we should output updated full file content that includes both TS and HTML with modifications applied: i.e., update TS to remove formatPrice method, and update HTML to replace {{ formatPrice(product?.price || 0) }} with {{ (product?.price || 0) | currency }}.\n\nThus we need to output the entire file content as a single block containing both TS and HTML? In the FROM they combined them; So we should output similar combined content but updated.\n\nThus we need to produce updated code where TS no longer has formatPrice method, and HTML uses currency pipe.\n\nLet's reconstruct updated content.\n\nOriginal TS (lines 1-...):\n\nimport ...;\n\n@Component(...)\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n\n  formatPrice(price: number): string {\n    return `$${price.toFixed(2)\\}}`;\n  }\n}\n\nOriginal HTML snippet inside the file? Actually they placed HTML after TS but it's not part of TS file; but for our output we need to include both? We'll produce a combined representation: maybe just output updated TS and mention that HTML is updated accordingly? But they want full updated file content. Might be they expect just the TS file content (since that's what has violation). However they also said modify template, but that template is separate file not listed; maybe they want us to modify that file but not output it? This is confusing.\n\nGiven typical tasks, I think they want us to output updated content of the file that contains the violation (i.e., the component TS file). So we will output updated TS file with formatPrice removed. No changes to template needed in this file.\n\nThus output:\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nBut they might want to keep template modifications referenced? Might need to indicate that template is also changed but not part of this file.\n\nI'll output only the TS file updated.\n",
+      "buildResult": {
+        "status": "error",
+        "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.810 seconds]\n\n\n✘ [ERROR] TS1127: Invalid character. [plugin angular-compiler]\n\n    src/app/app.ts:1:59:\n      1 │ ...ategy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Pro...\n        ╵                                    ^\n\n\n✘ [ERROR] Syntax error '\"'\n\n    src/app/app.ts:1:60:\n      1 │ ...tegy, Component, OnInit } from \\\"@angular/core\\\";\\nimport { Prod...\n        ╵                                    ^\n\n\n✘ [ERROR] TS1002: Unterminated string literal. [plugin angular-compiler]\n\n    src/app/app.ts:1:602:\n      1 │ ...bscribe((data) => {\\n      this.product = data;\\n    });\\n  }\\n}\\n\n        ╵                                                                      ^\n\n\n✘ [ERROR] TS2305: Module '\"./app/app\"' has no exported member 'App'. [plugin angular-compiler]\n\n    src/main.ts:2:9:\n      2 │ import { App } from \"./app/app\";\n        ╵          ~~~\n\n\n",
+        "errorType": "TypeScript Error"
+      },
+      "serveTestingResult": null,
+      "attempt": 0,
+      "lintResult": {
+        "status": "success",
+        "message": "Application passed linting with 0 results",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": []
+                }
+              },
+              "results": []
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

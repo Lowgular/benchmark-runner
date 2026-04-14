@@ -1,0 +1,406 @@
+{
+  "promptDef": {
+    "name": "angular.subscription-management.unsafe",
+    "prompt": "# angular-subscription-management-unsafe\n\n**Important:** This refactor always involves **two places**: the **component TypeScript file** (`.ts`) and the **template**. If the component uses `templateUrl: './app.html'`, you must edit **both** `app.ts` and `app.html`. If it uses inline `template: \\`...\\``, you edit the template string inside the `.ts`file. Do not change only the`.ts` file and leave the template still reading from the old property.\n\n## Refactor Steps\n\n1. **Remove the manual subscription**  \n   Delete the `.subscribe(...)` call from the constructor or `ngOnInit` (and from any other lifecycle or method where it's used for this data).\n\n2. **Expose the observable**  \n   Add a class property that holds the observable (e.g. `items$ = this.data.getItems()`). Remove any property that only stored the subscribed value (e.g. `items: string[] = []`).\n\n3. **Add `AsyncPipe` to the component's `imports`**\n   **In the component decorator** add the `AsyncPipe` if it is not there yet, if you need to add it - make sure to also add / modify import to `@angular/common` to contain `AsyncPipe` as well e.g. `import { AsyncPipe } from \"@angular/commmon\";`\n\n4. **Use the async pipe in the template**  \n   **In the template file** (the `.html` file, or the inline template string in the `.ts` file), use the observable with the async pipe (e.g. `(items$ | async)`). Use optional chaining if the value can be null/undefined (e.g. `(items$ | async)?.length`). **You must update the template** — the refactor is incomplete if only the `.ts` file is changed.\n\n5. **Tidy the class**  \n   If `ngOnInit` or the constructor is now empty (or only has other code you're removing), remove `implements OnInit` and/or the constructor, or switch to `inject()` if you keep the constructor for other reasons.\n\n### Before finishing — checklist\n\n- [ ] No `.subscribe()` in the component for this data (rule targets unsafe subscribe: no `take`, `takeUntil`, or `takeUntilDestroyed`).\n- [ ] The observable is exposed as a class property (e.g. `items$ = this.service.getItems()`).\n- [ ] **Both the `.ts` and the template (`.html` or inline) were updated:** the template uses the async pipe (e.g. `{{ (items$ | async)?.length \\}}`) instead of a property that was set inside `.subscribe()`.\n- [ ] There is import for `AsyncPipe` in component decorator\n- [ ] No leftover properties that only held the result of the removed subscription.\n- [ ] Component still compiles and the UI shows the same data (fix any typo like `lenght` → `length` in the template).\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO). **When the component uses an external `templateUrl`, show and edit both the `.ts` and the `.html` file in FROM and TO.**\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject } from \"@angular/core\";\nimport { DataService } from \"./data.service\";\n\n@Component({\n  selector: \"app-user\",\n  templateUrl: \"./app.html\",\n})\nexport class App {\n  private readonly data = inject(DataService);\n  items: string[] = [];\n\n  constructor() {\n    this.data.getItems().subscribe((items) => {\n      this.items = items;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ items.length \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject } from \"@angular/core\";\nimport { DataService } from \"./data.service\";\nimport { AsyncPipe } from \"@angular/commmon\";\n\n@Component({\n  selector: \"app-user\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class UserComponent {\n  private readonly data = inject(DataService);\n  items$ = this.data.getItems();\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ (items$ | async)?.lenght \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 17-17\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App implements OnInit {\n  private productService = inject(ProductService);\n  product: Product | null = null;\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ product?.price \\}}</div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\";\nimport { AsyncPipe } from \"@angular/common\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class App {\n  private productService = inject(ProductService);\n  product$ = this.productService.getProduct();\n}"
+    },
+    {
+      "filePath": "src/app/app.html",
+      "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"(product$ | async)?.image\"\n          [alt]=\"(product$ | async)?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ (product$ | async)?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ (product$ | async)?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "warning",
+      "message": "Linting did not find any results",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.subscription-management.async",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.subscription-management.async",
+                "message": {
+                  "text": "Rule angular.subscription-management.async found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 9,
+                        "startColumn": 390,
+                        "endLine": 9,
+                        "endColumn": 406
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "ruleId": "angular.subscription-management.async",
+                "message": {
+                  "text": "Rule angular.subscription-management.async found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 10,
+                        "startColumn": 434,
+                        "endLine": 10,
+                        "endColumn": 450
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "ruleId": "angular.subscription-management.async",
+                "message": {
+                  "text": "Rule angular.subscription-management.async found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 15,
+                        "startColumn": 589,
+                        "endLine": 15,
+                        "endColumn": 605
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "ruleId": "angular.subscription-management.async",
+                "message": {
+                  "text": "Rule angular.subscription-management.async found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 18,
+                        "startColumn": 703,
+                        "endLine": 18,
+                        "endColumn": 719
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "ruleId": "angular.subscription-management.async",
+                "message": {
+                  "text": "Rule angular.subscription-management.async found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 20,
+                        "startColumn": 818,
+                        "endLine": 20,
+                        "endColumn": 834
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "success",
+      "message": "Application built successfully!",
+      "safetyWebReportJson": [
+        {
+          "summaryVersion": "0.1.0",
+          "packageName": "app",
+          "packageVersion": "0.0.0",
+          "packagePath": ".",
+          "violations": []
+        }
+      ]
+    },
+    "serveTestingResult": {
+      "runtimeErrors": "",
+      "userJourneyAgentOutput": null
+    },
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\";\nimport { AsyncPipe } from \"@angular/common\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class App {\n  private productService = inject(ProductService);\n  product$ = this.productService.getProduct();\n}"
+      },
+      {
+        "filePath": "src/app/app.html",
+        "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"(product$ | async)?.image\"\n          [alt]=\"(product$ | async)?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ (product$ | async)?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ (product$ | async)?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Subscription Management",
+            "description": "Make sure to to ALWAYS unsubscribe from observables. Use takeUntilDestroyed(), take(), takeUntil() or async pipe - avoid manual unsubscribe() calls.",
+            "id": "subscription-management",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Angular Best Practices"
+            ],
+            "message": "Pass\nsrc/app/app.html.8.389.8.405,src/app/app.html.9.433.9.449,src/app/app.html.14.588.14.604,src/app/app.html.17.702.17.718,src/app/app.html.19.817.19.833"
+          }
+        ]
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": []
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\";\nimport { AsyncPipe } from \"@angular/common\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  imports: [AsyncPipe],\n})\nexport class App {\n  private productService = inject(ProductService);\n  product$ = this.productService.getProduct();\n}"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"(product$ | async)?.image\"\n          [alt]=\"(product$ | async)?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ (product$ | async)?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ (product$ | async)?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n      </div>\n    </div>\n  </div>\n</div>"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1623,
+        "outputTokens": 6739,
+        "totalTokens": 8362,
+        "thinkingTokens": 7670,
+        "cost": 0.01595414
+      },
+      "reasoning": "We are given a violation of the rule \"angular-subscription-management-unsafe\".\n The rule: we must fix the unsafe subscription by using AsyncPipe.\n\n Steps to fix:\n 1. Remove the manual subscription (in ngOnInit, the subscribe call).\n 2. Expose the observable as a class property (e.g., `product$ = this.productService.getProduct()`).\n 3. Add AsyncPipe to the component's imports (and import AsyncPipe from '@angular/common').\n 4. Update the template to use the async pipe (and optional chaining because the value might be null until the async data arrives).\n 5. Tidy the class: remove the `product` property and the `ngOnInit` since it's now empty (and also remove `implements OnInit`).\n\n Important: We must fix both the .ts file and the .html file (or the inline template if applicable).\n\n Looking at the provided files:\n\n File: src/app/app.ts (at location 17-17, which is the line with the subscribe call)\n\n Current code in app.ts:\n\n   export class App implements OnInit {\n     private productService = inject(ProductService);\n     product: Product | null = null;\n\n     ngOnInit(): void {\n       this.productService.getProduct().subscribe((data) => {\n         this.product = data;\n       });\n     }\n   }\n\n We are going to:\n   - Remove the `product` property and the `ngOnInit` method.\n   - Create an observable property `product$` that holds the result of `this.productService.getProduct()`.\n   - Add `AsyncPipe` to the component's `imports` and import it.\n\n Also, we have to update the template (app.html) to replace every occurrence of `product` with `(product$ | async)` and use optional chaining because the observable might emit null.\n\n Current app.html:\n\n   <div ...>\n     ... [attr.src]=\"product?.image\" ... [alt]=\"product?.name\" ...\n     <h1 ...>{{ product?.name }}</h1>\n     <p ...>{{ product?.description }}</p>\n     <div ...>{{ product?.price }}</div>\n   </div>\n\n We change to:\n   ... [attr.src]=\"(product$ | async)?.image\" ... [alt]=\"(product$ | async)?.name\" ...\n   <h1 ...>{{ (product$ | async)?.name }}</h1>\n   ... and similarly for description and price.\n\n Additionally, note that the rule example had a typo (lenght) but we are not introducing typos. We must be cautious about the original code.\n\n However, note the rule checklist: \"Component still compiles and the UI shows the same data (fix any typo like `lenght` → `length` in the template).\"\n\n In this case, there are no typos (like \"lenght\") in the provided template.\n\n Steps for the .ts file:\n\n   - Import AsyncPipe from '@angular/common'\n   - Add to the component decorator: `imports: [AsyncPipe]`\n   - Change the class:\n        Remove `product: ...` and `ngOnInit`\n        Add `product$ = this.productService.getProduct();`\n\n   - Also, note that the class name is `App`. We might want to change it to `AppComponent` but the rule doesn't require that unless it's necessary for the refactoring? Actually, the rule example did change to `UserComponent` but that was just an example. We should preserve the class name unless we have a good reason? The rule says: preserve existing behavior. So we leave the class name as `App`.\n\n   However, note: the rule example had a class name change. But in the provided code, the class name is `App`. We are not required to change the class name unless it's part of the rule? The rule doesn't say so. So we keep `App`.\n\n   But wait: the rule example changed the class name for some reason? Actually, it was just an example. We are to fix the violation without changing behavior. So we leave the class name.\n\n Steps for the .html file:\n\n   Replace every `product` with `(product$ | async)` and wrap the access in optional chaining (so `product?.name` becomes `(product$ | async)?.name`).\n\n   However, note that the rule example did: `{{ (items$ | async)?.lenght }}` but we are fixing to `length`? Actually, in our case the property is `name`, `description`, `price` and they are exactly as they are.\n\n   Important: The template uses `[attr.src]=\"product?.image\"` and `[alt]=\"product?.name\"`. We change these to:\n        [attr.src]=\"(product$ | async)?.image\"\n        [alt]=\"(product$ | async)?.name\"\n\n   And similarly, the interpolation is `{{ product?.name }}` becomes `{{ (product$ | async)?.name }}`\n\n   But note: the interpolation might be inside double quotes? Actually, in the template it's written as `{{ ... }}`. So we change the inside.\n\n   However, note that the rule example had a backslash in `{{ product?.name \\}}` - that's because in markdown we escape braces. The actual code doesn't have backslashes. So in the code we write without backslashes.\n\n   Let's write the corrected template.\n\n   Also note: the rule example had a typo in the TO: \"lenght\" instead of \"length\", but we are not changing the existing product property names.\n\n   We are replacing:\n        product?.name   -> (product$ | async)?.name\n        product?.description -> (product$ | async)?.description\n        product?.price -> (product$ | async)?.price\n        product?.image -> (product$ | async)?.image\n\n   But note: the `product` in the template is sometimes used as `product` (without optional chaining) but the original code uses `product?....` which is safe because the initial value is null. However, the async pipe will emit null first (or maybe undefined) until the data arrives. So we keep the optional chaining.\n\n   Actually, the async pipe will emit null initially because the Product type might be `Product | null`. So we need the optional chaining.\n\n Implementation:\n\n   We are going to generate two fixed files: app.ts (with the changes) and app.html (with the changes).\n\n Let's write the fixed app.ts:\n\n   Before:\n        import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\n        import { Product } from \"./product.model\";\n        import { ProductService } from \"./product.service\";\n\n        @Component({\n          selector: \"app-root\",\n          templateUrl: \"./app.html\",\n        })\n        export class App implements OnInit {\n          private productService = inject(ProductService);\n          product: Product | null = null;\n\n          ngOnInit(): void {\n            this.productService.getProduct().subscribe((data) => {\n              this.product = data;\n            });\n          }\n        }\n\n   After:\n\n        import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\"; // note: we remove OnInit from the import because we no longer use it, but the rule says to remove the `implements OnInit` and the empty ngOnInit.\n        // We add import for AsyncPipe\n        import { AsyncPipe } from \"@angular/common\";\n        import { Product } from \"./product.model\";\n        import { ProductService } from \"./product.service\";\n\n        @Component({\n          selector: \"app-root\",\n          templateUrl: \"./app.html\",\n          imports: [AsyncPipe], // added AsyncPipe to imports\n        })\n        export class App {\n          private productService = inject(ProductService);\n          product$ = this.productService.getProduct(); // replaces the product property and the subscription\n        }\n\n   We removed:\n        implements OnInit\n        ngOnInit method\n        the product property\n\n   We added:\n        import { AsyncPipe } from \"@angular/common\";\n        imports: [AsyncPipe] in the component decorator\n\n   Note: We changed `inject` to be used without the type parameters? Actually, the original code used `inject(ProductService)` which is fine. We don't change that.\n\n   Also note: the original code imported `OnInit` from @angular/core? We can remove it from the import because we don't use it anymore.\n\n   Now for the app.html:\n\n        We replace every occurrence of \"product\" (that is used to access the data) with \"(product$ | async)\" but with the following caveats:\n\n        - We must not replace the word \"product\" in the class names or other contexts? The template only uses \"product\" in the context of the data.\n\n        Specifically:\n\n          [attr.src]=\"product?.image\" -> [attr.src]=\"(product$ | async)?.image\"\n          [alt]=\"product?.name\" -> [alt]=\"(product$ | async)?.name\"\n          {{ product?.name }} -> {{ (product$ | async)?.name }}\n          {{ product?.description }} -> {{ (product$ | async)?.description }}\n          {{ product?.price }} -> {{ (product$ | async)?.price }}\n\n        Note: the template does not have any other occurrence of \"product\".\n\n   Let's write the fixed template.\n\n   However, note: the rule example had a typo in the TO (lenght) but we are not making such typos.\n\n   Also note: the rule requires that we update the template. We are updating every place where `product` was used to display data.\n\n   But note: the product might be null until the observable emits? Actually, the async pipe will handle the null because we use optional chaining. So we are safe.\n\n   One more thing: the rule says to use optional chaining (which we are doing) because the value can be null/undefined.\n\n   Now, let's write the fixed files.\n\n   Important: We must return the FULL updated file for the .ts file (the rule says: \"Return the FULL updated file\", so we output the entire app.ts with the changes). But note: the rule says \"Modify ONLY the reported location\", but the violation spans multiple files and we are required to fix both.\n\n   However, the problem says: \"Your task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\" and then \"Modify ONLY the reported location.\" - but the reported location is only one line (17-17) in the .ts file? But the rule requires updating two files.\n\n   Clarification: the rule definition says that the refactor always involves two places: the .ts and the template.\n\n   Since the problem says: \"You will be provided rule definition and places where this rule was violated.\" and the violation location is given as \"src/app/app.ts\" at line 17-17, we are expected to fix both files.\n\n   However, the instruction says: \"Return the FULL updated file.\" meaning the .ts file? But the problem also says: \"it can appear multiple times in different files\". So we are to return the .ts file that was reported? But the rule requires updating two files.\n\n   How to proceed?\n\n   Looking at the example in the rule: they showed both files.\n\n   But the instruction in the problem says: \"Return the FULL updated file.\" meaning the one that was reported (the .ts file) and then we are expected to also fix the template? However, the problem says:\n\n        \"You will be provided ... places where this rule was violated.\"\n\n        The violation location is given as:\n\n          ### src/app/app.ts\n\n          Location: 17-17\n\n        And then it shows the full file content for both the .ts and the .html.\n\n   The problem says: \"Return the FULL updated file.\".\n\n   But note: the example output in the rule had both files. However, the problem says \"Return the FULL updated file.\" (singular) and the violation location is a .ts file.\n\n   How did the rule example in the problem statement present? It showed two files in the FROM and TO.\n\n   But in the problem we are solving, the task is: we are given a violation in a specific file (app.ts) and we must fix it. However, the rule requires also fixing the template.\n\n   Since the problem states: \"Modify ONLY the reported location\", but note the rule definition says the refactor always involves two places. So we are allowed to fix two files? The problem says: \"the component uses `templateUrl: './app.html'`, you must edit **both** `app.ts` and `app.html`\".\n\n   Therefore, we are expected to output the fixed .ts file and also the fixed .html file? But the problem says \"Return the FULL updated file.\" (singular) and the violation location is the .ts file.\n\n   However, the instruction at the top: \"Return the FULL updated file.\" - meaning the one that was reported? But then we wouldn't fix the template and the rule wouldn't be satisfied.\n\n   Let me re-read:\n\n        \"You will be provided rule definition and places where this rule was violated.\"\n\n        Then it shows:\n\n          ### src/app/app.ts\n\n          Location: 17-17\n\n          ### Full File Content\n\n          <file content for app.ts and also app.html>\n\n        So they gave two files? Actually, they showed the content of both.\n\n        And the rule definition says: \"if the component uses templateUrl, you must edit both\".\n\n        Therefore, we must return both fixed files? But the problem says: \"Return the FULL updated file.\" (singular) and \"Do not explain your changes.\"\n\n        How to format the response? The problem example output didn't specify, but note: in the rule definition example they showed two files.\n\n        However, the problem says: \"Return the FULL updated file.\" meaning the one that was reported? But then we would only return the .ts file and the template would be broken.\n\n        Alternatively, perhaps the task is to fix the reported file (the .ts) and then the template fix is implied? But the problem says: \"Do NOT refactor unrelated code.\" and the template is not in the reported location.\n\n        But the rule specifically says: \"You must update the template\".\n\n        Considering the problem statement: \"IMPORTANT RULES: - Modify ONLY the reported location.\" - the reported location is the .ts file at line 17-17. However, the rule definition says that the fix must include two files.\n\n        This is a conflict. But note: the rule definition says: \"This refactor always involves **two places**\".\n\n        How did the example in the rule show? They showed both files.\n\n        Given the ambiguity, I think the intended solution is to return two fixed files? But the problem says \"Return the FULL updated file.\" (singular).\n\n        However, the problem also says: \"the component uses templateUrl: './app.html'\", meaning we have two files. And the rule requires both.\n\n        Since the problem showed two files in the \"Full File Content\", and we are to fix two files, we must output both.\n\n        But the instruction says: \"Return the FULL updated file.\" - so perhaps we return two blocks? One for each file.\n\n        How to format? The problem doesn't specify.\n\n        Let me check the problem statement:\n\n          \"Return the FULL updated file.\"\n\n          and\n\n          \"Do not explain your changes.\"\n\n        And the output format in the problem statement example was:\n\n          ```markdown\n          # <rule_id>\n          ... [rule details] ...\n\n          ## Files\n\n          ### <file name>\n\n          Location: <from line>-<to line>\n\n          ### Full File Content\n\n          <file content>\n          ```\n\n        But in our response, we are not to produce that markdown. We are to produce the fixed file.\n\n        Actually, the instruction says: \"Return the FULL updated file.\" meaning we output the entire fixed file (the one that was reported) as code.\n\n        However, we have two files to fix.\n\n        How did the rule example in the problem statement present the fix? They showed:\n\n          **TO**\n\n          src/app/app.ts\n\n          ```typescript\n          ... fixed ts ...\n          ```\n\n          src/app/app.html\n\n          ```html\n          ... fixed html ...\n          ```\n\n        So I think we are expected to output both files.\n\n        But the problem says: \"Return the FULL updated file.\" (singular) and the violation location is the .ts file.\n\n        After re-reading the problem: \"Your task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\".\n\n        So a violation might be in one file (the .ts) but the fix requires two files. How is that handled?\n\n        Given that the rule definition explicitly says to edit two files, and the problem provided both files in the input, I think we are to output two fixed files.\n\n        However, the problem says: \"Modify ONLY the reported location.\" - the reported location is the .ts file. But the rule definition overrides that? Because it says: \"This refactor always involves **two places**\".\n\n        How to resolve?\n\n        Let's look at the problem statement: \"IMPORTANT RULES: - Modify ONLY the reported location.\".\n\n        The reported location is a specific file and line. But the rule requires a change in the template too. The rule definition is part of the problem.\n\n        Since the rule definition states that the refactor always involves two places, we are allowed to change two places.\n\n        And the problem provided both files (in the \"Full File Content\" section for the violation) so we are expected to fix both.\n\n        Therefore, we will output:\n\n          Fixed app.ts (as the full file)\n          Fixed app.html (as the full file)\n\n        But the problem says: \"Return the FULL updated file.\" - meaning one file? Or more?\n\n        Given the example in the rule definition, I think they expect to see both.\n\n        However, the problem says: \"Return the FULL updated file.\" (singular) and the violation location is one file. But note: the violation is about subscription management, and the unsafe code is in the .ts file, but the fix also requires the template.\n\n        How about: the problem expects us to return the fixed .ts file? And then separately we would have to fix the template? But the problem says: \"the refactor is incomplete if only the `.ts` file is changed\".\n\n        Therefore, to do the refactor properly, we must fix both. And the automated pass should fix both.\n\n        Since the problem provided both files in the input, we will return both fixed files.\n\n        Format:\n\n          We output the fixed .ts file first (as a code block with the file name and language) and then the fixed .html file.\n\n        But the instruction says: \"Return the FULL updated file.\" - and we are returning two files? The problem doesn't specify.\n\n        Alternatively, the problem might only want the .ts file? But then the rule wouldn't be satisfied.\n\n        After careful thought: the rule violation is reported on the .ts file (at line 17-17). The problem says: \"Return the FULL updated file.\" meaning the .ts file. However, the fix requires also updating the template. So if we only return the .ts file, the system might have a separate step that fixes the template? But the rule says we must fix both.\n\n        Given the problem statement, I think it's safe to assume that the automated pass will run on both files? But the violation was only reported in the .ts file.\n\n        Actually, the rule might have a separate violation for the template? But the rule description says: \"You must update the template\".\n\n        How about: we output only the fixed .ts file? And then hope that the system also processes the template? But the problem says: \"the component uses templateUrl: './app.html'\", meaning the template is separate and the violation was not reported on it.\n\n        However, the rule definition says: \"if the component uses templateUrl: './app.html', you must edit both\".\n\n        So the fix is incomplete without the template.\n\n        Given the ambiguity, I will follow the rule example: in the rule example, they showed both files in the TO. So I'll output both.\n\n        How to format? Since the problem didn't specify, and to match the input format (which showed both files), I will output:\n\n          src/app/app.ts\n\n          ```typescript\n          ... fixed content ...\n          ```\n\n          src/app/app.html\n\n          ```html\n          ... fixed content ...\n          ```\n\n        But note: the problem says \"Return the FULL updated file.\" (singular) and \"Do not explain your changes.\".\n\n        Alternatively, the problem might expect only the .ts file because the violation was reported at that location? And the template fix is considered a separate step? But the rule definition says it's part of the same refactor.\n\n        After re-examining the problem: the section \"Files\" shows:\n\n          ### src/app/app.ts\n\n          Location: 17-17\n\n          ### Full File Content\n\n          ... [both the ts and html] ...\n\n        So they are grouping the two files as one violation? Because the violation is the unsafe subscription which requires both.\n\n        Therefore, we are to fix both and return both.\n\n        I will output two code blocks, one for each file.\n\n        But the instruction says: \"Return the FULL updated file.\" (singular). However, the problem might be designed to accept two files.\n\n        Given the instructions, I think the safest is to return the fixed .ts file as the main response, because that's the location of the violation. But the rule says the refactor is incomplete without the template.\n\n        How about we return the fixed .ts file and include in the response the fixed .html file as a comment? But that would be explaining.\n\n        The problem says: \"Do not explain your changes.\"\n\n        Another idea: the automated system expects only the .ts file? And then it has a separate mechanism for the template? But the rule definition doesn't say that.\n\n        After reading the rule definition: \"if the component uses `templateUrl: './app.html'`, you must edit **both** `app.ts` and `app.html`\". So the fix is two files.\n\n        And the problem provided both in the input.\n\n        Therefore, I will output both.\n\n        Format:\n\n          We output the fixed app.ts as a code block (with the file name and language) and then the fixed app.html as another code block.\n\n        Since the problem didn't specify how to return multiple files, and to be consistent with the problem input (which showed both), I do:\n\n          src/app/app.ts\n\n          ```typescript\n          ... code ...\n          ```\n\n          src/app/app.html\n\n          ```html\n          ... code ...\n          ```\n\n        Now, let's write the code.\n\n        For app.ts:\n\n          We remove the import of OnInit, add import for AsyncPipe, add imports: [AsyncPipe] in the component, remove the product property and the ngOnInit.\n\n        For app.html:\n\n          Replace every `product` in the data-binding with `(product$ | async)` and keep the optional chaining.\n\n        But note: the template uses `[attr.src]=\"product?.image\"` - we replace `product?.image` with `(product$ | async)?.image`\n\n        However, note: the interpolation `{{ product?.name }}` becomes `{{ (product$ | async)?.name }}`\n\n        But what about the `[attr.src]` binding? It's an attribute binding. We do the same.\n\n        Also note: the `product` in `[alt]=\"product?.name\"` becomes `(product$ | async)?.name`\n\n        We do not change the word \"product\" in the class names or elsewhere? The template doesn't have any.\n\n        Let's generate the fixed app.html.\n\n        Fixed app.html:\n\n          <div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n            <div\n              class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n            >\n              <div class=\"flex flex-col md:flex-row\">\n                <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n                  <img\n                    class=\"h-40 w-40 object-contain\"\n                    [attr.src]=\"(product$ | async)?.image\"\n                    [alt]=\"(product$ | async)?.name\"\n                  />\n                </div>\n                <div class=\"md:w-2/3 p-6 space-y-4\">\n                  <h1 class=\"text-2xl font-semibold text-slate-900\">\n                    {{ (product$ | async)?.name }}\n                  </h1>\n                  <p class=\"text-sm text-slate-600 leading-relaxed\">\n                    {{ (product$ | async)?.description }}\n                  </p>\n                  <div class=\"text-lg font-bold text-slate-900\">{{ (product$ | async)?.price }}</div>\n                </div>\n              </div>\n            </div>\n          </div>\n\n        Now, note: in the interpolation, we have to be cautious: the original had `{{ product?.name }}` and we are replacing with `{{ (product$ | async)?.name }}`.\n\n        Also, the note about the backslash in the problem example: that was just for markdown. We write without backslashes.\n\n        Let's write the fixed files.\n\n        One more note: the rule example had a typo in the TO (lenght) but we are not making such typos. We have `price` and `name` etc. as they were.\n\n        Now, code generation.\n\n        For app.ts:\n\n          Original imports: \n            import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\n            import { Product } from \"./product.model\";\n            import { ProductService } from \"./product.service\";\n\n          We remove OnInit from the first import because we are no longer using it.\n\n          Then we add: import { AsyncPipe } from \"@angular/common\";\n\n          Then in the component decorator, we add `imports: [AsyncPipe]`.\n\n          Then we remove the `product` property and the `ngOnInit`.\n\n          Then we add `product$ = this.productService.getProduct();`\n\n          Also, note: we remove `implements OnInit`.\n\n        Fixed app.ts:\n\n          import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\";\n          import { AsyncPipe } from \"@angular/common\";\n          import { Product } from \"./product.model\";\n          import { ProductService } from \"./product.service\";\n\n          @Component({\n            selector: \"app-root\",\n            templateUrl: \"./app.html\",\n            imports: [AsyncPipe],\n          })\n          export class App {\n            private productService = inject(ProductService);\n            product$ = this.productService.getProduct();\n          }\n\n        Note: the `ChangeDetectionStrategy` import is still there but we don't use it? We can remove it? The rule says: minimal change. Since we are not using it, and the minimal change is to remove only what is necessary, we leave it? Or remove it? The rule says preserve existing behavior. Removing unused import doesn't change behavior, but it's not required by the rule. However, the rule says \"minimal change\". So we leave it? Actually, the original code didn't use ChangeDetectionStrategy either. So we can remove it? But the rule says \"minimal change\". We are only required to fix the violation. We don't have to clean up other unused imports.\n\n        However, the rule step 5 says: \"Tidy the class\" - but that was about the class, not imports.\n\n        We are not required to remove unused imports. But the problem says: \"minimal change\". So if we remove an unused import, is that minimal? Actually, it's one extra edit. The rule doesn't require it.\n\n        But note: the rule example didn't remove any extra import. They only added the necessary ones.\n\n        So we leave the `ChangeDetectionStrategy` import even though it's unused? Yes, because the problem says minimal change. We don't want to change anything beyond what is necessary.\n\n        However, we are removing `OnInit` from the import, so we are changing that import. We can write:\n\n          import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\";\n\n        instead of \n\n          import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\n\n        So we change the import to remove OnInit.\n\n        So the first import becomes: `import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\";`\n\n        Also, note: the original code had `inject` in the productService assignment? But we are using `inject` without having imported it? Actually, we are importing `inject` from @angular/core (it's in the same import as Component). So it's fine.\n\n        Now, let's write the fixed app.ts.\n\n        Fixed app.ts code:\n\n          import { ChangeDetectionStrategy, Component, inject } from \"@angular/core\";\n          import { AsyncPipe } from \"@angular/common\";\n          import { Product } from \"./product.model\";\n          import { ProductService } from \"./product.service\";\n\n          @Component({\n            selector: \"app-root\",\n            templateUrl: \"./app.html\",\n            imports: [AsyncPipe],\n          })\n          export class App {\n            private productService = inject(ProductService);\n            product$ = this.productService.getProduct();\n          }\n\n        And fixed app.html as above.\n\n        Now, output.\n\n        We output:\n\n          src/app/app.ts\n\n          ```typescript\n          [the fixed ts code]\n          ```\n\n          src/app/app.html\n\n          ```html\n          [the fixed html code]\n          ```\n\n        But note: the problem says \"Return the FULL updated file.\" and \"Do not explain\", so we don't add any explanation.\n\n        However, the problem example input had a markdown with the file name. So we follow that.\n\n        Alternatively, if the system expects only one file (the one that was reported), then we would only output the .ts file? But then the fix is incomplete.\n\n        Given the rule definition, I believe we must output both.\n\n        Let's do it.\n",
+      "buildResult": {
+        "status": "success",
+        "message": "Application built successfully!",
+        "safetyWebReportJson": [
+          {
+            "summaryVersion": "0.1.0",
+            "packageName": "app",
+            "packageVersion": "0.0.0",
+            "packagePath": ".",
+            "violations": []
+          }
+        ]
+      },
+      "serveTestingResult": {
+        "runtimeErrors": "",
+        "userJourneyAgentOutput": null
+      },
+      "attempt": 0,
+      "lintResult": {
+        "status": "warning",
+        "message": "Linting did not find any results",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.subscription-management.async",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.subscription-management.async",
+                  "message": {
+                    "text": "Rule angular.subscription-management.async found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 9,
+                          "startColumn": 390,
+                          "endLine": 9,
+                          "endColumn": 406
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ruleId": "angular.subscription-management.async",
+                  "message": {
+                    "text": "Rule angular.subscription-management.async found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 10,
+                          "startColumn": 434,
+                          "endLine": 10,
+                          "endColumn": 450
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ruleId": "angular.subscription-management.async",
+                  "message": {
+                    "text": "Rule angular.subscription-management.async found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 15,
+                          "startColumn": 589,
+                          "endLine": 15,
+                          "endColumn": 605
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ruleId": "angular.subscription-management.async",
+                  "message": {
+                    "text": "Rule angular.subscription-management.async found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 18,
+                          "startColumn": 703,
+                          "endLine": 18,
+                          "endColumn": 719
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "ruleId": "angular.subscription-management.async",
+                  "message": {
+                    "text": "Rule angular.subscription-management.async found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 20,
+                          "startColumn": 818,
+                          "endLine": 20,
+                          "endColumn": 834
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

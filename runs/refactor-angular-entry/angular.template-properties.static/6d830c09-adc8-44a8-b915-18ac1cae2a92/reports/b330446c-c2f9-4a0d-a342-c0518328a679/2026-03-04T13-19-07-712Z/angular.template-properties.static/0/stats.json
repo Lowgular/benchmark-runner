@@ -1,0 +1,9 @@
+{
+  "fileSize": 1452,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.690 seconds]\n\n\n✘ [ERROR] TS2724: '\"@angular/core/rxjs-interop\"' has no exported member named 'Signal'. Did you mean 'toSignal'? [plugin angular-compiler]\n\n    src/app/app.ts:2:9:\n      2 │ import { Signal, toSignal } from \"@angular/core/rxjs-interop\";\n        ╵          ~~~~~~\n\n\n✘ [ERROR] TS2729: Property 'productService' is used before its initialization. [plugin angular-compiler]\n\n    src/app/app.ts:13:60:\n      13 │ ...nal<Product | null> = toSignal(this.productService.getProduct(), {\n         ╵                                        ~~~~~~~~~~~~~~\n\n  'productService' is declared here.\n\n    src/app/app.ts:17:14:\n      17 │   constructor(private productService: ProductService) {}\n         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

@@ -1,0 +1,20 @@
+{
+  "fileSize": 488,
+  "buildResult": {
+    "status": "success",
+    "message": "Application built successfully!",
+    "safetyWebReportJson": [
+      {
+        "summaryVersion": "0.1.0",
+        "packageName": "app",
+        "packageVersion": "0.0.0",
+        "packagePath": ".",
+        "violations": []
+      }
+    ]
+  },
+  "serveTestingResult": {
+    "runtimeErrors": "",
+    "userJourneyAgentOutput": null
+  }
+}

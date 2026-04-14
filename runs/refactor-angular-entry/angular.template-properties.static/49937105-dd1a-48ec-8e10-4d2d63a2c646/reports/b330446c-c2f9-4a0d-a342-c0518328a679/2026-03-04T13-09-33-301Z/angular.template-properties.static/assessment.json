@@ -1,0 +1,216 @@
+{
+  "promptDef": {
+    "name": "angular.template-properties.static",
+    "prompt": "# angular-template-properties-static-to-signal\n\n**Common mistake:** Migrating only the TypeScript to a signal and **not** updating the template. The template must **call** the signal: use `user()?.name`, not `user?.name`. Otherwise the rule reports **signal-binding-error** instead of correct signal usage.\n\nYou must edit **both** the component TypeScript file and the template file (e.g. app.html). Do not skip the template. Prefer updating the template file first, then the TypeScript.\n\n## Refactor Steps\n\n**Rule:** Any template that reads the property must now call it: `prop` → `prop()`, and `prop?.x` → `prop()?.x`.\n\n### 1. Update the template file (do this first)\n\n- In every template that uses this property (e.g. app.html), replace **property** with **property()**: `product` → `product()`, `product?.x` → `product()?.x`. Do this for every binding (interpolations, attribute bindings, etc.).\n- **If you do not change the template, the refactor is incomplete and will fail** (reported as signal-binding-error).\n\n### 2. Component TypeScript file\n\n1. Find the property that should be changed.\n2. Change the type of the property from a normal TypeScript type to `Signal<T>` with that type as the generic (e.g. `Signal<User | undefined>`).\n3. Find the place where the property is assigned and use that expression to initialize the signal (e.g. `toSignal(...)`).\n\n- If it is set inside an RxJS callback (e.g. `.subscribe` or `tap`), prefer using `toSignal` directly.\n\n4. Clean up the old code:\n\n- Remove the old property assignment.\n- If nothing else remains in the callback/method body, remove the entire callback/method.\n- If the call site (e.g. `ngOnInit`, `constructor`, `effect`) is now empty, remove it too (and remove `implements OnInit` from the class if applicable).\n\n### 3. Template file(s) — reminder\n\n- In every template that binds to the property, change **property** to **property()** — e.g. `user?.name` → `user()?.name`.\n- If you only change the .ts file and leave the .html with `product?.…`, the refactor is wrong and will be reported as **signal-binding-error**.\n\n### Before finishing — checklist\n\n- [ ] Component uses `Signal<T>` and `toSignal` (or equivalent).\n- [ ] **Template file(s) use `property()` everywhere instead of `property`** (e.g. `product()?.name` not `product?.name`).\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject, OnInit } from \"@angular/core\";\nimport { User, UserService } from \"./user.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App implements OnInit {\n  private readonly userService = inject(UserService);\n  user: User | undefined;\n\n  ngOnInit(): void {\n    this.userService.getUser().subscribe((user) => {\n      this.user = user;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ user?.name \\}}</p>\n<p>{{ user?.email \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { User, UserService } from \"./user.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App {\n  private readonly userService = inject(UserService);\n\n  protected user: Signal<User | undefined> = toSignal(\n    this.userService.getUser(),\n    {\n      initialValue: undefined,\n    },\n  );\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ user()?.name \\}}</p>\n<p>{{ user()?.email \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 12-12\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n\n**TO:** Apply the same pattern as in \"Component with explicit Default\" above: component uses `Signal<T>` and `toSignal`; template uses `property()` everywhere instead of `property` (e.g. `product()` not `product` in all bindings).\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    { initialValue: null },\n  );\n}"
+    },
+    {
+      "filePath": "src/app/app.html",
+      "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name \\ }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description \\ }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) \\ }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "warning",
+      "message": "Linting did not find any results",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.template-properties.signal",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.template-properties.signal",
+                "message": {
+                  "text": "Rule angular.template-properties.signal found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.ts"
+                      },
+                      "region": {
+                        "startLine": 14,
+                        "startColumn": 3,
+                        "endLine": 17,
+                        "endColumn": 5
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "error",
+      "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.736 seconds]\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 18 in expression [ product()?.name \\ ] at the end of the expression [ product()?.name \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@14:10 [plugin angular-compiler]\n\n    src/app/app.html:15:10:\n      15 │           {{ product()?.name \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 18 in expression [ product()?.name \\ ]' at column 19 in [ product()?.name \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@14:10 [plugin angular-compiler]\n\n    src/app/app.html:15:10:\n      15 │           {{ product()?.name \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 25 in expression [ product()?.description \\ ] at the end of the expression [ product()?.description \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@17:10 [plugin angular-compiler]\n\n    src/app/app.html:18:10:\n      18 │           {{ product()?.description \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 25 in expression [ product()?.description \\ ]' at column 26 in [ product()?.description \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@17:10 [plugin angular-compiler]\n\n    src/app/app.html:18:10:\n      18 │           {{ product()?.description \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 31 in expression [ product()?.price?.toFixed(2) \\ ] at the end of the expression [ product()?.price?.toFixed(2) \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@20:11 [plugin angular-compiler]\n\n    src/app/app.html:21:11:\n      21 │           ${{ product()?.price?.toFixed(2) \\ }}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 31 in expression [ product()?.price?.toFixed(2) \\ ]' at column 32 in [ product()?.price?.toFixed(2) \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@20:11 [plugin angular-compiler]\n\n    src/app/app.html:21:11:\n      21 │           ${{ product()?.price?.toFixed(2) \\ }}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+      "errorType": "Angular Diagnostic"
+    },
+    "serveTestingResult": null,
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    { initialValue: null },\n  );\n}"
+      },
+      {
+        "filePath": "src/app/app.html",
+        "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name \\ }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description \\ }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) \\ }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Template Properties",
+            "description": "For component state used in templates, use signals (preferred) or RxJS observables. Do not use plain class properties for template-bound state.",
+            "id": "template-properties",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Pass\nsrc/app/app.ts.13.2.16.4"
+          }
+        ]
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": []
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    { initialValue: null },\n  );\n}"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name \\ }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description \\ }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) \\ }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1668,
+        "outputTokens": 2387,
+        "totalTokens": 4055,
+        "thinkingTokens": 2157,
+        "cost": 0
+      },
+      "reasoning": "We need to apply the rule to the provided file. It's an Angular component that reads a signal property named `product` which currently is a normal property assigned inside subscription. The template uses product?.name etc. Must convert to signal.\n\nThe violation location is given: Location: 12-12 (presumably line 12 in app.ts). The full file content includes app.ts and app.html. We must modify both files appropriately, applying minimal changes. According to rule: update template first, then component TS.\n\nThus we need to produce updated file content with modifications.\n\nWe need to identify the property: product is assigned in ngOnInit via subscription. So we need to change to a signal using toSignal.\n\nImplementation steps:\n\n- Import Signal and toSignal from @angular/core.\n- Change property type to Signal<Product | null> perhaps.\n- Use toSignal(this.productService.getProduct()) maybe with initialValue: null.\n- Remove subscription and ngOnInit method? According to rule: remove old property assignment, if nothing else remains in callback/method body, remove entire callback/method. Also remove implements OnInit if applicable.\n\nWe need to keep component class, maybe still implements OnInit? Could remove implements OnInit.\n\nAlso need to adjust template: replace every occurrence of product?.name, product?.description, product?.price?.toFixed(2), product?.image, product?.name alt etc with product()?.name etc. Also change interpolation bindings.\n\nIn template, there are attribute bindings: [attr.src]=\"product?.image\" and [alt]=\"product?.name\". Also interpolation: {{ product?.name }}, {{ product?.description }}, {{ product?.price?.toFixed(2) }}.\n\nWe need to change these to product()?.image, product()?.name, product()?.description, product()?.price()?.toFixed(2)? Actually price is a number; product?.price is a number, but product()?.price will be a number? The signal returns Product | null; product may have price: number. So product()?.price is number, can call toFixed via method? toFixed is method on number, can be called directly: product()?.price?.toFixed(2). That's fine.\n\nThus template modifications: each occurrence of product?.X becomes product()?.X.\n\nAlso need to replace product?.name with product()?.name inside alt attribute.\n\nNow component TS: Replace product property declaration with Signal<Product | null> = toSignal(...). Since subscription uses productService.getProduct() observable; we can use toSignal(this.productService.getProduct()). Use initialValue: null.\n\nRemove ngOnInit method and subscription. Also remove product property initial value and assignment.\n\nAlso need to remove import of OnInit maybe.\n\nAlso need to adjust change detection? Not needed.\n\nNow final file content: Provide both app.ts and app.html updated.\n\nThe user wants \"Return the FULL updated file.\" Probably they want the full file content with modifications. Since there are multiple files, we need to output the updated file content for each file indicated. The \"Files\" section lists src/app/app.ts and src/app/app.html. We need to output the entire content of each file after changes.\n\nThus we should output something like:\n\n### src/app/app.ts\n\nLocation: 12-12 (maybe not needed in output but we can include). Then Full File Content: updated code.\n\n### src/app/app.html\n\nFull File Content: updated code.\n\nBut the instruction: \"Return the FULL updated file.\" Maybe they want the whole file content for each file.\n\nThus we will output a block with the updated file content for each file.\n\nWe must not explain changes.\n\nThus produce something like:\n\n```\n### src/app/app.ts\nLocation: 12-12\n\nFull File Content\n<updated code>\n```\n\nBut the format earlier shows they embed file name and then Full File Content. We can follow similar.\n\nProbably just output the updated code for both files.\n\nLet's craft updated app.ts:\n\n```\nimport { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n  protected userSignal: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    { initialValue: null },\n  );\n}\n```\n\nBut the property name is product; we can keep productSignal variable named product maybe.\n\nBetter: product: Signal<Product | null> = toSignal(this.productService.getProduct(), { initialValue: null });\n\nThus:\n\n```\nprotected product: Signal<Product | null> = toSignal(this.productService.getProduct(), { initialValue: null });\n```\n\nBut the class doesn't need to implement OnInit.\n\nThus final app.ts:\n\n```\nimport { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    { initialValue: null },\n  );\n}\n```\n\nWe removed ngOnInit and subscription.\n\nNow app.html modifications:\n\nChange each occurrence.\n\nOriginal template lines:\n\n```\n<img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n```\n\nChange to:\n\n```\n<img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n```\n\nThen:\n\n```\n<h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n```\n\nChange to:\n\n```\n<h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name \\}}\n        </h1>\n```\n\nSimilarly:\n\n```\n<p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n```\n\nChange to:\n\n```\n<p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description \\}}\n        </p>\n```\n\nAnd:\n\n```\n<div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n```\n\nChange to:\n\n```\n<div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) \\}}\n        </div>\n```\n\nMake sure to keep escaping backslashes? The original had backslashes before } maybe for escaping? It seems they used `{{ product?.name \\}}` with a backslash before closing braces? Actually it's weird; maybe they had spaces? We'll preserve same formatting but replace property?. with product()?.\n\nThus final app.html:\n\n```\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n\nNow produce output with file sections.\n\nThus final answer should include both file updates.\n\nWe must not explain.\n\nProceed.\n",
+      "buildResult": {
+        "status": "error",
+        "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.736 seconds]\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 18 in expression [ product()?.name \\ ] at the end of the expression [ product()?.name \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@14:10 [plugin angular-compiler]\n\n    src/app/app.html:15:10:\n      15 │           {{ product()?.name \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 18 in expression [ product()?.name \\ ]' at column 19 in [ product()?.name \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@14:10 [plugin angular-compiler]\n\n    src/app/app.html:15:10:\n      15 │           {{ product()?.name \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 25 in expression [ product()?.description \\ ] at the end of the expression [ product()?.description \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@17:10 [plugin angular-compiler]\n\n    src/app/app.html:18:10:\n      18 │           {{ product()?.description \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 25 in expression [ product()?.description \\ ]' at column 26 in [ product()?.description \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@17:10 [plugin angular-compiler]\n\n    src/app/app.html:18:10:\n      18 │           {{ product()?.description \\ }}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 31 in expression [ product()?.price?.toFixed(2) \\ ] at the end of the expression [ product()?.price?.toFixed(2) \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@20:11 [plugin angular-compiler]\n\n    src/app/app.html:21:11:\n      21 │           ${{ product()?.price?.toFixed(2) \\ }}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 31 in expression [ product()?.price?.toFixed(2) \\ ]' at column 32 in [ product()?.price?.toFixed(2) \\ ] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.template-properties.static/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.template-properties.static0IAVo2/src/app/app.html@20:11 [plugin angular-compiler]\n\n    src/app/app.html:21:11:\n      21 │           ${{ product()?.price?.toFixed(2) \\ }}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+        "errorType": "Angular Diagnostic"
+      },
+      "serveTestingResult": null,
+      "attempt": 0,
+      "lintResult": {
+        "status": "warning",
+        "message": "Linting did not find any results",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.template-properties.signal",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.template-properties.signal",
+                  "message": {
+                    "text": "Rule angular.template-properties.signal found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.ts"
+                        },
+                        "region": {
+                          "startLine": 14,
+                          "startColumn": 3,
+                          "endLine": 17,
+                          "endColumn": 5
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

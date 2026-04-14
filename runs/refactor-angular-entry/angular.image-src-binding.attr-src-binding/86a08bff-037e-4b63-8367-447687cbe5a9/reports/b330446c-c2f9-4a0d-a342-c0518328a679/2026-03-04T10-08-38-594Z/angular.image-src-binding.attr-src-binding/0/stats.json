@@ -1,0 +1,9 @@
+{
+  "fileSize": 868,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.877 seconds]\n\n\n✘ [ERROR] NG8002: Can't bind to 'ngSrc' since it isn't a known property of 'img'. [plugin angular-compiler]\n\n    src/app/app.html:9:10:\n      9 │           [ngSrc]=\"product?.image\"\n        ╵           ~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+    "errorType": "Angular Diagnostic"
+  },
+  "serveTestingResult": null
+}

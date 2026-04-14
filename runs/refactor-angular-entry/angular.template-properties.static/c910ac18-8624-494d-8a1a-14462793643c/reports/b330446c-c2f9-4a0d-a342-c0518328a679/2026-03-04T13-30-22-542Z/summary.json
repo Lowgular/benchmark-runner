@@ -1,0 +1,284 @@
+{
+  "id": "d646efa2-77b0-4494-b4a5-f14d90b83ade",
+  "group": "cfa3d512b4220c6aae45cdbaba70d26db244e6bd19f129afed0037df8f977d30",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.template-properties.static",
+        "prompt": "# angular-template-properties-static-to-signal\n\n**Common mistake:** Migrating only the TypeScript to a signal and **not** updating the template. The template must **call** the signal: use `user()?.name`, not `user?.name`. Otherwise the rule reports **signal-binding-error** instead of correct signal usage.\n\nYou must edit **both** the component TypeScript file and the template file (e.g. app.html). Do not skip the template. Prefer updating the template file first, then the TypeScript.\n\n## Refactor Steps\n\n**Rule:** Any template that reads the property must now call it: `prop` → `prop()`, and `prop?.x` → `prop()?.x`.\n\n### 1. Update the template file (do this first)\n\n- In every template that uses this property (e.g. app.html), replace **property** with **property()**: `product` → `product()`, `product?.x` → `product()?.x`. Do this for every binding (interpolations, attribute bindings, etc.).\n- **If you do not change the template, the refactor is incomplete and will fail** (reported as signal-binding-error).\n\n### 2. Component TypeScript file\n\n1. Find the property that should be changed.\n2. Change the type of the property from a normal TypeScript type to `Signal<T>` with that type as the generic (e.g. `Signal<User | undefined>`).\n3. Find the place where the property is assigned and use that expression to initialize the signal (e.g. `toSignal(...)`).\n\n- If it is set inside an RxJS callback (e.g. `.subscribe` or `tap`), prefer using `toSignal` directly.\n\n4. Clean up the old code:\n\n- Remove the old property assignment.\n- If nothing else remains in the callback/method body, remove the entire callback/method.\n- If the call site (e.g. `ngOnInit`, `constructor`, `effect`) is now empty, remove it too (and remove `implements OnInit` from the class if applicable).\n\n### 3. Template file(s) — reminder\n\n- In every template that binds to the property, change **property** to **property()** — e.g. `user?.name` → `user()?.name`.\n- If you only change the .ts file and leave the .html with `product?.…`, the refactor is wrong and will be reported as **signal-binding-error**.\n\n### Before finishing — checklist\n\n- [ ] Component uses `Signal<T>` and `toSignal` (or equivalent).\n- [ ] **Template file(s) use `property()` everywhere instead of `property`** (e.g. `product()?.name` not `product?.name`).\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject, OnInit } from \"@angular/core\";\nimport { User, UserService } from \"./user.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App implements OnInit {\n  private readonly userService = inject(UserService);\n  user: User | undefined;\n\n  ngOnInit(): void {\n    this.userService.getUser().subscribe((user) => {\n      this.user = user;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ user?.name \\}}</p>\n<p>{{ user?.email \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { User, UserService } from \"./user.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App {\n  private readonly userService = inject(UserService);\n\n  protected user: Signal<User | undefined> = toSignal(\n    this.userService.getUser(),\n    {\n      initialValue: undefined,\n    },\n  );\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ user()?.name \\}}</p>\n<p>{{ user()?.email \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 12-12\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n\n**TO:** Apply the same pattern as in \"Component with explicit Default\" above: component uses `Signal<T>` and `toSignal`; template uses `property()` everywhere instead of `property` (e.g. `product()` not `product` in all bindings).\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    {\n      initialValue: null,\n    },\n  );\n}\n"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "warning",
+          "message": "Linting did not find any results",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.template-properties.signal",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.template-properties.signal",
+                    "message": {
+                      "text": "Rule angular.template-properties.signal found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.ts"
+                          },
+                          "region": {
+                            "startLine": 15,
+                            "startColumn": 3,
+                            "endLine": 20,
+                            "endColumn": 5
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "success",
+          "message": "Application built successfully!",
+          "safetyWebReportJson": [
+            {
+              "summaryVersion": "0.1.0",
+              "packageName": "app",
+              "packageVersion": "0.0.0",
+              "packagePath": ".",
+              "violations": []
+            }
+          ]
+        },
+        "serveTestingResult": {
+          "runtimeErrors": "",
+          "userJourneyAgentOutput": null
+        },
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.ts",
+            "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    {\n      initialValue: null,\n    },\n  );\n}\n"
+          },
+          {
+            "filePath": "src/app/app.html",
+            "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Template Properties",
+                "description": "For component state used in templates, use signals (preferred) or RxJS observables. Do not use plain class properties for template-bound state.",
+                "id": "template-properties",
+                "scoreReduction": "10%",
+                "successPercentage": 1,
+                "category": "high-impact",
+                "groupingLabels": [
+                  "Components"
+                ],
+                "message": "Pass\nsrc/app/app.ts.14.2.19.4"
+              }
+            ]
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": []
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.ts",
+              "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    {\n      initialValue: null,\n    },\n  );\n}\n"
+            },
+            {
+              "filePath": "src/app/app.html",
+              "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+            }
+          ],
+          "usage": {
+            "inputTokens": 1597,
+            "outputTokens": 3606,
+            "totalTokens": 5203,
+            "thinkingTokens": 3465,
+            "cost": 0.0088914
+          },
+          "reasoning": "1.  **Analyze the Request:**\n    *   **Rule ID:** `angular-template-properties-static-to-signal`\n    *   **Goal:** Migrate a property from a standard TS property to a Signal (`Signal<T>`) and update the corresponding template to call it (`prop()`).\n    *   **Input:** Two files: `src/app/app.ts` and `src/app/app.html`.\n    *   **Context:** The component `App` has a property `product` initialized in `ngOnInit` via a subscription. The template uses `product` in interpolations and attribute bindings.\n    *   **Constraint:** Modify ONLY the reported locations (both files provided). Preserve existing behavior. Minimal change. Return FULL updated files.\n\n2.  **Step 1: Analyze `src/app/app.html` (Template):**\n    *   Current usage:\n        *   `[attr.src]=\"product?.image\"`\n        *   `[alt]=\"product?.name\"`\n        *   `{{ product?.name }}`\n        *   `{{ product?.description }}`\n        *   `{{ product?.price?.toFixed(2) }}`\n    *   Required change: Replace `product` with `product()` and `product?.` with `product()?.`.\n    *   Updated usage:\n        *   `[attr.src]=\"product()?.image\"`\n        *   `[alt]=\"product()?.name\"`\n        *   `{{ product()?.name }}`\n        *   `{{ product()?.description }}`\n        *   `{{ product()?.price?.toFixed(2) }}`\n\n3.  **Step 2: Analyze `src/app/app.ts` (Component):**\n    *   Current state:\n        *   `product: Product | null = null;`\n        *   `implements OnInit`\n        *   `constructor(private productService: ProductService) {}`\n        *   `ngOnInit(): void { this.productService.getProduct().subscribe((data) => { this.product = data; }); }`\n    *   Required changes:\n        *   Import `Signal` from `@angular/core`.\n        *   Import `toSignal` from `@angular/core/rxjs-interop`.\n        *   Change property type: `product: Product | null = null;` -> `product: Signal<Product | null>;` (or `readonly`/`protected` depending on style, usually `protected` or `readonly` is good practice with signals, but the example used `protected` in the user case, let's stick to the pattern. The example used `protected user`. I will use `protected` or `readonly` to be safe, or just standard public. The example used `protected`. Let's check the provided example: `protected user: Signal<User | undefined> = toSignal(...)`. Okay, I will use `protected` or just standard. Let's stick to the minimal change which implies keeping visibility similar. The original was public (default). The example shows `protected`. I will use `readonly` or `protected` to match the \"signal\" vibe, but strictly speaking, just changing the type is the requirement. Let's look at the example again. `protected user: ...`. I'll use `readonly` as it's very common for signals, or just stick to the example's `protected`. Let's use `readonly` as it's safer, but wait, the example used `protected`. Let's stick to the example's style: `protected`. Actually, the original code didn't have a modifier, so it's public. The example changed it to `protected`. I will follow the example's lead and make it `readonly` or `protected`. Let's go with `readonly` as it prevents reassignment which is correct for signals, but the example specifically used `protected`. Let's look at the example provided in the prompt: `protected user: Signal<User | undefined>`. Okay, I will use `protected`. Wait, looking at the example again, the original was `user: User | undefined;`, the result was `protected user: Signal<User | undefined>`.\n        *   Initialize with `toSignal`.\n        *   The source is `this.productService.getProduct()`.\n        *   The initial value is `null` (based on `product: Product | null = null`).\n        *   Remove `implements OnInit`.\n        *   Remove `ngOnInit` method.\n        *   Remove `constructor` if it's only used for injection (which it is). I can use `inject()` instead or keep the constructor. The example used `inject(UserService)` in the field declaration. The current code uses `constructor(private productService: ProductService)`. I should refactor to `inject` to match the \"clean up\" step (\"If nothing else remains in the callback/method body... remove it... If the call site... is now empty, remove it too\").\n        *   So: `private readonly productService = inject(ProductService);`.\n\n4.  **Refactoring `src/app/app.ts`:**\n\n    *   *Imports:* Add `Signal` to `@angular/core` imports. Add `toSignal` from `@angular/core/rxjs-interop`.\n    *   *Class:* Remove `implements OnInit`.\n    *   *Service Injection:* Change constructor injection to property injection using `inject`.\n    *   *Property:*\n        ```typescript\n        protected product: Signal<Product | null> = toSignal(\n          this.productService.getProduct(),\n          { initialValue: null }\n        );\n        ```\n    *   *Removal:* Remove `constructor` and `ngOnInit`.\n\n5.  **Refactoring `src/app/app.html`:**\n\n    *   Replace `product?.` with `product()?.`.\n\n6.  **Reviewing the output format:**\n    *   The prompt asks for the FULL updated file.\n    *   It lists two files. I need to provide the content for both.\n\n7.  **Drafting the content:**\n\n    *   **File: src/app/app.ts**\n        ```typescript\n        import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\n        import { toSignal } from \"@angular/core/rxjs-interop\";\n        import { Product } from \"./product.model\";\n        import { ProductService } from \"./product.service\";\n\n        @Component({\n          selector: \"app-root\",\n          templateUrl: \"./app.html\",\n          styleUrl: \"./app.css\",\n          changeDetection: ChangeDetectionStrategy.Default,\n        })\n        export class App {\n          private readonly productService = inject(ProductService);\n\n          protected product: Signal<Product | null> = toSignal(\n            this.productService.getProduct(),\n            {\n              initialValue: null,\n            }\n          );\n        }\n        ```\n        *Self-Correction on `protected` vs `readonly`:* The example used `protected`. The original code had no modifier (public). I will use `readonly` on the signal itself because signals are generally readonly references, but the template needs access. `protected` works. `public` works. The example used `protected`. I'll stick with `protected` to match the example style. Actually, looking at the example closely: `protected user: Signal<User | undefined>`. I will use `protected`.\n\n    *   **File: src/app/app.html**\n        ```html\n        <div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n          <div\n            class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n          >\n            <div class=\"flex flex-col md:flex-row\">\n              <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n                <img\n                  class=\"h-40 w-40 object-contain\"\n                  [attr.src]=\"product()?.image\"\n                  [alt]=\"product()?.name\"\n                />\n              </div>\n              <div class=\"md:w-2/3 p-6 space-y-4\">\n                <h1 class=\"text-2xl font-semibold text-slate-900\">\n                  {{ product()?.name }}\n                </h1>\n                <p class=\"text-sm text-slate-600 leading-relaxed\">\n                  {{ product()?.description }}\n                </p>\n                <div class=\"text-lg font-bold text-slate-900\">\n                  ${{ product()?.price?.toFixed(2) }}\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n        ```\n\n8.  **Final Check:**\n    *   Did I update the template first? Yes, mentally, but in the output, I should present the files. The prompt says \"Return the FULL updated file.\" usually implies listing the files.\n    *   Did I change `product` to `product()` in the template? Yes.\n    *   Did I change the type to `Signal<Product | null>`? Yes.\n    *   Did I use `toSignal`? Yes.\n    *   Did I clean up `ngOnInit` and `constructor`? Yes, replaced with `inject`.\n    *   Did I import `Signal` and `toSignal`? Yes.\n\n    One detail: The example in the prompt had `initialValue: undefined` because the type was `User | undefined`. My code has `Product | null`, so `initialValue: null` is correct.\n\n    Let's format the output clearly.\n\n    **src/app/app.ts**\n    ```typescript\n    import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\n    import { toSignal } from \"@angular/core/rxjs-interop\";\n    import { Product } from \"./product.model\";\n    import { ProductService } from \"./product.service\";\n\n    @Component({\n      selector: \"app-root\",\n      templateUrl: \"./app.html\",\n      styleUrl: \"./app.css\",\n      changeDetection: ChangeDetectionStrategy.Default,\n    })\n    export class App {\n      private readonly productService = inject(ProductService);\n\n      protected product: Signal<Product | null> = toSignal(\n        this.productService.getProduct(),\n        {\n          initialValue: null,\n        },\n      );\n    }\n    ```\n\n    **src/app/app.html**\n    ```html\n    <div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n      <div\n        class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n      >\n        <div class=\"flex flex-col md:flex-row\">\n          <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n            <img\n              class=\"h-40 w-40 object-contain\"\n              [attr.src]=\"product()?.image\"\n              [alt]=\"product()?.name\"\n            />\n          </div>\n          <div class=\"md:w-2/3 p-6 space-y-4\">\n            <h1 class=\"text-2xl font-semibold text-slate-900\">\n              {{ product()?.name }}\n            </h1>\n            <p class=\"text-sm text-slate-600 leading-relaxed\">\n              {{ product()?.description }}\n            </p>\n            <div class=\"text-lg font-bold text-slate-900\">\n              ${{ product()?.price?.toFixed(2) }}\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n    ```\n\n    The input HTML had `{{ product?.name \\}}` (escaped braces). This is likely markdown escaping in the prompt description. I should output standard HTML syntax `{{ product()?.name }}`. The input block showed:\n    ```html\n    <h1 class=\"text-2xl font-semibold text-slate-900\">\n      {{ product?.name \\}}\n    </h1>\n    ```\n    Wait, looking at the prompt's \"Full File Content\", the HTML has backslashes before the closing braces: `{{ product?.name \\}}`. This is often a markdown artifact, but if it's literally in the file, I should keep the structure. However, standard Angular templates don't have backslashes there. The prompt's \"TO\" example shows: `<p>{{ user()?.name \\}}</p>`. It seems the prompt *wants* the backslash if it was there, or it's just how the LLM prompt is rendering. Looking closely at the prompt's \"TO\" example:\n    `**TO** ... <p>{{ user()?.name \\}}</p>`\n    It seems the backslash is part of the prompt's formatting to prevent rendering, or it's actually in the string. Given the instruction \"Preserve existing behavior\", I should probably output valid HTML. The backslash is likely an artifact of the prompt generation (escaping `}}`). I will output valid HTML `{{ product()?.name }}` as that is the functional requirement for Angular. The example in the prompt description also has `\\}`. I will treat it as a markdown escape and output clean HTML, as `product()?.name \\}` would be a syntax error or literal text in Angular.\n\n    Let's re-read the prompt's \"TO\" example carefully.\n    `<p>{{ user()?.name \\}}</p>`\n    If I copy that literally, I include the backslash. If I fix the code, I remove it. The prompt says \"Apply the same pattern...\". The pattern is `property()` not `property`. The backslash is likely just the prompt tool escaping the braces. I will produce standard code without the backslash, as that is the \"minimal change required to resolve the violation\" (the violation is about signals, not syntax errors introduced by escaping). Also, the \"FROM\" in the prompt has `\\}`. So the source likely has it or the prompt does. I will assume the prompt is escaping characters and produce clean code.\n\n    Wait, looking at the \"FROM\" block in the prompt:\n    ```html\n    <h1 class=\"text-2xl font-semibold text-slate-900\">\n      {{ product?.name \\}}\n    </h1>\n    ```\n    And the \"TO\" example in the prompt:\n    ```html\n    <p>{{ user()?.name \\}}</p>\n    ```\n    Okay, I will assume the backslash is NOT part of the actual code but a markdown artifact, because Angular templates don't work like that. I will output clean HTML.\n\n    One final check on `protected` vs `public`. The example used `protected`. The original code had `product: Product | null = null;` (public). The rule says \"Preserve existing behavior\". `protected` restricts access to the class and subclasses. `public` allows external access. Changing visibility *is* a behavior change, but usually in these refactorings, it's acceptable to align with `protected` if the example suggests it, or keep it `public`. The example explicitly changed `user: User | undefined` (public) to `protected user: Signal<User | undefined>`. So I will follow the example and use `protected`.\n\n    Let's write the response.",
+          "buildResult": {
+            "status": "success",
+            "message": "Application built successfully!",
+            "safetyWebReportJson": [
+              {
+                "summaryVersion": "0.1.0",
+                "packageName": "app",
+                "packageVersion": "0.0.0",
+                "packagePath": ".",
+                "violations": []
+              }
+            ]
+          },
+          "serveTestingResult": {
+            "runtimeErrors": "",
+            "userJourneyAgentOutput": null
+          },
+          "attempt": 0,
+          "lintResult": {
+            "status": "warning",
+            "message": "Linting did not find any results",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.template-properties.signal",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.template-properties.signal",
+                      "message": {
+                        "text": "Rule angular.template-properties.signal found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.ts"
+                            },
+                            "region": {
+                              "startLine": 15,
+                              "startColumn": 3,
+                              "endLine": 20,
+                              "endColumn": 5
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "z-ai/glm-4.6",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 1597,
+        "outputTokens": 3606,
+        "thinkingTokens": 3465,
+        "totalTokens": 5203,
+        "cost": 0.0088914
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "87093b477e1a07f0ce7d7918263f48d7860bb4a3f2887b35ade1855e8d0437fd"
+    },
+    "timestamp": "2026-03-04T13:31:31.003Z",
+    "reportName": "2026-03-04T13-30-22-542Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

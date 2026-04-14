@@ -1,0 +1,9 @@
+{
+  "fileSize": 1441,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.919 seconds]\n\n\n✘ [ERROR] NG8004: No pipe found with name 'currency'.\nTo fix this, import the \"CurrencyPipe\" class from \"@angular/common\" and add it to the \"imports\" array of the component. [plugin angular-compiler]\n\n    src/app/app.html:21:37:\n      21 │           {{ (product?.price || 0) | currency }}\n         ╵                                      ~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+    "errorType": "Angular Diagnostic"
+  },
+  "serveTestingResult": null
+}

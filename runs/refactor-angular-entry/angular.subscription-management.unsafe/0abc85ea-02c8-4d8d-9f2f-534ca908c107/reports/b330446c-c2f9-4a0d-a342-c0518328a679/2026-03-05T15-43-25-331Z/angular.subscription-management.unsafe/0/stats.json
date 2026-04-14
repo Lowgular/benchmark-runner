@@ -1,0 +1,9 @@
+{
+  "fileSize": 1241,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.884 seconds]\n\n\n✘ [ERROR] TS2304: Cannot find name 'Component'. [plugin angular-compiler]\n\n    src/app/app.ts:5:1:\n      5 │ @Component({\n        ╵  ~~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

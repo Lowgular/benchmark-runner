@@ -1,0 +1,262 @@
+{
+  "id": "990149ab-b8f2-4526-b4ab-d9254804a29c",
+  "group": "693c2c03a2230697623f004b9c352ba7e8e792a0ec5e3a3bfddf0b41247f9395",
+  "version": 3,
+  "results": [
+    {
+      "promptDef": {
+        "name": "angular.image-src-binding.attr-src-binding",
+        "prompt": "# angular.image-src-binding.attr-src-binding\n\n## Refactor Steps\n\n1. Add `NgOptimizedImage` to the component's `imports` (standalone) or the NgModule that declares the component.\n2. Replace **`[attr.src]`** with **`[ngSrc]`** (or `ngSrc` for a static value) on the `<img>` tag.\n3. Keep the same expression; NgOptimizedImage will use it for the optimized image source.\n4. Double check the context because `ngSrc` attribute binding does not accept `nullish` values so to prevent build errors you can consider wrapping a block with `@if` control flow (at the top level where property is accessed)\n\n## Use-case examples (FROM → TO)\n\n---\n\n### Bound attr.src in Component decorator\n\n**_IMPORTANT_**: This example requires changes only in a Typescript file!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  template: `<img [attr.src]=\"url\" alt=\"\" />`,\n})\nexport class InlineComponent {}\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-src\",\n  template: `<img [ngSrc]=\"a.jpg\" alt=\"\" />`,\n  imports: [NgOptimizedImage],\n})\nexport class InlineComponent {}\n```\n\n---\n\n### Bound attr.src in Component template\n\n**_IMPORTANT_**: This example requires changes in:\n\n- HTML file (main change just like before)\n- Typescript file because you need to add `NgOptimizedImage` to imports in component decorator!\n\n**FROM**\n\n```typescript\nimport { Component } from \"@angular/core\";\n\n@Component({\n  selector: \"app-attr-src\",\n  templateUrl: \"./html.component.html\",\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [attr.src]=\"url\" alt=\"\" />\n```\n\n**TO**\n\n```typescript\nimport { NgOptimizedImage } from \"@angular/common\";\nimport { Component } from \"@angular/core\";\n\n@Component({\n  templateUrl: \"./html.component.html\",\n  imports: [NgOptimizedImage],\n})\nexport class HtmlComponent {}\n```\n\n```html\n<img [ngSrc]=\"url\" alt=\"\" />\n```\n\n## Files\n\n### src/app/app.html\n\nLocation: 5-5\n\n### Full File Content\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+      },
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n  standalone: true,\n  imports: [NgOptimizedImage],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        @if (product?.image) {\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [ngSrc]=\"product.image\"\n            [alt]=\"product?.name\"\n          />\n        }\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+        }
+      ],
+      "finalAttempt": {
+        "lintResult": {
+          "status": "success",
+          "message": "Application passed linting!",
+          "response": {
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "lowgular-static-analysis",
+                    "version": "0.0.0",
+                    "rules": [
+                      {
+                        "id": "angular.image-ng-src-binding.ng-src-binding",
+                        "defaultConfiguration": {
+                          "level": "note"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "results": [
+                  {
+                    "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                    "message": {
+                      "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                    },
+                    "locations": [
+                      {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/app/app.html"
+                          },
+                          "region": {
+                            "startLine": 10,
+                            "startColumn": 414,
+                            "endLine": 10,
+                            "endColumn": 437
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "buildResult": {
+          "status": "error",
+          "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [2.527 seconds]\n\n\n✘ [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]\n\n    src/app/app.html:10:29:\n      10 │             [ngSrc]=\"product.image\"\n         ╵                              ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 16 in expression [ product?.name \\] at the end of the expression [ product?.name \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@16:10 [plugin angular-compiler]\n\n    src/app/app.html:17:10:\n      17 │           {{ product?.name \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 16 in expression [ product?.name \\]' at column 17 in [ product?.name \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@16:10 [plugin angular-compiler]\n\n    src/app/app.html:17:10:\n      17 │           {{ product?.name \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 23 in expression [ product?.description \\] at the end of the expression [ product?.description \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@19:10 [plugin angular-compiler]\n\n    src/app/app.html:20:10:\n      20 │           {{ product?.description \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 23 in expression [ product?.description \\]' at column 24 in [ product?.description \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@19:10 [plugin angular-compiler]\n\n    src/app/app.html:20:10:\n      20 │           {{ product?.description \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 29 in expression [ product?.price?.toFixed(2) \\] at the end of the expression [ product?.price?.toFixed(2) \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@22:11 [plugin angular-compiler]\n\n    src/app/app.html:23:11:\n      23 │           ${{ product?.price?.toFixed(2) \\}}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 29 in expression [ product?.price?.toFixed(2) \\]' at column 30 in [ product?.price?.toFixed(2) \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@22:11 [plugin angular-compiler]\n\n    src/app/app.html:23:11:\n      23 │           ${{ product?.price?.toFixed(2) \\}}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+          "errorType": "Angular Diagnostic"
+        },
+        "serveTestingResult": null,
+        "outputFiles": [
+          {
+            "filePath": "src/app/app.ts",
+            "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n  standalone: true,\n  imports: [NgOptimizedImage],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+          },
+          {
+            "filePath": "src/app/app.html",
+            "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        @if (product?.image) {\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [ngSrc]=\"product.image\"\n            [alt]=\"product?.name\"\n          />\n        }\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+          }
+        ],
+        "repairAttempts": 0,
+        "axeRepairAttempts": 0,
+        "testRepairAttempts": 0
+      },
+      "score": {
+        "totalPoints": 100,
+        "maxOverallPoints": 100,
+        "categories": [
+          {
+            "name": "High",
+            "maxPoints": 50,
+            "id": "high-impact",
+            "points": 50,
+            "assessments": []
+          },
+          {
+            "name": "Medium",
+            "maxPoints": 30,
+            "id": "medium-impact",
+            "points": 30,
+            "assessments": [
+              {
+                "state": 0,
+                "name": "Image Src Binding",
+                "description": "Use NgOptimizedImage with ngSrc for img tags; do not use src or [attr.src] for static or bound image sources.",
+                "id": "image-src-binding",
+                "scoreReduction": "20%",
+                "successPercentage": 1,
+                "category": "medium-impact",
+                "groupingLabels": [
+                  "Templates"
+                ],
+                "message": "Pass\nsrc/app/app.html.9.413.9.436"
+              }
+            ]
+          },
+          {
+            "name": "Low",
+            "maxPoints": 20,
+            "id": "low-impact",
+            "points": 20,
+            "assessments": []
+          }
+        ],
+        "tokenUsage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "thinkingTokens": 0,
+          "cost": 0
+        }
+      },
+      "repairAttempts": 0,
+      "attemptDetails": [
+        {
+          "outputFiles": [
+            {
+              "filePath": "src/app/app.ts",
+              "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\nimport { NgOptimizedImage } from \"@angular/common\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n  standalone: true,\n  imports: [NgOptimizedImage],\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+            },
+            {
+              "filePath": "src/app/app.html",
+              "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        @if (product?.image) {\n          <img\n            class=\"h-40 w-40 object-contain\"\n            [ngSrc]=\"product.image\"\n            [alt]=\"product?.name\"\n          />\n        }\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+            }
+          ],
+          "usage": {
+            "inputTokens": 1410,
+            "outputTokens": 3882,
+            "totalTokens": 5292,
+            "thinkingTokens": 3397,
+            "cost": 0.00220065
+          },
+          "reasoning": "The rule is \"angular.image-src-binding.attr-src-binding\". It requires fixing [attr.src] to use NgOptimizedImage with [ngSrc].\n\n\n## Identifying Rule Violation\n- Found a rule violation in the Angular setup: \"angular.image-src-binding.attr-src-binding\" requires fixing.\n- The issue involves changing [attr.src] to use NgOptimizedImage with [ngSrc] for better performance.\n\n## Examining Component Setup\n- The component in app.ts uses templateUrl: \"./app.html\", indicating it’s not standalone, with no imports array visible.\n- It’s likely declared in an NgModule, but since the module isn’t provided, focus shifts to the reported violation in app.html.\n\n## Reviewing Fix Requirements\n- To fix, replace [attr.src] with [ngSrc] in the <img> tag at app.html line 5-5.\n- Also need to import NgOptimizedImage, but for non-standalone components, it should go in the module’s imports, not the component.\n\n## Analyzing NgOptimizedImage Integration\n- If making the component standalone, add standalone: true and imports: [NgOptimizedImage] to app.ts.\n- Without the module, and given the task focuses on app.html, adjustments to app.ts may be necessary for full compliance.\n\n## Ensuring Image Handling  \n- Noted that [ngSrc] in Angular cannot handle nullish values, so wrapping the <img> tag with `@if (product?.image)` is necessary to prevent build errors.  \n- This approach ensures the image only renders if `product?.image` exists, maintaining UI integrity.  \n\n## Updating Component Configuration  \n- To use NgOptimizedImage, add `import { NgOptimizedImage } from '@angular/common'` and set `standalone: true` in the @Component decorator of app.ts.  \n- Include `imports: [NgOptimizedImage]` in the decorator, ensuring the component can utilize NgOptimizedImage features.  \n\n## Modifying File Contents  \n- In app.html, change the <img> tag from `[attr.src]` to `[ngSrc]` and wrap it with `@if (product?.image)` for safety.  \n- Both app.ts and app.html need updates, as the task involves fixing the violation by modifying provided files.\n\n## Evaluating Image Handling  \n- Confirmed that `product?.image` can be an empty string, which is falsy, so the `@if (product?.image)` check will skip rendering if `image` is empty or null, which is acceptable.  \n- Noted that `ngSrc` requires a valid string, and while an empty string might be allowed, it’s best to ensure the image exists to avoid potential errors.\n[REDACTED]",
+          "buildResult": {
+            "status": "error",
+            "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [2.527 seconds]\n\n\n✘ [ERROR] TS2531: Object is possibly 'null'. [plugin angular-compiler]\n\n    src/app/app.html:10:29:\n      10 │             [ngSrc]=\"product.image\"\n         ╵                              ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 16 in expression [ product?.name \\] at the end of the expression [ product?.name \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@16:10 [plugin angular-compiler]\n\n    src/app/app.html:17:10:\n      17 │           {{ product?.name \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 16 in expression [ product?.name \\]' at column 17 in [ product?.name \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@16:10 [plugin angular-compiler]\n\n    src/app/app.html:17:10:\n      17 │           {{ product?.name \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 23 in expression [ product?.description \\] at the end of the expression [ product?.description \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@19:10 [plugin angular-compiler]\n\n    src/app/app.html:20:10:\n      20 │           {{ product?.description \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 23 in expression [ product?.description \\]' at column 24 in [ product?.description \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@19:10 [plugin angular-compiler]\n\n    src/app/app.html:20:10:\n      20 │           {{ product?.description \\}}\n         ╵           ~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Lexer Error: Unexpected character [\\] at column 29 in expression [ product?.price?.toFixed(2) \\] at the end of the expression [ product?.price?.toFixed(2) \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@22:11 [plugin angular-compiler]\n\n    src/app/app.html:23:11:\n      23 │           ${{ product?.price?.toFixed(2) \\}}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n✘ [ERROR] NG5002: Parser Error: Unexpected token 'Lexer Error: Unexpected character [\\] at column 29 in expression [ product?.price?.toFixed(2) \\]' at column 30 in [ product?.price?.toFixed(2) \\] in /Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/refactor-angular-entry/angular.image-src-binding.attr-src-binding/.web-codegen-scorer/tmp-workspaces/fw-b330446c-c2f9-4a0d-a342-c0518328a679-build-angular.image-src-binding.attr-src-bindingh3UgQb/src/app/app.html@22:11 [plugin angular-compiler]\n\n    src/app/app.html:23:11:\n      23 │           ${{ product?.price?.toFixed(2) \\}}\n         ╵            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+            "errorType": "Angular Diagnostic"
+          },
+          "serveTestingResult": null,
+          "attempt": 0,
+          "lintResult": {
+            "status": "success",
+            "message": "Application passed linting!",
+            "response": {
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "version": "2.1.0",
+              "runs": [
+                {
+                  "tool": {
+                    "driver": {
+                      "name": "lowgular-static-analysis",
+                      "version": "0.0.0",
+                      "rules": [
+                        {
+                          "id": "angular.image-ng-src-binding.ng-src-binding",
+                          "defaultConfiguration": {
+                            "level": "note"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "results": [
+                    {
+                      "ruleId": "angular.image-ng-src-binding.ng-src-binding",
+                      "message": {
+                        "text": "Rule angular.image-ng-src-binding.ng-src-binding found"
+                      },
+                      "locations": [
+                        {
+                          "physicalLocation": {
+                            "artifactLocation": {
+                              "uri": "src/app/app.html"
+                            },
+                            "region": {
+                              "startLine": 10,
+                              "startColumn": 414,
+                              "endLine": 10,
+                              "endColumn": 437
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "axeRepairAttempts": 0,
+      "testResult": null,
+      "testRepairAttempts": 0
+    }
+  ],
+  "details": {
+    "summary": {
+      "model": "x-ai/grok-4.1-fast",
+      "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+      "displayName": "Angular 20 Legacy",
+      "framework": {
+        "fullStackFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        },
+        "clientSideFramework": {
+          "id": "angular",
+          "displayName": "Angular"
+        }
+      },
+      "additionalAiAnalysis": [],
+      "completionStats": {
+        "allPromptsCount": 1,
+        "failedPrompts": []
+      },
+      "usage": {
+        "inputTokens": 1410,
+        "outputTokens": 3882,
+        "thinkingTokens": 3397,
+        "totalTokens": 5292,
+        "cost": 0.00220065
+      },
+      "runner": {
+        "id": "ai-sdk",
+        "displayName": "AI SDK"
+      },
+      "ratingHash": "3cb6172c5856ecb6b984be626ae364873b8c23654ea6a24f48f6787307a7d0ac"
+    },
+    "timestamp": "2026-03-04T10:17:23.893Z",
+    "reportName": "2026-03-04T10-16-41-615Z",
+    "systemPromptGeneration": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "systemPromptRepair": "You are performing an automated code repair pass.\n\nYour task is to FIX on static-analysis violation at a time that can appear multiple times in different files.\n\nIMPORTANT RULES:\n\n- Modify ONLY the reported location.\n- Do NOT refactor unrelated code.\n- Preserve existing behavior.\n- Apply the minimal change required to resolve the violation.\n- Return the FULL updated file.\n- Do not explain your changes.\n\nYou will be provided rule definition and places where this rule was violated.\n\nIt will look like this:\n\n```markdown\n# <rule_id>\n\n## Refactor Steps\n\n1. <first_step>\n2. <second_step>\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### <use_case_1>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n### <use_case_2>\n\n**FROM**\n\n<code_block_for_code_violation>\n\n**TO**\n\n<code_block_for_code_fix>\n\n---\n\n## Files\n\n### <file name>\n\nLocation: <from line>-<to line>\n\n### Full File Content\n\n<file content>\n\n<entire_file_with_code_violation>\n```\n",
+    "labels": []
+  }
+}

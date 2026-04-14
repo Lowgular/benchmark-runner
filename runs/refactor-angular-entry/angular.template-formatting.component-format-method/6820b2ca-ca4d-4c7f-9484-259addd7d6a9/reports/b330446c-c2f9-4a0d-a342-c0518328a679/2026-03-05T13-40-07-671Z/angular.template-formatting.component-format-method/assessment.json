@@ -1,0 +1,216 @@
+{
+  "promptDef": {
+    "name": "angular.template-formatting.component-format-method",
+    "prompt": "# angular-template-formatting-component-format-method-to-pipe\n\n## What this rule flags:\n\nA component method is used in the template only to format a value (e.g. formatPrice(price) that returns price.toFixed(2) or similar). Prefer a built-in pipe in the template instead (e.g. number, currency, percent, date) and remove the format method.\n\nYou must edit both the component TypeScript file and the template. Prefer updating the template first, then cleaning up the TypeScript.\n\n## Refactor steps\n\nRule: Replace template calls to the format method with a built-in pipe. Then remove the format method from the component.\n\n1. Update the template (do this first)\n   Find every interpolation (or binding) that calls the format method, e.g.:\n\n   ```\n   {{ formatPrice(product?.price ?? 0) \\}}\n   ```\n\n   Replace it with the same value passed through the appropriate built-in pipe:\n   Currency / money: use the currency pipe, e.g.:\n\n   ```\n   {{ (product?.price ?? 0) | currency \\}}\n   ```\n\n   (optional args: 'USD', 'symbol', '1.2-2').\n   Plain number with decimals: use the number pipe, e.g.:\n\n   ```\n   {{ value | number:'1.2-2' \\}}\n   ```\n\n   Percent: use the percent pipe.\n   Date/time: use the date pipe with an optional format.\n   Ensure the expression before the pipe is the value that was previously passed into the method (e.g. product?.price ?? 0), not the method call.\n   If you do not change the template, the refactor is incomplete and the rule will still report the method.\n\n2. Component TypeScript file\n   Find the format method that is no longer used in the template (e.g. formatPrice(price: number): string { ... }).\n   Remove the entire method.\n   Remove unused imports if any (e.g. if nothing else uses them).\n3. Template — reminder\n   Every former call to the format method must be replaced by a pipe on the same value. Use value | pipeName (and optional pipe args), not formatMethod(value).\n\nBefore finishing — checklist\n[ ] Template uses a built-in pipe (e.g. number, currency, percent, date) instead of calling the format method.\n[ ] The format method has been removed from the component class.\n\n## Use-case examples (FROM → TO)\n\nSimplified examples showing the same pattern with minimal context.\n\n---\n\n### Currency formatting\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  price = 10;\n\n  formatPrice(): string {\n    return `$${this.price.toFixed(2)\\}}`;\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ formatPrice(product?.price || 0) \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  price = 10;\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ price | currency \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 22-24\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n\n  formatPrice(price: number): string {\n    return `$${price.toFixed(2)\\}}`;\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ formatPrice(product?.price || 0) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+    },
+    {
+      "filePath": "src/app/app.html",
+      "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ (product?.price || 0) | currency }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "warning",
+      "message": "Linting did not find any results",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.template-formatting.built-in-pipe",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.template-formatting.built-in-pipe",
+                "message": {
+                  "text": "Rule angular.template-formatting.built-in-pipe found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.html"
+                      },
+                      "region": {
+                        "startLine": 21,
+                        "startColumn": 774,
+                        "endLine": 21,
+                        "endColumn": 806
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "error",
+      "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.709 seconds]\n\n\n✘ [ERROR] NG8004: No pipe found with name 'currency'.\nTo fix this, import the \"CurrencyPipe\" class from \"@angular/common\" and add it to the \"imports\" array of the component. [plugin angular-compiler]\n\n    src/app/app.html:21:37:\n      21 │           {{ (product?.price || 0) | currency }}\n         ╵                                      ~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+      "errorType": "Angular Diagnostic"
+    },
+    "serveTestingResult": null,
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+      },
+      {
+        "filePath": "src/app/app.html",
+        "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ (product?.price || 0) | currency }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": []
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Template Formatting",
+            "description": "Use built-in pipes (currency, number, date) or custom pure pipes for formatting. Do not put formatting logic or hardcoded symbols (e.g. $) in the template — that is hard to spot and breaks i18n. Prefer pipes; if formatting lives in the component (method, computed, or property), that is less bad but still penalized.",
+            "id": "template-formatting",
+            "scoreReduction": "20%",
+            "successPercentage": 1,
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Templates"
+            ],
+            "message": "Pass\nsrc/app/app.html.20.773.20.805"
+          }
+        ]
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          {{ (product?.price || 0) | currency }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1554,
+        "outputTokens": 471,
+        "totalTokens": 2025,
+        "thinkingTokens": 0,
+        "cost": 0.0013752
+      },
+      "reasoning": "",
+      "buildResult": {
+        "status": "error",
+        "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.709 seconds]\n\n\n✘ [ERROR] NG8004: No pipe found with name 'currency'.\nTo fix this, import the \"CurrencyPipe\" class from \"@angular/common\" and add it to the \"imports\" array of the component. [plugin angular-compiler]\n\n    src/app/app.html:21:37:\n      21 │           {{ (product?.price || 0) | currency }}\n         ╵                                      ~~~~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:7:15:\n      7 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+        "errorType": "Angular Diagnostic"
+      },
+      "serveTestingResult": null,
+      "attempt": 0,
+      "lintResult": {
+        "status": "warning",
+        "message": "Linting did not find any results",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.template-formatting.built-in-pipe",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.template-formatting.built-in-pipe",
+                  "message": {
+                    "text": "Rule angular.template-formatting.built-in-pipe found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.html"
+                        },
+                        "region": {
+                          "startLine": 21,
+                          "startColumn": 774,
+                          "endLine": 21,
+                          "endColumn": 806
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

@@ -1,0 +1,9 @@
+{
+  "fileSize": 1485,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.791 seconds]\n\n\n✘ [ERROR] TS2305: Module '\"@angular/platform-browser\"' has no exported member 'NgOptimizedImage'. [plugin angular-compiler]\n\n    src/app/app.ts:4:9:\n      4 │ import { NgOptimizedImage } from \"@angular/platform-browser\";\n        ╵          ~~~~~~~~~~~~~~~~\n\n\n✘ [ERROR] NG1010: 'imports' must be an array of components, directives, pipes, or NgModules.\n  Value could not be determined statically. [plugin angular-compiler]\n\n    src/app/app.ts:11:12:\n      11 │   imports: [NgOptimizedImage],\n         ╵             ~~~~~~~~~~~~~~~~\n\n  Unknown reference.\n\n    src/app/app.ts:11:12:\n      11 │   imports: [NgOptimizedImage],\n         ╵             ~~~~~~~~~~~~~~~~\n\n\n",
+    "errorType": "Angular Diagnostic"
+  },
+  "serveTestingResult": null
+}

@@ -1,0 +1,9 @@
+{
+  "fileSize": 1466,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [2.361 seconds]\n\n\n✘ [ERROR] TS2729: Property 'productService' is used before its initialization. [plugin angular-compiler]\n\n    src/app/app.ts:14:9:\n      14 │     this.productService.getProduct(),\n         ╵          ~~~~~~~~~~~~~~\n\n  'productService' is declared here.\n\n    src/app/app.ts:20:14:\n      20 │   constructor(private productService: ProductService) {}\n         ╵               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

@@ -1,0 +1,9 @@
+{
+  "fileSize": 1516,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [2.062 seconds]\n\n\n✘ [ERROR] TS2322: Type 'string | undefined' is not assignable to type 'string | SafeValue'.\n  Type 'undefined' is not assignable to type 'string | SafeValue'. [plugin angular-compiler]\n\n    src/app/app.html:9:11:\n      9 │           [ngSrc]=\"product?.image\"\n        ╵            ~~~~~\n\n  Error occurs in the template of component App.\n\n    src/app/app.ts:8:15:\n      8 │   templateUrl: \"./app.html\",\n        ╵                ~~~~~~~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

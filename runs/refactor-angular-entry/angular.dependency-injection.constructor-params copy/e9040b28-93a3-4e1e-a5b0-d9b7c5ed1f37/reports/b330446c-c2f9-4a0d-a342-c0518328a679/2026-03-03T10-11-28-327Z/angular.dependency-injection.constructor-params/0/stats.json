@@ -1,0 +1,9 @@
+{
+  "fileSize": 1037,
+  "buildResult": {
+    "status": "error",
+    "message": "\n> app@0.0.0 build\n> ng build\n\n❯ Building...\n✔ Building...\nApplication bundle generation failed. [1.848 seconds]\n\n\n✘ [ERROR] TS2459: Module '\"./product.service\"' declares 'inject' locally, but it is not exported. [plugin angular-compiler]\n\n    src/app/app.ts:3:25:\n      3 │ import { ProductService, inject } from \"./product.service\";\n        ╵                          ~~~~~~\n\n  'inject' is declared here.\n\n    src/app/product.service.ts:1:21:\n      1 │ import { HttpClient, inject } from \"@angular/common/http\";\n        ╵                      ~~~~~~\n\n\n✘ [ERROR] TS7006: Parameter 'data' implicitly has an 'any' type. [plugin angular-compiler]\n\n    src/app/app.ts:17:48:\n      17 │     this.productService.getProduct().subscribe((data) => {\n         ╵                                                 ~~~~\n\n\n✘ [ERROR] TS2305: Module '\"@angular/common/http\"' has no exported member 'inject'. [plugin angular-compiler]\n\n    src/app/product.service.ts:1:21:\n      1 │ import { HttpClient, inject } from \"@angular/common/http\";\n        ╵                      ~~~~~~\n\n\n",
+    "errorType": "TypeScript Error"
+  },
+  "serveTestingResult": null
+}

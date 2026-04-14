@@ -1,0 +1,82 @@
+[
+  {
+    "id": "2278ef5a4e365f78c12773e8459c6aa4e7d72c87021e977622fe96c70c17ee6d",
+    "version": 3,
+    "displayName": "Angular 20 Legacy",
+    "timestamp": "2026-03-04T10:09:48.696Z",
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "appsCount": 1,
+    "labels": [],
+    "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+    "framework": {
+      "fullStackFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      },
+      "clientSideFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      }
+    },
+    "model": "nvidia/nemotron-3-nano-30b-a3b:free",
+    "stats": {
+      "builds": {
+        "successfulInitialBuilds": 0,
+        "successfulBuildsAfterRepair": 0,
+        "failedBuilds": 1,
+        "errorDistribution": {
+          "Angular Diagnostic": 1
+        }
+      },
+      "tests": {
+        "successfulInitialTests": 0,
+        "successfulTestsAfterRepair": 0,
+        "failedTests": 0,
+        "noTestsRun": 1
+      },
+      "buckets": [
+        {
+          "name": "Excellent",
+          "nameWithLabels": "Excellent (98-100%)",
+          "min": 98,
+          "max": 100,
+          "id": "excellent",
+          "appsCount": 1
+        },
+        {
+          "name": "Great",
+          "nameWithLabels": "Great (85-97%)",
+          "min": 85,
+          "max": 97,
+          "id": "great",
+          "appsCount": 0
+        },
+        {
+          "name": "Good",
+          "nameWithLabels": "Good (71-84%)",
+          "min": 71,
+          "max": 84,
+          "id": "good",
+          "appsCount": 0
+        },
+        {
+          "name": "Poor",
+          "nameWithLabels": "Poor (0-70%)",
+          "min": 0,
+          "max": 70,
+          "id": "poor",
+          "appsCount": 0
+        }
+      ],
+      "security": {
+        "appsWithErrors": 0,
+        "appsWithoutErrors": 1
+      }
+    },
+    "runner": {
+      "id": "ai-sdk",
+      "displayName": "AI SDK"
+    }
+  }
+]

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "b07fee556d3a6210fe42ca94cb17c46772cb97c67d22c4c70c4c877efb228246",
+    "version": 3,
+    "displayName": "Angular 20 Legacy",
+    "timestamp": "2026-03-04T13:32:31.146Z",
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "appsCount": 1,
+    "labels": [],
+    "environmentId": "b330446c-c2f9-4a0d-a342-c0518328a679",
+    "framework": {
+      "fullStackFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      },
+      "clientSideFramework": {
+        "id": "angular",
+        "displayName": "Angular"
+      }
+    },
+    "model": "z-ai/glm-4.7-flash",
+    "stats": {
+      "builds": {
+        "successfulInitialBuilds": 1,
+        "successfulBuildsAfterRepair": 0,
+        "failedBuilds": 0
+      },
+      "tests": {
+        "successfulInitialTests": 0,
+        "successfulTestsAfterRepair": 0,
+        "failedTests": 0,
+        "noTestsRun": 1
+      },
+      "buckets": [
+        {
+          "name": "Excellent",
+          "nameWithLabels": "Excellent (98-100%)",
+          "min": 98,
+          "max": 100,
+          "id": "excellent",
+          "appsCount": 1
+        },
+        {
+          "name": "Great",
+          "nameWithLabels": "Great (85-97%)",
+          "min": 85,
+          "max": 97,
+          "id": "great",
+          "appsCount": 0
+        },
+        {
+          "name": "Good",
+          "nameWithLabels": "Good (71-84%)",
+          "min": 71,
+          "max": 84,
+          "id": "good",
+          "appsCount": 0
+        },
+        {
+          "name": "Poor",
+          "nameWithLabels": "Poor (0-70%)",
+          "min": 0,
+          "max": 70,
+          "id": "poor",
+          "appsCount": 0
+        }
+      ],
+      "runtime": {
+        "appsWithErrors": 0,
+        "appsWithoutErrors": 1
+      },
+      "security": {
+        "appsWithErrors": 0,
+        "appsWithoutErrors": 1
+      }
+    },
+    "runner": {
+      "id": "ai-sdk",
+      "displayName": "AI SDK"
+    }
+  }
+]

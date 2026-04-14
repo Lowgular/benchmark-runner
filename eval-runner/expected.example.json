@@ -1,0 +1,16 @@
+{
+  "expectedNodes": [
+    { "name": "AppService", "filePath": "api/src/app/app.service.ts" },
+    { "name": "TeamsService", "filePath": "web/src/app/teams/teams.service.ts" },
+    { "name": "ConfigService", "filePath": "web/src/app/config.service.ts" },
+    { "name": "ConfigDefault", "filePath": "web/src/app/config.service.ts" },
+    {
+      "name": "AnalyticsService",
+      "filePath": "web/src/app/analytics/analytics.service.ts"
+    },
+    {
+      "name": "AnalyticsState",
+      "filePath": "web/src/app/analytics/analytics.state.ts"
+    }
+  ]
+}

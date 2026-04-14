@@ -5,8 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "lint": "static-analysis run",
-    "gen": "static-analysis gen"
+    "lint": "static-analysis run --reporter file --output lint.sarif --rules angular.dependency-injection.extends-constructor-params"
   },
   "private": true,
   "dependencies": {
@@ -29,7 +28,8 @@
     "@angular/build": "^20.1.1",
     "@angular/cli": "^20.1.1",
     "@angular/compiler-cli": "^20.1.2",
-    "@lowgular/static-analysis": "file:/Users/greg/Desktop/projects/lowgular/lowgular-internal/dist/apps/static-analysis",
+    "@lowgular/static-analysis": "/Users/greg/Desktop/projects/lowgular/lowgular-internal/dist/apps/static-analysis",
+    "@lowgular/wcs-ratings": "/Users/greg/Desktop/projects/lowgular/lowgular-internal/dist/apps/wcs-ratings",
     "typescript": "~5.8.3"
   }
 }

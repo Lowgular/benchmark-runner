@@ -1,0 +1,226 @@
+{
+  "promptDef": {
+    "name": "angular.provided-in-root.not-root",
+    "prompt": "# angular.provided-in-root.not-root\n\n# angular-provided-in-root-not-root-to-root\n\n## Refactor Steps\n\n1. Add or update the **`providedIn`** property in the `@Injectable()` config to **`'root'`**.\n2. If the service was previously provided in a module, remove it from that module’s `providers` (the root injector will provide it).\n3. Keep other `@Injectable()` options (e.g. `providedIn: 'root'` with other metadata) as needed.\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n**FROM**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"platform\",\n})\nexport class Service {}\n```\n\n**TO**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class Service {}\n```\n\n---\n\n**FROM**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"any\",\n})\nexport class Service {}\n```\n\n**TO**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class Service {}\n```\n\n---\n\n**FROM**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable()\nexport class Service {}\n```\n\n**TO**\n\n```typescript\nimport { Injectable } from \"@angular/core\";\n\n@Injectable({\n  providedIn: \"root\",\n})\nexport class Service {}\n```\n\n## Files\n\n### src/app/product.service.ts\n\nLocation: 6-6\n\n### Full File Content\n\n```typescript\nimport { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable()\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}\n```\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/product.service.ts",
+      "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({\n  providedIn: 'root'\n})\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "success",
+      "message": "Application passed linting!",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.provided-in-root.root",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.provided-in-root.root",
+                "message": {
+                  "text": "Rule angular.provided-in-root.root found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/product.service.ts"
+                      },
+                      "region": {
+                        "startLine": 7,
+                        "startColumn": 3,
+                        "endLine": 7,
+                        "endColumn": 21
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "success",
+      "message": "Application built successfully!",
+      "safetyWebReportJson": [
+        {
+          "summaryVersion": "0.1.0",
+          "packageName": "app",
+          "packageVersion": "0.0.0",
+          "packagePath": ".",
+          "violations": []
+        }
+      ]
+    },
+    "serveTestingResult": {
+      "runtimeErrors": "",
+      "userJourneyAgentOutput": null
+    },
+    "outputFiles": [
+      {
+        "filePath": "src/app/product.service.ts",
+        "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({\n  providedIn: 'root'\n})\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": []
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Only Provided in Root",
+            "description": "For singleton services, use providedIn: 'root' in the @Injectable decorator.",
+            "id": "only-provided-in-root",
+            "scoreReduction": "20%",
+            "successPercentage": 1,
+            "category": "medium-impact",
+            "groupingLabels": [
+              "Services"
+            ],
+            "message": "Pass\nsrc/app/product.service.ts.6.2.6.20"
+          }
+        ]
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/product.service.ts",
+          "code": "import { HttpClient } from \"@angular/common/http\";\nimport { Injectable } from \"@angular/core\";\nimport { Observable } from \"rxjs\";\nimport { Product } from \"./product.model\";\n\n@Injectable({\n  providedIn: 'root'\n})\nexport class ProductService {\n  private readonly productUrl =\n    \"https://storage.googleapis.com/lowgular-platform/mocks/product.json\";\n\n  constructor(private http: HttpClient) {}\n\n  getProduct(): Observable<Product> {\n    return this.http.get<Product>(this.productUrl);\n  }\n}"
+        }
+      ],
+      "usage": {
+        "inputTokens": 808,
+        "outputTokens": 374,
+        "totalTokens": 1182,
+        "thinkingTokens": 240,
+        "cost": 0.00039454
+      },
+      "reasoning": "We are given a rule that requires us to change the `@Injectable` decorator to have `providedIn: 'root'`.\n The violation is in the file `src/app/product.service.ts` at line 6 (the line of the `@Injectable()` decorator).\n\n The current code has:\n   @Injectable()\n\n We need to change it to:\n   @Injectable({\n     providedIn: 'root'\n   })\n\n According to the rule, we must change the reported location (line 6) and only that.\n\n Let's look at the file content and make the minimal change.\n\n We are to return the full updated file.\n\n Note: The rule says we should also remove the service from module providers if it was provided there, but in this case,\n we are only given the service file. We are not provided with any module file, so we only change the service.\n\n We are to apply the minimal change: change the `@Injectable()` to `@Injectable({ providedIn: 'root' })`.\n\n Let's write the updated file.",
+      "buildResult": {
+        "status": "success",
+        "message": "Application built successfully!",
+        "safetyWebReportJson": [
+          {
+            "summaryVersion": "0.1.0",
+            "packageName": "app",
+            "packageVersion": "0.0.0",
+            "packagePath": ".",
+            "violations": []
+          }
+        ]
+      },
+      "serveTestingResult": {
+        "runtimeErrors": "",
+        "userJourneyAgentOutput": null
+      },
+      "attempt": 0,
+      "lintResult": {
+        "status": "success",
+        "message": "Application passed linting!",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.provided-in-root.root",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.provided-in-root.root",
+                  "message": {
+                    "text": "Rule angular.provided-in-root.root found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/product.service.ts"
+                        },
+                        "region": {
+                          "startLine": 7,
+                          "startColumn": 3,
+                          "endLine": 7,
+                          "endColumn": 21
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}

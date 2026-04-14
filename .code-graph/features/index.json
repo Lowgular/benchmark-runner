@@ -1,0 +1,26 @@
+{
+  "model": "Xenova/bge-small-en-v1.5",
+  "builtAt": "2026-03-26T12:45:24.284Z",
+  "entries": [
+    {
+      "id": "angular.property.client.http",
+      "featureId": "angular.property.client",
+      "params": [
+        "classDeclaration"
+      ],
+      "cypher": "MATCH (c:ClassDeclaration {id: '$classDeclaration.id$'})-[:HAS_MEMBER]->(n:PropertyDeclaration)-[:HAS_INITIALIZER]->(injectCall:CallExpression)-[:HAS_EXPRESSION]->(:Identifier {text: 'inject'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (injectCall)-[:HAS_ARGUMENT]->(:Identifier {text: 'HttpClient'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/common/http'})\nRETURN n",
+      "tags": [],
+      "embedding": []
+    },
+    {
+      "id": "angular.properties.subject",
+      "featureId": "angular.property.reactive",
+      "params": [
+        "classDeclaration"
+      ],
+      "cypher": "MATCH (c:ClassDeclaration {id: \"$classDeclaration.id$\"})-[:HAS_MEMBER]->(n:PropertyDeclaration)-[:HAS_INITIALIZER]->(:NewExpression)-[:HAS_EXPRESSION]->(type:Identifier)\nWHERE type.text STARTS WITH 'Subject' OR type.text STARTS WITH 'BehaviorSubject' OR type.text STARTS WITH 'ReplaySubject' OR type.text STARTS WITH 'AsyncSubject' OR type.text STARTS WITH 'WritableSignal'\nRETURN n",
+      "tags": [],
+      "embedding": []
+    }
+  ]
+}

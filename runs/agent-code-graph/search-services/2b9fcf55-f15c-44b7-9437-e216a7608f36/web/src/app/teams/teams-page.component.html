@@ -1,0 +1,69 @@
+<main class="layout">
+  <section class="panel">
+    <h1>Teams CRUD</h1>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+      <label>
+        Name
+        <input type="text" formControlName="name" placeholder="Team name" />
+      </label>
+
+      <label>
+        City
+        <input type="text" formControlName="city" placeholder="City" />
+      </label>
+
+      <div class="actions">
+        <button type="submit">
+          {{ selectedTeam ? 'Update team' : 'Create team' }}
+        </button>
+        <button type="button" (click)="cancelEdit()">Clear</button>
+      </div>
+    </form>
+
+    @if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>All teams</h2>
+    <div class="lookup">
+      <input type="number" min="1" [(ngModel)]="lookupId" placeholder="Find team by id" />
+      <button type="button" (click)="fetchOne()">Read one</button>
+    </div>
+
+    @if (fetchedTeam) {
+    <p class="lookup-result">
+      Found: <strong>{{ fetchedTeam.name }}</strong> ({{ fetchedTeam.city || 'No city'
+      }})
+    </p>
+    }
+
+    @if (isLoading) {
+    <p>Loading...</p>
+    } @else if (!teams.length) {
+    <p>No teams yet.</p>
+    } @else {
+    <ul class="team-list">
+      @for (team of teams(); track team.id) {
+      <li>
+        <div>
+          <strong>{{ team.name }}</strong>
+          <span>{{ team.city || 'No city' }}</span>
+          <ul>
+            @for (member of team.members; track $index) {
+            <app-member [member]="member"></app-member>
+            }
+          </ul>
+        </div>
+        <div class="actions">
+          <app-button [label]="'Edit'" (click)="edit(team)"></app-button>
+          <app-button [label]="'Delete'" (click)="delete(team)"></app-button>
+        </div>
+      </li>
+      }
+    </ul>
+    }
+  </section>
+</main>

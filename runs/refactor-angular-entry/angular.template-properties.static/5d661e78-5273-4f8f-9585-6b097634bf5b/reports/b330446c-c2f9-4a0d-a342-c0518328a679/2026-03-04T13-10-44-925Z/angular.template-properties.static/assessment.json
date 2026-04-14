@@ -1,0 +1,238 @@
+{
+  "promptDef": {
+    "name": "angular.template-properties.static",
+    "prompt": "# angular-template-properties-static-to-signal\n\n**Common mistake:** Migrating only the TypeScript to a signal and **not** updating the template. The template must **call** the signal: use `user()?.name`, not `user?.name`. Otherwise the rule reports **signal-binding-error** instead of correct signal usage.\n\nYou must edit **both** the component TypeScript file and the template file (e.g. app.html). Do not skip the template. Prefer updating the template file first, then the TypeScript.\n\n## Refactor Steps\n\n**Rule:** Any template that reads the property must now call it: `prop` → `prop()`, and `prop?.x` → `prop()?.x`.\n\n### 1. Update the template file (do this first)\n\n- In every template that uses this property (e.g. app.html), replace **property** with **property()**: `product` → `product()`, `product?.x` → `product()?.x`. Do this for every binding (interpolations, attribute bindings, etc.).\n- **If you do not change the template, the refactor is incomplete and will fail** (reported as signal-binding-error).\n\n### 2. Component TypeScript file\n\n1. Find the property that should be changed.\n2. Change the type of the property from a normal TypeScript type to `Signal<T>` with that type as the generic (e.g. `Signal<User | undefined>`).\n3. Find the place where the property is assigned and use that expression to initialize the signal (e.g. `toSignal(...)`).\n\n- If it is set inside an RxJS callback (e.g. `.subscribe` or `tap`), prefer using `toSignal` directly.\n\n4. Clean up the old code:\n\n- Remove the old property assignment.\n- If nothing else remains in the callback/method body, remove the entire callback/method.\n- If the call site (e.g. `ngOnInit`, `constructor`, `effect`) is now empty, remove it too (and remove `implements OnInit` from the class if applicable).\n\n### 3. Template file(s) — reminder\n\n- In every template that binds to the property, change **property** to **property()** — e.g. `user?.name` → `user()?.name`.\n- If you only change the .ts file and leave the .html with `product?.…`, the refactor is wrong and will be reported as **signal-binding-error**.\n\n### Before finishing — checklist\n\n- [ ] Component uses `Signal<T>` and `toSignal` (or equivalent).\n- [ ] **Template file(s) use `property()` everywhere instead of `property`** (e.g. `product()?.name` not `product?.name`).\n\n## Use-case examples (FROM → TO)\n\nEach use case shows the context, the current code (FROM), and the result after refactor (TO).\n\n---\n\n### Component with explicit Default\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject, OnInit } from \"@angular/core\";\nimport { User, UserService } from \"./user.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App implements OnInit {\n  private readonly userService = inject(UserService);\n  user: User | undefined;\n\n  ngOnInit(): void {\n    this.userService.getUser().subscribe((user) => {\n      this.user = user;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ user?.name \\}}</p>\n<p>{{ user?.email \\}}</p>\n```\n\n**TO**\n\nsrc/app/app.ts\n\n```typescript\nimport { Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { User, UserService } from \"./user.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n})\nexport class App {\n  private readonly userService = inject(UserService);\n\n  protected user: Signal<User | undefined> = toSignal(\n    this.userService.getUser(),\n    {\n      initialValue: undefined,\n    },\n  );\n}\n```\n\nsrc/app/app.html\n\n```html\n<p>{{ user()?.name \\}}</p>\n<p>{{ user()?.email \\}}</p>\n```\n\n## Files\n\n### src/app/app.ts\n\nLocation: 12-12\n\n### Full File Content\n\n**FROM**\n\nsrc/app/app.ts\n\n```typescript\nimport { ChangeDetectionStrategy, Component, OnInit } from \"@angular/core\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App implements OnInit {\n  product: Product | null = null;\n\n  constructor(private productService: ProductService) {}\n\n  ngOnInit(): void {\n    this.productService.getProduct().subscribe((data) => {\n      this.product = data;\n    });\n  }\n}\n```\n\nsrc/app/app.html\n\n```html\n<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product?.image\"\n          [alt]=\"product?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product?.name \\}}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product?.description \\}}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product?.price?.toFixed(2) \\}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n```\n\n**TO:** Apply the same pattern as in \"Component with explicit Default\" above: component uses `Signal<T>` and `toSignal`; template uses `property()` everywhere instead of `property` (e.g. `product()` not `product` in all bindings).\n"
+  },
+  "outputFiles": [
+    {
+      "filePath": "src/app/app.ts",
+      "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    {\n      initialValue: null,\n    },\n  );\n}"
+    },
+    {
+      "filePath": "src/app/app.html",
+      "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+    }
+  ],
+  "finalAttempt": {
+    "lintResult": {
+      "status": "warning",
+      "message": "Linting did not find any results",
+      "response": {
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+          {
+            "tool": {
+              "driver": {
+                "name": "lowgular-static-analysis",
+                "version": "0.0.0",
+                "rules": [
+                  {
+                    "id": "angular.template-properties.signal",
+                    "defaultConfiguration": {
+                      "level": "note"
+                    }
+                  }
+                ]
+              }
+            },
+            "results": [
+              {
+                "ruleId": "angular.template-properties.signal",
+                "message": {
+                  "text": "Rule angular.template-properties.signal found"
+                },
+                "locations": [
+                  {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "src/app/app.ts"
+                      },
+                      "region": {
+                        "startLine": 15,
+                        "startColumn": 3,
+                        "endLine": 20,
+                        "endColumn": 5
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "buildResult": {
+      "status": "success",
+      "message": "Application built successfully!",
+      "safetyWebReportJson": [
+        {
+          "summaryVersion": "0.1.0",
+          "packageName": "app",
+          "packageVersion": "0.0.0",
+          "packagePath": ".",
+          "violations": []
+        }
+      ]
+    },
+    "serveTestingResult": {
+      "runtimeErrors": "",
+      "userJourneyAgentOutput": null
+    },
+    "outputFiles": [
+      {
+        "filePath": "src/app/app.ts",
+        "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    {\n      initialValue: null,\n    },\n  );\n}"
+      },
+      {
+        "filePath": "src/app/app.html",
+        "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+      }
+    ],
+    "repairAttempts": 0,
+    "axeRepairAttempts": 0,
+    "testRepairAttempts": 0
+  },
+  "score": {
+    "totalPoints": 100,
+    "maxOverallPoints": 100,
+    "categories": [
+      {
+        "name": "High",
+        "maxPoints": 50,
+        "id": "high-impact",
+        "points": 50,
+        "assessments": [
+          {
+            "state": 0,
+            "name": "Template Properties",
+            "description": "For component state used in templates, use signals (preferred) or RxJS observables. Do not use plain class properties for template-bound state.",
+            "id": "template-properties",
+            "scoreReduction": "10%",
+            "successPercentage": 1,
+            "category": "high-impact",
+            "groupingLabels": [
+              "Components"
+            ],
+            "message": "Pass\nsrc/app/app.ts.14.2.19.4"
+          }
+        ]
+      },
+      {
+        "name": "Medium",
+        "maxPoints": 30,
+        "id": "medium-impact",
+        "points": 30,
+        "assessments": []
+      },
+      {
+        "name": "Low",
+        "maxPoints": 20,
+        "id": "low-impact",
+        "points": 20,
+        "assessments": []
+      }
+    ],
+    "tokenUsage": {
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "totalTokens": 0,
+      "thinkingTokens": 0,
+      "cost": 0
+    }
+  },
+  "repairAttempts": 0,
+  "attemptDetails": [
+    {
+      "outputFiles": [
+        {
+          "filePath": "src/app/app.ts",
+          "code": "import { ChangeDetectionStrategy, Component, inject, Signal } from \"@angular/core\";\nimport { toSignal } from \"@angular/core/rxjs-interop\";\nimport { Product } from \"./product.model\";\nimport { ProductService } from \"./product.service\";\n\n@Component({\n  selector: \"app-root\",\n  templateUrl: \"./app.html\",\n  styleUrl: \"./app.css\",\n  changeDetection: ChangeDetectionStrategy.Default,\n})\nexport class App {\n  private readonly productService = inject(ProductService);\n\n  protected product: Signal<Product | null> = toSignal(\n    this.productService.getProduct(),\n    {\n      initialValue: null,\n    },\n  );\n}"
+        },
+        {
+          "filePath": "src/app/app.html",
+          "code": "<div class=\"min-h-screen bg-slate-50 flex items-center justify-center p-6\">\n  <div\n    class=\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\"\n  >\n    <div class=\"flex flex-col md:flex-row\">\n      <div class=\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\">\n        <img\n          class=\"h-40 w-40 object-contain\"\n          [attr.src]=\"product()?.image\"\n          [alt]=\"product()?.name\"\n        />\n      </div>\n      <div class=\"md:w-2/3 p-6 space-y-4\">\n        <h1 class=\"text-2xl font-semibold text-slate-900\">\n          {{ product()?.name }}\n        </h1>\n        <p class=\"text-sm text-slate-600 leading-relaxed\">\n          {{ product()?.description }}\n        </p>\n        <div class=\"text-lg font-bold text-slate-900\">\n          ${{ product()?.price?.toFixed(2) }}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
+        }
+      ],
+      "usage": {
+        "inputTokens": 1872,
+        "outputTokens": 5123,
+        "totalTokens": 6995,
+        "thinkingTokens": 4566,
+        "cost": 0.0022364
+      },
+      "reasoning": "**Updating Component with Signals**\n\nI'm currently focused on transforming the component's template. Specifically, I'm updating all instances of `product?.image` to now use the signal syntax, `product()?.image`, to reflect the migration. This is the initial step in adapting the view to leverage Angular Signals.\n\n**Implementing Signal Initialization**\n\nI am now focusing on the TypeScript file, specifically converting the `product` property to a signal. I'll initialize this signal using `toSignal` from an observable, ensuring it correctly handles `null` values and removes the need for manual subscription management within `ngOnInit`.\n\n**Updating Template and Component**\n\nI'm now shifting focus to the component's TypeScript file. My primary task is converting the `product` property to a signal using `toSignal` and the `productService` observable, ensuring proper initialization with a null default and marking it as protected.\n\n**Refining Product Display Logic**\n\nI've successfully updated the component's template to use signal accessors like `product()?.image`. This ensures the view correctly subscribes to and displays product data when it becomes available.\n\n**Converting Template to Signals**\n\nI've successfully updated the component's HTML template. All references like `product?.image` have been converted to the new signal accessors, such as `product()?.image`, preparing the view for signal integration.\n\n**Integrating Signals in Component**\n\nMy current focus is on the component's TypeScript file. I'm transforming the `product` property into a signal using `toSignal` and the observable from `productService`, ensuring it's correctly initialized and managed.\n\n**Finalizing Signal Implementation**\n\nI've completed the migration of the `product` property to a signal in the component's TypeScript. This involves using `toSignal` with the `productService` observable, setting the `initialValue` to null, and removing the `OnInit` lifecycle hook.\n\n**Applying Signal Syntax to Template**\n\nI have now modified the component's template to use the signal accessors for `product`. This includes updating the image source, alt text, name, description, and price, ensuring they correctly reflect the data from the signal.\n\n**Refactoring Component for Signals**\n\nMy efforts are now concentrated on the component's TypeScript file. I am converting the `product` property to a signal, initializing it with `toSignal` from the `productService` observable, and marking it as protected.\n\n**Completing Signal Migration**\n\nI have finalized the transition to Angular Signals. The component's template now utilizes signal accessors for all product-related properties, and the component's TypeScript file has been refactored to manage the product data as a signal.\n\n**Updating Template Accessors**\n\nI've successfully updated the component's HTML template. All instances like `product?.image` have been transformed into signal accessors, now appearing as `product()?.image`, which aligns with the new signal-based approach.\n\n**Refining Component Logic with Signals**\n\nMy current focus is on the component's TypeScript file. I am transitioning the `product` property to a signal using `toSignal`, sourced from the `productService` observable, ensuring proper initialization and protected access.\n\n**Integrating Signal Initialization**\n\nI've now converted the `product` property within the component's TypeScript file to a signal. This involves using `toSignal` with the `productService` observable and setting the `initialValue` to `null`.\n\n**Finalizing Signal Migration**\n\nThe Angular Signals migration is complete. The component's template now uses signal accessors for all product properties, and the TypeScript has been refactored to manage `product` as a signal.\n\n**Updating Template and Component**\n\nI've successfully updated the component's HTML template. All instances like `product?.image` have been transformed into signal accessors, now appearing as `product()?.image`, which aligns with the new signal-based approach. My focus now shifts to refactoring the component's TypeScript file.\n\n**Applying Signal Syntax to Template**\n\nI've updated the component's HTML template. All product property accesses, such as `product?.image`, now correctly utilize signal syntax, becoming `product()?.image`. This prepares the view for seamless integration with the new signal-based data flow.\n\n**Updating Template Syntax**\n\nI've successfully updated the component's HTML template. All instances of `product?.propertyName` have been transformed into `product()?.propertyName`, ensuring the view now correctly uses signal accessors for data retrieval.\n\n**Integrating Signal Initialization**\n\nMy focus is on the component's TypeScript file. I've replaced the manual subscription in `ngOnInit` with `toSignal` to initialize the `product` property as a signal, sourcing it from the `productService` observable with a `null` initial value.\n\n**Refactoring Component for Signals**\n\nI am currently working on the component's TypeScript file, converting the `product` property to a signal. This involves using `toSignal` with the `productService` observable and ensuring it's initialized with `null`.\n\n**Applying Signal Syntax to Template**\n\nI have modified the component's HTML template. All occurrences of `product?.image`, `product?.name`, `product?.description`, and `product?.price?.toFixed(2)` have been updated to their signal accessor equivalents, such as `product()?.image`.\n\n**Finalizing Signal Implementation**\n\nThe migration is complete. The component's template now uses signal accessors, and the TypeScript has been refactored to manage the `product` data as a signal using `toSignal` and `inject`, removing the need for manual subscriptions.\n\n**Updating Component Logic**\n\nI've shifted my attention to the component's TypeScript file. The `product` property is now being converted to a signal using `toSignal` from the `productService` observable, with `null` as its initial value.\n\n**Converting Template to Signals**\n\nMy efforts have successfully updated the component's HTML template. All direct property accesses like `product?.name` have been replaced with the signal syntax, `product()?.name`, preparing for the shift to signal-based data management.\n\n**Integrating Signals in Component**\n\nI'm now focusing on the TypeScript file. The `product` property is being transformed into a signal, initialized via `toSignal` from the `productService` observable, and `null` is set as the default value.\n\n**Refining Product Display Logic**\n\nI've completed the template updates. All `product?.property` references have been converted to `product()?.property`, ensuring the view correctly interacts with the new signal-based property.\n\n**Completing Signal Migration**\n\nThe component's template is now fully updated with signal accessors. The TypeScript file has been refactored to use `toSignal` for initializing the `product` signal, removing `OnInit` and manual subscription management.\n\n**Updating Template Accessors**\n\nI've successfully modified the component's HTML template. All data bindings now use the signal accessor syntax, changing `product?.image` to `product()?.image`, `product?.name` to `product()?.name`, and so on.\n\n**Integrating Signal Initialization**\n\nI am now working on the component's TypeScript file. I'm converting the `product` property to a signal using `toSignal` from the `productService` observable, ensuring it's initialized with `null` and managed appropriately.\n\n**Refining Component Logic with Signals**\n\nMy focus has moved to the component's TypeScript file. I'm converting the `product` property to a signal using `toSignal` from the `productService` observable, ensuring it's properly initialized and adheres to the signal pattern.\n\n**Finalizing Signal Migration**\n\nThe Angular Signals migration for this component is complete. The template now uses signal accessors, and the TypeScript class manages the `product` data as a signal, initialized using `toSignal` and `inject`.\n\n**Updating Template and Component**\n\nI've successfully updated the component's HTML template to use signal accessors like `product()?.image`. Now, I'm shifting focus to the component's TypeScript file, converting the `product` property to a signal using `toSignal` from `productService` and `inject`.\n\n**Applying Signal Syntax**\n\nI've updated the component's template by replacing all direct property accesses like `product?.image` with their signal accessor equivalents, such as `product()?.image`. This ensures the view is now correctly set up to consume data from the upcoming signal.\n\n**Updating Template Syntax**\n\nI've successfully updated the component's HTML template. All instances of `product?.propertyName` have been transformed into `product()?.propertyName`, ensuring the view now correctly uses signal accessors for data retrieval. The next step involves refactoring the component's TypeScript file.\n\n**Applying Signal Syntax to Template**\n\nI've updated the component's HTML template. All direct property accesses like `product?.image` have been replaced with the signal syntax, `product()?.image`, preparing for the shift to signal-based data management. My next step is to refactor the component's TypeScript file.\n\n**Updating Template Syntax**\n\nI've successfully updated the component's HTML template. All instances of `product?.propertyName` have been transformed into `product()?.propertyName`, ensuring the view now correctly uses signal accessors for data retrieval.\n\n**Integrating Signal Initialization**\n\nMy focus is now on the component's TypeScript file. I've replaced the manual subscription in `ngOnInit` with `toSignal` to initialize the `product` property as a signal, sourcing it from the `productService` observable with a `null` initial value.\n\n```json\n{\n  \"outputFiles\": [\n    {\n      \"filePath\": \"src/app/app.ts\",\n      \"code\": \"import { ChangeDetectionStrategy, Component, inject, Signal } from \\\"@angular/core\\\";\\nimport { toSignal } from \\\"@angular/core/rxjs-interop\\\";\\nimport { Product } from \\\"./product.model\\\";\\nimport { ProductService } from \\\"./product.service\\\";\\n\\n@Component({\\n  selector: \\\"app-root\\\",\\n  templateUrl: \\\"./app.html\\\",\\n  styleUrl: \\\"./app.css\\\",\\n  changeDetection: ChangeDetectionStrategy.Default,\\n})\\nexport class App {\\n  private readonly productService = inject(ProductService);\\n\\n  protected product: Signal<Product | null> = toSignal(\\n    this.productService.getProduct(),\\n    {\\n      initialValue: null,\\n    },\\n  );\\n}\"\n    },\n    {\n      \"filePath\": \"src/app/app.html\",\n      \"code\": \"<div class=\\\"min-h-screen bg-slate-50 flex items-center justify-center p-6\\\">\\n  <div\\n    class=\\\"w-full max-w-2xl bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden\\\"\\n  >\\n    <div class=\\\"flex flex-col md:flex-row\\\">\\n      <div class=\\\"md:w-1/3 bg-slate-100 flex items-center justify-center p-6\\\">\\n        <img\\n          class=\\\"h-40 w-40 object-contain\\\"\\n          [attr.src]=\\\"product()?.image\\\"\\n          [alt]=\\\"product()?.name\\\"\\n        />\\n      </div>\\n      <div class=\\\"md:w-2/3 p-6 space-y-4\\\">\\n        <h1 class=\\\"text-2xl font-semibold text-slate-900\\\">\\n          {{ product()?.name }}\\n        </h1>\\n        <p class=\\\"text-sm text-slate-600 leading-relaxed\\\">\\n          {{ product()?.description }}\\n        </p>\\n        <div class=\\\"text-lg font-bold text-slate-900\\\">\\n          ${{ product()?.price?.toFixed(2) }}\\n        </div>\\n      </div>\\n    </div>\\n  </div>\\n</div>\\n\"\n    }\n  ]\n}\n```\n\n",
+      "buildResult": {
+        "status": "success",
+        "message": "Application built successfully!",
+        "safetyWebReportJson": [
+          {
+            "summaryVersion": "0.1.0",
+            "packageName": "app",
+            "packageVersion": "0.0.0",
+            "packagePath": ".",
+            "violations": []
+          }
+        ]
+      },
+      "serveTestingResult": {
+        "runtimeErrors": "",
+        "userJourneyAgentOutput": null
+      },
+      "attempt": 0,
+      "lintResult": {
+        "status": "warning",
+        "message": "Linting did not find any results",
+        "response": {
+          "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+          "version": "2.1.0",
+          "runs": [
+            {
+              "tool": {
+                "driver": {
+                  "name": "lowgular-static-analysis",
+                  "version": "0.0.0",
+                  "rules": [
+                    {
+                      "id": "angular.template-properties.signal",
+                      "defaultConfiguration": {
+                        "level": "note"
+                      }
+                    }
+                  ]
+                }
+              },
+              "results": [
+                {
+                  "ruleId": "angular.template-properties.signal",
+                  "message": {
+                    "text": "Rule angular.template-properties.signal found"
+                  },
+                  "locations": [
+                    {
+                      "physicalLocation": {
+                        "artifactLocation": {
+                          "uri": "src/app/app.ts"
+                        },
+                        "region": {
+                          "startLine": 15,
+                          "startColumn": 3,
+                          "endLine": 20,
+                          "endColumn": 5
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "axeRepairAttempts": 0,
+  "testResult": null,
+  "testRepairAttempts": 0
+}
