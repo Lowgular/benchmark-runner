@@ -1,7 +1,7 @@
-import { tool } from 'langchain';
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
-import { z } from 'zod';
+import { tool } from "langchain";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { z } from "zod";
 
 type CypherContextIndexEntry = {
   id: string;
@@ -18,14 +18,14 @@ type CypherContextIndex = {
 const splitWords = (value: string): string[] =>
   value
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/[^a-z0-9]+/g, " ")
     .trim()
     .split(/\s+/)
     .filter(Boolean);
 
 const scoreEntry = (
   needles: string[],
-  entry: CypherContextIndexEntry
+  entry: CypherContextIndexEntry,
 ): number => {
   const id = entry.id.toLowerCase();
   const aliases = (entry.aliases ?? []).map((a) => a.toLowerCase());
@@ -66,17 +66,11 @@ const scoreEntry = (
 
 export function createCypherContextSearchTool(options: { cwd?: string } = {}) {
   const cwd = options.cwd ?? process.cwd();
-  const indexPath = path.join(cwd, '.code-graph', 'cypher', 'index.json');
+  const indexPath = path.join(cwd, ".code-graph", "cypher", "index.json");
 
   return tool(
-    async ({
-      needles,
-      topK,
-    }: {
-      needles: string[];
-      topK: number;
-    }) => {
-      const raw = await readFile(indexPath, 'utf8');
+    async ({ needles, topK }: { needles: string[]; topK: number }) => {
+      const raw = await readFile(indexPath, "utf8");
       const index = JSON.parse(raw) as CypherContextIndex;
 
       const ranked = index.entries
@@ -91,14 +85,14 @@ export function createCypherContextSearchTool(options: { cwd?: string } = {}) {
       const matches = await Promise.all(
         ranked.map(async ({ entry, score }) => {
           const contextFilePath = path.join(cwd, entry.contextPath);
-          const contextMarkdown = await readFile(contextFilePath, 'utf8');
+          const contextMarkdown = await readFile(contextFilePath, "utf8");
           return {
             id: entry.id,
             score,
             contextPath: entry.contextPath,
             contextMarkdown,
           };
-        })
+        }),
       );
 
       const payload = {
@@ -108,22 +102,22 @@ export function createCypherContextSearchTool(options: { cwd?: string } = {}) {
       };
 
       console.log(
-        '[tool] search_cypher_context:',
-        matches.map((m) => `${m.id}: ${m.score}`).join(', ')
+        "[tool] search_cypher_context:",
+        matches.map((m) => `${m.id}: ${m.score}`).join(", "),
       );
       return JSON.stringify(payload, null, 2);
     },
     {
-      name: 'search_cypher_context',
+      name: "search_cypher_context",
       description:
-        'Lookup minimal Cypher/schema guidance chunks (with examples) using known ids/tags/aliases as retrieval signals.',
+        "Lookup minimal Cypher/schema guidance chunks (with examples) using known ids/tags/aliases as retrieval signals.",
       schema: z.object({
         needles: z
           .array(z.string().min(1))
           .min(1)
           .max(32)
           .describe(
-            'Known ids, aliases, and/or tags to use for retrieval. (No raw user query text.)'
+            "Known ids, aliases, and/or tags to use for retrieval. (No raw user query text.)",
           ),
         topK: z
           .number()
@@ -131,8 +125,8 @@ export function createCypherContextSearchTool(options: { cwd?: string } = {}) {
           .min(1)
           .max(4)
           .default(2)
-          .describe('Maximum number of Cypher context chunks to return.'),
+          .describe("Maximum number of Cypher context chunks to return."),
       }),
-    }
+    },
   );
 }

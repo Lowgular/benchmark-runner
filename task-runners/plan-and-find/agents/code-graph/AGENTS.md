@@ -196,6 +196,13 @@ Build final Cypher by composing instruction fragments in order:
 Reason carefully over combined constraints to avoid contradictions.
 Produce one sound final query, not separate partial queries.
 
+Polarity preservation rules:
+
+- If the normalized AST plan includes `or does not have [property]`, preserve both branches in Cypher.
+- Do not collapse a disjunction into only the positive branch.
+- For `property value OR property absent` intents, do not use required `MATCH` on that property.
+- Prefer `OPTIONAL MATCH` for the property node plus a null-aware predicate (for example `p IS NULL OR p.initializer = 'true'`).
+
 Execution format:
 
 - Pass Cypher as a single query string when calling `code-graph-query` (avoid multiline payload fragmentation).

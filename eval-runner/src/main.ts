@@ -29,6 +29,24 @@ const stripInlineMarkdown = (value: string): string => {
     .trim();
 };
 
+const extractFilePathFromBulletRhs = (raw: string): string => {
+  const text = raw.trim();
+
+  // Prefer explicit code-span paths: `web/src/app/app.component.ts`
+  const codeSpan = text.match(/`([^`]+)`/);
+  if (codeSpan?.[1]) {
+    return codeSpan[1].trim();
+  }
+
+  // Remove explanatory suffixes, e.g. "(standalone by default ...)".
+  const beforeParen = text.split(/\s+\(/, 1)[0]?.trim() ?? "";
+  if (beforeParen.length > 0) {
+    return beforeParen;
+  }
+
+  return text;
+};
+
 const normalizeNode = (node: NodeMatch): NodeMatch => {
   return {
     name: stripInlineMarkdown(node.name),
@@ -88,7 +106,8 @@ const parseActualNodesFromResponse = (markdown: string): NodeMatch[] => {
     const match = line.match(/^- (.+?)\s+[—-]\s+(.+)$/);
     if (!match) continue;
 
-    const [, name, filePath] = match;
+    const [, name, filePathRaw] = match;
+    const filePath = extractFilePathFromBulletRhs(filePathRaw);
     nodes.push(normalizeNode({ name, filePath }));
   }
 

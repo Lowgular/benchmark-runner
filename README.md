@@ -23,6 +23,8 @@ We have 2 agents here: bash and code-graph.
 
 First of all it is recommended that you install globally code-graph so you can also play with it (but you can also wire it in via npm locally): `npm i -G @lowgular/code-graph@0.2.8`
 
+Also we have added .code-graph in some init-states to .gitignore - but you can unzup the `code-graph.zip` and copy it to .code-graph folder in appropriate init-state
+
 ### Example: Bash vs Code Graph pipelines
 
 Then you can just go to the `runs/agent-code-graph` folder and then:
