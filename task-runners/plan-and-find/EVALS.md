@@ -48,6 +48,14 @@ RETURN c, p, t
 
 find all properties that are used in template and are not signal based
 
+```cypher
+MATCH (c:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:TypeAliasDeclaration)
+WHERE t.filePath CONTAINS '@angular/core' AND t.name IS NOT 'Signal'
+MATCH (c)-[:HAS_TEMPLATE_BINDING]->(id:Identifier)
+MATCH (id)-[:HAS_ANCESTOR]->(p)
+RETURN c, p, t
+```
+
 find components that use built in directive in the template
 find components that output / render team data
 find components that use "TeamComponent" in their template

@@ -1,0 +1,16 @@
+{
+  "expectedNodes": [
+    {
+      "name": "ButtonComponent",
+      "filePath": "web/src/app/shared/button.ts"
+    },
+    {
+      "name": "TeamsPageComponent",
+      "filePath": "web/src/app/teams/teams-page.component.ts"
+    },
+    {
+      "name": "AppComponent",
+      "filePath": "web/src/app/app.component.ts"
+    }
+  ]
+}

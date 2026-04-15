@@ -9,7 +9,7 @@ export default {
   sourceDirectory: "../../init-states/angular-20-fresh",
   ratings: [...Object.values(RATINGS)],
   generationSystemPrompt: "./system-instructions.md",
-  executablePrompts: ["../../prompts/**/*.md"],
+  executablePrompts: ["../../tasks/entry/**/*.md"],
   packageManager: "npm",
   categoryOverrides: {
     [RatingCategory.HIGH_IMPACT]: { maxPoints: 50, name: "High" },

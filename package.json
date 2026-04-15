@@ -6,6 +6,7 @@
     "@langchain/anthropic": "^1.3.26",
     "@langchain/openrouter": "^0.2.2",
     "@lowgular/wcs-ratings": "file:../../../../lowgular-internal/dist/apps/wcs-ratings",
+    "@lowgular/code-graph": "0.2.8",
     "deepagents": "^1.9.0",
     "web-codegen-scorer": "^0.0.61"
   }
