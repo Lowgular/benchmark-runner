@@ -10,7 +10,7 @@ export default {
   ratings: [RATINGS.subscriptionManagementRating],
   generationSystemPrompt: "./system-instructions.md",
   repairSystemPrompt: "./system-instructions.md",
-  executablePrompts: ["../../prompt-rules/**/*.md"],
+  executablePrompts: ["../../tasks/rules/**/*.md"],
   packageManager: "npm",
   categoryOverrides: {
     [RatingCategory.HIGH_IMPACT]: { maxPoints: 50, name: "High" },
