@@ -1,0 +1,5 @@
+node_modules/
+.code-graph
+RESPONSE.md
+summary.json
+*.log

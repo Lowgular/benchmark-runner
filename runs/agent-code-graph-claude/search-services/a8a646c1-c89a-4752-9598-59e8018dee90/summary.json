@@ -1,0 +1,59 @@
+{
+  "version": "1",
+  "results": [
+    {
+      "promptDef": {
+        "name": "search-services",
+        "prompt": "Find all services"
+      },
+      "score": null
+    }
+  ],
+  "details": {
+    "summary": {
+      "taskId": "search-services",
+      "prompt": "Find all services",
+      "taskRunId": "dedae068-21d4-47cf-97a2-e769bfb518ad",
+      "environmentId": "angular-nest-team-crud",
+      "model": "claude-haiku-4-5",
+      "runner": {
+        "id": "claude-agent-sdk"
+      },
+      "pipelineId": "code-graph",
+      "elapsedMs": 21679,
+      "toolCalls": [
+        {
+          "name": "mcp__code-graph__list_pattern_catalog",
+          "input": {}
+        },
+        {
+          "name": "mcp__code-graph__search_pattern_context",
+          "input": {
+            "queryKeywords": [
+              "service",
+              "services"
+            ],
+            "topK": 2
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_cypher_context",
+          "input": {
+            "needles": [
+              "service",
+              "injectable",
+              "decorator"
+            ],
+            "topK": 2
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)\nMATCH (cd)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Injectable' })\nMATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' })\nRETURN c.id, c.name, c.filePath"
+          }
+        }
+      ]
+    }
+  }
+}

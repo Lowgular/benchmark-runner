@@ -201,6 +201,40 @@
         "depends"
       ],
       "contextPath": ".code-graph/patterns/dependency-chain.md"
+    },
+    {
+      "id": "model",
+      "aliases": [
+        "model",
+        "models",
+        "data model",
+        "domain model",
+        "dto",
+        "interface",
+        "interfaces",
+        "type",
+        "types",
+        "type alias",
+        "type aliases",
+        "model declaration",
+        "data declaration",
+        "data shape",
+        "plain object type",
+        "value object",
+        "entity model",
+        "model class"
+      ],
+      "tags": [
+        "model",
+        "interface",
+        "type",
+        "alias",
+        "data",
+        "declaration",
+        "dto",
+        "domain"
+      ],
+      "contextPath": ".code-graph/patterns/model.md"
     }
   ]
 }

@@ -1,0 +1,163 @@
+{
+  "version": "1",
+  "results": [
+    {
+      "promptDef": {
+        "name": "search-models-used-in-components-and-ui-states",
+        "prompt": "Find model declarations that are used by both Angular components and UI states.\n\nOutput it in this format:\n\nModel - filePath\n"
+      },
+      "score": {
+        "categories": [
+          {
+            "id": "high-impact",
+            "name": "High Impact",
+            "maxPoints": 100,
+            "points": 0,
+            "assessments": [
+              {
+                "id": "recall",
+                "name": "Recall",
+                "state": 0,
+                "message": "Partial Pass (50%)\nRecall: 2/4 (50%)",
+                "category": "high-impact",
+                "description": "Measures how many expected nodes were found in the final answer.",
+                "groupingLabels": [
+                  "Retrieval"
+                ],
+                "scoreReduction": "50%",
+                "successPercentage": 0.5
+              },
+              {
+                "id": "precision",
+                "name": "Precision",
+                "state": 0,
+                "message": "Partial Pass (67%)\nPrecision: 2/3 (67%)",
+                "category": "high-impact",
+                "description": "Measures how many returned nodes in the final answer are correct.",
+                "groupingLabels": [
+                  "Retrieval"
+                ],
+                "scoreReduction": "50%",
+                "successPercentage": 0.6666666666666666
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "details": {
+    "summary": {
+      "taskId": "search-models-used-in-components-and-ui-states",
+      "prompt": "Find model declarations that are used by both Angular components and UI states.\n\nOutput it in this format:\n\nModel - filePath\n",
+      "taskRunId": "99f49a80-013a-45bb-a953-475194c738ef",
+      "environmentId": "angular-nest-team-crud",
+      "model": "claude-opus-4-7",
+      "runner": {
+        "id": "claude-agent-sdk"
+      },
+      "pipelineId": "code-graph",
+      "elapsedMs": 76435,
+      "toolCalls": [
+        {
+          "name": "ToolSearch",
+          "input": {
+            "query": "select:mcp__code-graph__list_pattern_catalog,mcp__code-graph__search_pattern_context,mcp__code-graph__search_constraint_context,mcp__code-graph__search_cypher_context,mcp__code-graph__code-graph-query",
+            "max_results": 5
+          }
+        },
+        {
+          "name": "mcp__code-graph__list_pattern_catalog",
+          "input": {}
+        },
+        {
+          "name": "mcp__code-graph__search_pattern_context",
+          "input": {
+            "queryKeywords": [
+              "model",
+              "model declaration",
+              "data model"
+            ],
+            "topK": 2
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_pattern_context",
+          "input": {
+            "queryKeywords": [
+              "component",
+              "angular component"
+            ],
+            "topK": 2
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_constraint_context",
+          "input": {
+            "constraintKeywords": [
+              "UI state",
+              "state",
+              "used by",
+              "type usage"
+            ]
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (c:ClassDeclaration) WHERE c.name =~ '.*([Ss]tate|UiState).*' RETURN c.id, c.name, c.filePath LIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_cypher_context",
+          "input": {
+            "needles": [
+              "model",
+              "type",
+              "type alias",
+              "interface",
+              "class"
+            ],
+            "topK": 3
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_cypher_context",
+          "input": {
+            "needles": [
+              "component",
+              "decorator",
+              "type usage",
+              "HAS_TYPE_DECLARATION"
+            ],
+            "topK": 3
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (component:ClassDeclaration)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (component)-[:HAS_MEMBER]->(compProp:PropertyDeclaration)\nMATCH (compProp)-[:HAS_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (uiState:ClassDeclaration)-[:HAS_MEMBER]->(uiProp:PropertyDeclaration)\nWHERE uiState.filePath CONTAINS '.ui-state.ts'\nMATCH (uiProp)-[:HAS_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (uiState:ClassDeclaration)-[:HAS_MEMBER]->(uiProp:PropertyDeclaration)\nWHERE uiState.filePath CONTAINS '.ui-state.ts'\nMATCH (uiProp)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (component:ClassDeclaration)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (component)-[:HAS_MEMBER]->(compProp:PropertyDeclaration)\nMATCH (compProp)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+          }
+        }
+      ]
+    }
+  }
+}

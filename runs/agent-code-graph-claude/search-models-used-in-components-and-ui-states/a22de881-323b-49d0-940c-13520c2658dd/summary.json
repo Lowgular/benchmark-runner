@@ -1,0 +1,408 @@
+{
+  "version": "1",
+  "results": [
+    {
+      "promptDef": {
+        "name": "search-models-used-in-components-and-ui-states",
+        "prompt": "Find model declarations that are used by both Angular components and UI states.\n\nOutput it in this format:\n\nModel - filePath\n"
+      },
+      "score": null
+    }
+  ],
+  "details": {
+    "summary": {
+      "taskId": "search-models-used-in-components-and-ui-states",
+      "prompt": "Find model declarations that are used by both Angular components and UI states.\n\nOutput it in this format:\n\nModel - filePath\n",
+      "taskRunId": "43529b26-012c-4557-b83d-897aac525b4c",
+      "environmentId": "angular-nest-team-crud",
+      "model": "claude-haiku-4-5",
+      "runner": {
+        "id": "claude-agent-sdk"
+      },
+      "pipelineId": "code-graph",
+      "elapsedMs": 352539,
+      "toolCalls": [
+        {
+          "name": "mcp__code-graph__list_pattern_catalog",
+          "input": {}
+        },
+        {
+          "name": "mcp__code-graph__search_pattern_context",
+          "input": {
+            "queryKeywords": [
+              "model",
+              "component",
+              "class"
+            ],
+            "topK": 3
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_constraint_context",
+          "input": {
+            "constraintKeywords": [
+              "model declaration",
+              "ui state",
+              "used by"
+            ]
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_pattern_context",
+          "input": {
+            "queryKeywords": [
+              "service",
+              "dependency",
+              "injectable"
+            ],
+            "topK": 2
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_constraint_context",
+          "input": {
+            "constraintKeywords": [
+              "state",
+              "UI state"
+            ]
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_cypher_context",
+          "input": {
+            "needles": [
+              "dependency",
+              "class usage",
+              "type references"
+            ],
+            "topK": 2
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(compDecorator:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(compImport:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:DEPENDS_ON]->(model:ClassDeclaration)\n\nMATCH (svc:ClassDeclaration)-[:HAS_DECORATOR]->(svcDecorator:Decorator)-[:HAS_DESCENDANT]->(svcId:Identifier {text: 'Injectable'})\nMATCH (svcId)-[:HAS_SYMBOL_IMPORT]->(svcImport:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (svc)-[:DEPENDS_ON]->(model)\n\nWHERE NOT model.filePath CONTAINS 'node_modules'\nAND NOT comp.filePath CONTAINS 'node_modules'\nAND NOT svc.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(compDecorator:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(compImport:ImportDeclaration {moduleSpecifier: '@angular/core'})\nRETURN DISTINCT comp.name, comp.filePath\nLIMIT 10"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (svc:ClassDeclaration)-[:HAS_DECORATOR]->(svcDecorator:Decorator)-[:HAS_DESCENDANT]->(svcId:Identifier {text: 'Injectable'})\nMATCH (svcId)-[:HAS_SYMBOL_IMPORT]->(svcImport:ImportDeclaration {moduleSpecifier: '@angular/core'})\nRETURN DISTINCT svc.name, svc.filePath\nLIMIT 10"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(compDecorator:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(compImport:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:DEPENDS_ON]->(model:ClassDeclaration)\nWHERE NOT model.filePath CONTAINS 'node_modules'\nAND NOT comp.filePath CONTAINS 'node_modules'\nRETURN DISTINCT model.name, model.filePath\nLIMIT 20"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(compDecorator:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(compImport:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(dep:Identifier)\nRETURN comp.name, COLLECT(DISTINCT dep.text) as identifiers\nLIMIT 5"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration {name: 'TeamsPageComponent'})-[:HAS_DESCENDANT]->(node)\nRETURN DISTINCT node.text, labels(node)\nLIMIT 20"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration {name: 'TeamsPageComponent'})-[rel]->(target)\nRETURN type(rel) as relationshipType, target.name as targetName, target.id\nLIMIT 20"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration {name: 'TeamsPageComponent'})-[:HAS_DESCENDANT]->(id:Identifier)\nWHERE id.text IS NOT NULL\nRETURN DISTINCT id.text\nLIMIT 30"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (state:ClassDeclaration {name: 'TeamCacheUiState'})-[:HAS_DESCENDANT]->(id:Identifier)\nWHERE id.text IS NOT NULL\nRETURN DISTINCT id.text\nLIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(id1:Identifier {text: 'Component'})\nMATCH (id1)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DESCENDANT]->(id2:Identifier {text: 'State'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND NOT comp.filePath CONTAINS 'node_modules'\nAND NOT state.filePath CONTAINS 'node_modules'\nAND ref1.text != comp.name\nAND ref1.text != state.name\n\nRETURN DISTINCT ref1.text as modelName, ref1.id as modelId\nLIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (model:ClassDeclaration)\nWHERE comp.filePath CONTAINS model.name\nOR comp.filePath CONTAINS model.id\nRETURN DISTINCT comp.name, model.name, model.filePath\nLIMIT 10"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\nMATCH (model:ClassDeclaration {name: compRef.text})\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(stateRef:Identifier)\n\nWHERE stateRef.text = model.name\nAND compRef.text = model.name\nAND NOT model.filePath CONTAINS 'node_modules'\nAND model.name != comp.name\nAND model.name != state.name\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE NOT model.filePath CONTAINS 'node_modules'\nAND (model.name = 'Team' OR model.name = 'TeamFilterModel')\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nRETURN model.name, model.filePath\nLIMIT 30"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nWITH COLLECT({comp: comp.name, ref: compRef.text}) as compRefs\n\nMATCH (state:ClassDeclaration)\nWHERE state.name IN ['TeamCacheUiState', 'TeamListUiState', 'TeamSubjectUiState', 'AnalyticsState']\nMATCH (state)-[:HAS_DESCENDANT]->(stateRef:Identifier)\n\nWITH compRefs, COLLECT({state: state.name, ref: stateRef.text}) as stateRefs\n\nRETURN compRefs, stateRefs\nLIMIT 1"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\n\nMATCH (state:ClassDeclaration {name: 'TeamCacheUiState'})\n\nMATCH (comp)-[:HAS_DESCENDANT]->(ref:Identifier)\nMATCH (state)-[:HAS_DESCENDANT]->(ref)\n\nRETURN DISTINCT comp.name, state.name, ref.text as sharedIdentifier"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration {name: 'TeamCacheUiState'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != state.name\nAND ref1.text != 'Component'\nAND ref1.text != 'Injectable'\n\nRETURN DISTINCT comp.name, state.name, ref1.text"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration {name: 'TeamCacheUiState'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nMATCH (model:ClassDeclaration {name: ref1.text})\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != state.name\nAND NOT model.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration {name: 'Team'})\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)\nWHERE state.name IN ['TeamCacheUiState', 'TeamListUiState', 'TeamSubjectUiState', 'AnalyticsState']\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text IN ['TeamEntity', 'MemberEntity', 'CreateTeamDto', 'UpdateTeamDto', 'MemberInputDto']\n\nRETURN DISTINCT comp.name, state.name, ref1.text"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text IN ['TeamEntity', 'MemberEntity', 'CreateTeamDto', 'UpdateTeamDto', 'MemberInputDto', 'Team', 'Member']\n\nRETURN DISTINCT comp.name, state.name, ref1.text"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nMATCH (model:ClassDeclaration {name: ref1.text})\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != state.name\nAND NOT model.filePath CONTAINS 'node_modules'\nAND NOT model.filePath CONTAINS '.service'\nAND NOT model.filePath CONTAINS '.component'\nAND NOT model.filePath CONTAINS '.module'\nAND NOT model.filePath CONTAINS '.directive'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != state.name\n\nRETURN DISTINCT ref1.text as sharedIdentifier\nLIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nMATCH (model:ClassDeclaration {name: ref1.text})\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != state.name\nAND NOT model.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE NOT model.filePath CONTAINS 'node_modules'\nAND (model.filePath CONTAINS 'model' OR model.filePath CONTAINS 'dto' OR model.filePath CONTAINS 'entity' OR model.filePath CONTAINS 'state')\nRETURN model.name, model.filePath\nORDER BY model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE NOT model.filePath CONTAINS 'node_modules'\nAND (model.filePath CONTAINS 'model' OR model.filePath CONTAINS 'dto' OR model.filePath CONTAINS 'entity')\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text IN ['MemberEntity', 'TeamEntity', 'MemberInputDto', 'CreateTeamDto', 'UpdateTeamDto']\n\nRETURN DISTINCT comp.name, state.name, ref1.text"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (state:ClassDeclaration {name: 'TeamListUiState'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref:Identifier)\nRETURN DISTINCT ref.text\nLIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration {name: 'TeamListUiState'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text IN ['TeamFilterModel', 'TeamActionModel']\n\nRETURN DISTINCT comp.name, state.name, ref1.text"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration {name: 'TeamFilterModel'})\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nMATCH (model:ClassDeclaration {name: ref1.text})\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != state.name\nAND NOT model.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (state:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(stateId:Identifier {text: 'Injectable'})\nMATCH (stateId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (state)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != state.name\n\nRETURN DISTINCT ref1.text as sharedName\nLIMIT 100"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE model.name IN ['signal', 'inject', 'team', 'Team', 'city', 'getTeams', 'name', 'subscribe', 'id', 'body', 'delete']\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE model.name IN ['signal', 'inject', 'team', 'Team', 'city', 'getTeams', 'name', 'subscribe', 'id', 'body']\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (service:ClassDeclaration)\nWHERE service.name IN ['TeamsService', 'AuditLogService', 'ConfigService', 'AnalyticsService', 'AnalyticsState', 'TeamCacheUiState', 'TeamListUiState', 'TeamSubjectUiState']\nMATCH (service)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nMATCH (model:ClassDeclaration {name: ref1.text})\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != service.name\nAND NOT model.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE NOT model.filePath CONTAINS 'node_modules'\nAND NOT model.filePath CONTAINS '.component'\nAND NOT model.filePath CONTAINS '.service'\nAND NOT model.filePath CONTAINS '.module'\nAND NOT model.filePath CONTAINS '.directive'\nAND NOT model.filePath CONTAINS '.controller'\nAND NOT model.filePath CONTAINS '.entity'\nAND NOT model.filePath CONTAINS '.dto'\nRETURN model.name, model.filePath\nLIMIT 20"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nMATCH (service:ClassDeclaration)-[:HAS_DESCENDANT]->(srvRef:Identifier)\n\nMATCH (model:ClassDeclaration {name: compRef.text})\n\nWHERE compRef.text = srvRef.text\nAND model.name = compRef.text\nAND NOT model.filePath CONTAINS 'node_modules'\nAND NOT model.filePath CONTAINS '.component'\nAND NOT model.filePath CONTAINS '.service'\nAND NOT model.filePath CONTAINS '.module'\nAND NOT model.filePath CONTAINS '.directive'\nAND NOT model.filePath CONTAINS '.controller'\nAND model.name != comp.name\nAND model.name != service.name\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nMATCH (service:ClassDeclaration)-[:HAS_DESCENDANT]->(srvRef:Identifier)\n\nMATCH (model:ClassDeclaration {name: compRef.text})\nWHERE NOT (model)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(:Identifier {text: 'Component'})\n\nWHERE compRef.text = srvRef.text\nAND model.name = compRef.text\nAND NOT model.filePath CONTAINS 'node_modules'\nAND NOT model.filePath CONTAINS '.component'\nAND NOT model.filePath CONTAINS '.service'\nAND NOT model.filePath CONTAINS '.module'\nAND NOT model.filePath CONTAINS '.directive'\nAND NOT model.filePath CONTAINS '.controller'\nAND NOT model.filePath CONTAINS '.state'\nAND NOT model.filePath CONTAINS 'ui-state'\nAND model.name != comp.name\nAND model.name != service.name\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nMATCH (service:ClassDeclaration)-[:HAS_DESCENDANT]->(srvRef:Identifier)\n\nMATCH (model:ClassDeclaration {name: compRef.text})\n\nWHERE compRef.text = srvRef.text\nAND model.name = compRef.text\nAND NOT model.filePath CONTAINS 'node_modules'\nAND NOT model.filePath CONTAINS '.component'\nAND NOT model.filePath CONTAINS '.service'\nAND NOT model.filePath CONTAINS '.module'\nAND NOT model.filePath CONTAINS '.directive'\nAND NOT model.filePath CONTAINS '.controller'\nAND NOT model.filePath CONTAINS '.state'\nAND NOT model.filePath CONTAINS 'ui-state'\nAND model.name != comp.name\nAND model.name != service.name\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.name IN ['AnalyticsState', 'TeamCacheUiState', 'TeamListUiState', 'TeamSubjectUiState', 'MemberSelection']\nMATCH (uiState)-[:HAS_DESCENDANT]->(stateRef:Identifier)\n\nMATCH (model:ClassDeclaration {name: compRef.text})\n\nWHERE compRef.text = stateRef.text\nAND NOT model.filePath CONTAINS 'node_modules'\nAND model.name != comp.name\nAND model.name != uiState.name\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier {text: 'MemberSelection'})\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.name IN ['AnalyticsState', 'TeamCacheUiState', 'TeamListUiState', 'TeamSubjectUiState', 'MemberSelection']\nMATCH (uiState)-[:HAS_DESCENDANT]->(stateRef:Identifier {text: 'MemberSelection'})\n\nRETURN DISTINCT comp.name, uiState.name"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration {name: 'TeamsPageComponent'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref:Identifier)\n\nMATCH (uiState:ClassDeclaration {name: 'TeamListUiState'})\nMATCH (uiState)-[:HAS_DESCENDANT]->(ref)\n\nRETURN DISTINCT ref.text as sharedIdentifier"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration {name: 'TeamsPageComponent'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (uiState:ClassDeclaration {name: 'TeamListUiState'})\nMATCH (uiState)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\n\nRETURN DISTINCT ref1.text as sharedIdentifier\nLIMIT 30"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.filePath CONTAINS 'ui-state' OR uiState.filePath CONTAINS '.state'\nMATCH (uiState)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\n\nRETURN DISTINCT ref1.text as identifier\nLIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE model.name IN ['signal', 'selectedTeam', 'pendingAction', 'inject', 'TeamFilterModel', 'team', 'Team']\nAND NOT model.filePath CONTAINS 'node_modules'\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.filePath CONTAINS 'ui-state' OR uiState.filePath CONTAINS '.state'\n\nMATCH (model:ClassDeclaration)\nWHERE NOT (model)-[:HAS_DECORATOR]->(:Decorator)\n\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier {text: model.name})\nMATCH (uiState)-[:HAS_DESCENDANT]->(stateRef:Identifier {text: model.name})\n\nWHERE NOT model.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.filePath CONTAINS 'ui-state' OR uiState.filePath CONTAINS '.state'\nMATCH (uiState)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nMATCH (sharedModel:ClassDeclaration {name: ref1.text})\n\nWHERE ref1.text = ref2.text\nAND sharedModel.name != comp.name\nAND sharedModel.name != uiState.name\nAND NOT sharedModel.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT sharedModel.name, sharedModel.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE NOT model.filePath CONTAINS 'node_modules'\nAND NOT model.filePath CONTAINS '.component'\nAND NOT model.filePath CONTAINS '.service'\nAND NOT model.filePath CONTAINS '.module'\nAND NOT model.filePath CONTAINS '.directive'\nAND NOT model.filePath CONTAINS 'ui-state'\nAND NOT model.filePath CONTAINS '.state'\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.filePath CONTAINS 'ui-state' OR uiState.filePath CONTAINS '.state'\nMATCH (uiState)-[:HAS_DESCENDANT]->(stateRef:Identifier)\n\nMATCH (model:ClassDeclaration {name: compRef.text})\nWHERE model.name IN ['MemberSelection', 'ButtonComponent', 'AlertDirective', 'DisabledDirective', 'AppController', 'TeamsController']\n\nWHERE compRef.text = stateRef.text\nAND model.name = compRef.text\nAND NOT model.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.filePath CONTAINS 'ui-state' OR uiState.filePath CONTAINS '.state'\nMATCH (uiState)-[:HAS_DESCENDANT]->(stateRef:Identifier)\n\nMATCH (model:ClassDeclaration {name: compRef.text})\nWHERE model.filePath CONTAINS 'api/'\n\nWHERE compRef.text = stateRef.text\nAND model.name = compRef.text\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (model:ClassDeclaration)\nWHERE model.filePath CONTAINS 'web/'\nAND NOT model.filePath CONTAINS '.component'\nAND NOT model.filePath CONTAINS '.service'\nAND NOT model.filePath CONTAINS '.module'\nAND NOT model.filePath CONTAINS '.directive'\nAND NOT model.filePath CONTAINS 'ui-state'\nAND NOT model.filePath CONTAINS '.state'\nRETURN model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier {text: 'MemberSelection'})\n\nMATCH (uiState:ClassDeclaration)\nWHERE uiState.filePath CONTAINS 'ui-state' OR uiState.filePath CONTAINS '.state'\nMATCH (uiState)-[:HAS_DESCENDANT]->(ref2:Identifier {text: 'MemberSelection'})\n\nRETURN DISTINCT comp.name, uiState.name"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(compRef:Identifier)\n\nMATCH (svc:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(svcId:Identifier {text: 'Injectable'})\nMATCH (svcId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (svc)-[:HAS_DESCENDANT]->(svcRef:Identifier)\n\nMATCH (model:ClassDeclaration {name: compRef.text})\n\nWHERE compRef.text = svcRef.text\nAND model.name = compRef.text\nAND model.name != comp.name\nAND model.name != svc.name\nAND NOT model.filePath CONTAINS 'node_modules'\n\nRETURN DISTINCT model.name, model.filePath"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d1:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(i1:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (comp)-[:HAS_DESCENDANT]->(ref1:Identifier)\n\nMATCH (svc:ClassDeclaration)-[:HAS_DECORATOR]->(d2:Decorator)-[:HAS_DESCENDANT]->(svcId:Identifier {text: 'Injectable'})\nMATCH (svcId)-[:HAS_SYMBOL_IMPORT]->(i2:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (svc)-[:HAS_DESCENDANT]->(ref2:Identifier)\n\nWHERE ref1.text = ref2.text\nAND ref1.text != comp.name\nAND ref1.text != svc.name\n\nRETURN DISTINCT ref1.text\nLIMIT 100"
+          }
+        }
+      ]
+    }
+  }
+}
