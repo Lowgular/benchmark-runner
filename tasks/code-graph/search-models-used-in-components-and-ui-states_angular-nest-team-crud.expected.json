@@ -1,0 +1,20 @@
+{
+  "expectedNodes": [
+    {
+      "name": "Member",
+      "filePath": "web/src/app/teams/member.ts"
+    },
+    {
+      "name": "ViewingPreferences",
+      "filePath": "web/src/app/teams/viewing-preferences.ts"
+    },
+    {
+      "name": "Team",
+      "filePath": "web/src/app/teams/team.ts"
+    },
+    {
+      "name": "TeamFilterModel",
+      "filePath": "web/src/app/teams/team-filter.model.ts"
+    }
+  ]
+}

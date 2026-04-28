@@ -162,6 +162,8 @@ Dialect gotchas:
 
 - Never write `MATCH n`; always `MATCH (n)`.
 - Never write `(n {prop: 'value'})` without a label — always `(n:Label {prop: 'value'})`.
+- Declare each variable only once with a label (for example `p:PropertyDeclaration`).
+- If reusing a bound variable in later clauses, reference it without redeclaring the label (for example `(p)` not `(p:PropertyDeclaration)`).
 - Use regex operator `=~`; do not use `MATCHES`.
 - `WITH`, `UNWIND`, `UNION`, and write operations are not supported.
 
@@ -196,10 +198,19 @@ Build final Cypher by composing instruction fragments in order:
 Reason carefully over combined constraints to avoid contradictions.
 Produce one sound final query, not separate partial queries.
 
+Variable binding rules when combining retrieved snippets:
+
+- Treat snippet variables as placeholders; normalize them before merge.
+- Keep one canonical variable name per entity (for example one `c` for class, one `p` for property).
+- Never redeclare the same variable with a label in a later `MATCH`.
+- Prefer adding new constraints to already-bound variables instead of re-matching the same path.
+- For “same declaration/type used by two owners” intents, bind the shared declaration once and connect both owners to that same variable; do not only compare names. For type usage, preserve the owner-to-typed-node shape: `owner -> member/typed node -> HAS_TYPE_DECLARATION or HAS_DESCENDANT_TYPE_DECLARATION -> shared declaration`. Do not apply type-resolution relationships directly to the owner class.
+
 Polarity preservation rules:
 
 - If the normalized AST plan includes `or does not have [property]`, preserve both branches in Cypher.
 - Do not collapse a disjunction into only the positive branch.
+- For `does not have [member/node]` constraints, use `OPTIONAL MATCH` for that member/node and `WHERE <var> IS NULL`.
 - For `property value OR property absent` intents, do not use required `MATCH` on that property.
 - Prefer `OPTIONAL MATCH` for the property node plus a null-aware predicate (for example `p IS NULL OR p.initializer = 'true'`).
 
@@ -211,6 +222,14 @@ Payload policy:
 
 - Prefer minimal fields first: `id`, `name`, `filePath`
 - Add extra fields only when the user asks.
+
+When to split into multiple query calls:
+
+- If a single merged query would require unsupported constructs, or repeatedly collides on variable binding, run multiple `code-graph-query` calls.
+- Use call 1 to get candidate ids for the base concept.
+- Use call 2 (or more) to apply additional constraints against those ids.
+- Intersect candidates by `id` in post-processing and return only rows that satisfy all required constraints.
+- Prefer this decomposition over forcing a brittle one-shot query.
 
 #### Query quality checklist (before execution)
 
@@ -241,6 +260,7 @@ The tool always returns a string. Interpret it as follows:
 - If error mentions unsupported relationship type — go back to retrieved cypher examples and copy the exact relationship name. Do not invent a variation.
 - If error mentions unlabeled node — add the missing label.
 - If error mentions unsupported clause — check dialect gotchas.
+- If error mentions maximum call stack size — the query is usually too broad. Narrow owners/members before type resolution, use direct `HAS_TYPE_DECLARATION` for simple annotations, and reserve `HAS_DESCENDANT_TYPE_DECLARATION` for generic/nested types. If it still over-expands, use an identifier fallback.
 - Fix the query and retry once.
 - If error persists after one fix — call `search_cypher_context` with the failing intent to fetch a closer example, then retry.
 
@@ -249,6 +269,7 @@ The tool always returns a string. Interpret it as follows:
 - Do not assume nothing exists.
 - Remove one constraint and retry to verify the traversal path is correct.
 - If broader query returns results, the removed constraint was the problem — refine it.
+- If broadening keeps failing due to query-shape conflicts, decompose into multiple calls and intersect by `id`.
 
 Do not exceed two total execution attempts.
 

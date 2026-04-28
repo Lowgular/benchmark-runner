@@ -1,0 +1,206 @@
+{
+  "model": "Xenova/bge-small-en-v1.5",
+  "builtAt": "2026-03-29T12:30:00.000Z",
+  "entries": [
+    {
+      "id": "class",
+      "aliases": [
+        "class",
+        "classes",
+        "class declaration",
+        "dependency",
+        "dependencies"
+      ],
+      "tags": [
+        "class",
+        "declaration",
+        "dependency"
+      ],
+      "contextPath": ".code-graph/patterns/class.md"
+    },
+    {
+      "id": "component",
+      "aliases": [
+        "components",
+        "angular component",
+        "component class"
+      ],
+      "tags": [
+        "angular",
+        "decorator",
+        "class",
+        "component"
+      ],
+      "contextPath": ".code-graph/patterns/component.md",
+      "constraints": [
+        "standalone-property",
+        "smart-component"
+      ],
+      "embedding": []
+    },
+    {
+      "id": "directive",
+      "aliases": [
+        "directives",
+        "angular directive"
+      ],
+      "tags": [
+        "angular",
+        "decorator",
+        "class",
+        "directive"
+      ],
+      "contextPath": ".code-graph/patterns/directive.md",
+      "constraints": [
+        "standalone-property"
+      ],
+      "embedding": []
+    },
+    {
+      "id": "ngmodule",
+      "aliases": [
+        "ng modules",
+        "angular module",
+        "ngmodule"
+      ],
+      "tags": [
+        "angular",
+        "decorator",
+        "class",
+        "ngmodule"
+      ],
+      "contextPath": ".code-graph/patterns/ng-module.md",
+      "embedding": []
+    },
+    {
+      "id": "pipe",
+      "aliases": [
+        "pipes",
+        "angular pipe"
+      ],
+      "tags": [
+        "angular",
+        "decorator",
+        "class",
+        "pipe"
+      ],
+      "contextPath": ".code-graph/patterns/pipe.md",
+      "embedding": []
+    },
+    {
+      "id": "service",
+      "aliases": [
+        "services",
+        "angular service",
+        "injectable service"
+      ],
+      "tags": [
+        "angular",
+        "decorator",
+        "class",
+        "service",
+        "injectable"
+      ],
+      "contextPath": ".code-graph/patterns/service.md",
+      "embedding": []
+    },
+    {
+      "id": "method",
+      "aliases": [
+        "methods",
+        "class method",
+        "interface method",
+        "type alias method"
+      ],
+      "tags": [
+        "method"
+      ],
+      "contextPath": ".code-graph/patterns/method.md",
+      "embedding": []
+    },
+    {
+      "id": "signal-property",
+      "aliases": [
+        "signal properties",
+        "signal fields",
+        "angular signals",
+        "signal()",
+        "signals",
+        "writable signal",
+        "input signal",
+        "model signal",
+        "signal properties used in template"
+      ],
+      "tags": [
+        "angular",
+        "signal",
+        "property",
+        "reactive",
+        "class",
+        "template",
+        "binding"
+      ],
+      "contextPath": ".code-graph/patterns/signal-property.md"
+    },
+    {
+      "id": "property-template-binding",
+      "aliases": [
+        "properties used in template",
+        "properties bound in template",
+        "template properties",
+        "properties referenced in template",
+        "component template property",
+        "signal property in template",
+        "component signal properties used in template"
+      ],
+      "tags": [
+        "template",
+        "binding",
+        "property",
+        "component",
+        "angular"
+      ],
+      "contextPath": ".code-graph/patterns/property-template-binding.md"
+    },
+    {
+      "id": "component-input-binding",
+      "aliases": [
+        "components inputs to component",
+        "components inputs to directive",
+        "component input binding",
+        "component input binding to component",
+        "component input binding to directive"
+      ],
+      "tags": [
+        "input",
+        "binding",
+        "component",
+        "directive"
+      ],
+      "contextPath": ".code-graph/patterns/component-input-binding.md"
+    },
+    {
+      "id": "dependency-chain",
+      "aliases": [
+        "dependency chain",
+        "class dependencies",
+        "dependency depth",
+        "injection chain",
+        "transitive dependencies",
+        "longest dependency",
+        "deepest dependency",
+        "dependency between",
+        "depends on"
+      ],
+      "tags": [
+        "dependency",
+        "chain",
+        "depth",
+        "class",
+        "transitive",
+        "depends"
+      ],
+      "contextPath": ".code-graph/patterns/dependency-chain.md"
+    }
+  ]
+}

@@ -1,0 +1,954 @@
+{
+  "generatedAt": "2026-04-25T06:58:31.390Z",
+  "runsRoot": "../../runs/agent-code-graph",
+  "targetWorkspace": "../../init-states/angular-nest-team-crud",
+  "count": 34,
+  "entries": [
+    {
+      "id": "001",
+      "source": "runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "call_e082c4e29b5646409cd6c458",
+      "cypher": "MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id != c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS 'web' AND c2.filePath CONTAINS 'web' RETURN c1.name, c2.name, length(path) as hops",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c1.name": "AnalyticsState",
+            "c2.name": "ConfigDefault",
+            "hops": 3
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigService",
+            "hops": 3
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigDefault",
+            "hops": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "002",
+      "source": "runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "call_b74b9095ca9f494e878b68bf",
+      "cypher": "MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id != c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS 'web' AND c2.filePath CONTAINS 'web' WITH c1, c2, path, nodes(path) as ns UNWIND range(0, size(ns)-2) as i RETURN c1.name, c2.name, length(path) as hops, [n in ns | n.name] as chain",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id != c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS 'web' AND c2.filePath CONTAINS 'web' WITH c1, c2, path, nodes(path) as ns UNWIND range(0, size(ns)-2) as i RETURN c1.name, c2.name, length(path) as hops, [n in ns | n.name] as chain\nError: Unsupported Cypher feature detected: WITH clause\n\nWITH clause is not supported. Cannot use WITH for intermediate results or variable passing.\n\nAlternative: Use multiple MATCH statements or inline variables directly in WHERE/RETURN clauses.\n\nQuery: MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id != c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS 'web' AND c2.filePath CONTAINS 'web' WITH c1, c2, path, nodes(path) as ns UNWIND range(0, size(ns)-2) as i RETURN c1.name, c2.name, length(path) as hops, [n in ns | n.name] as chain\n\nstderr: Error: Unsupported Cypher feature detected: WITH clause\n\nWITH clause is not supported. Cannot use WITH for intermediate results or variable passing.\n\nAlternative: Use multiple MATCH statements or inline variables directly in WHERE/RETURN clauses.\n\nQuery: MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id != c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS 'web' AND c2.filePath CONTAINS 'web' WITH c1, c2, path, nodes(path) as ns UNWIND range(0, size(ns)-2) as i RETURN c1.name, c2.name, length(path) as hops, [n in ns | n.name] as chain\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "003",
+      "source": "runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "call_38226ea820c14bc298cef1dc",
+      "cypher": "MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id != c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS 'web' AND c2.filePath CONTAINS 'web' RETURN c1.name, c2.name, length(path) as hops, path",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c1.name": "AnalyticsState",
+            "c2.name": "ConfigDefault",
+            "hops": 3,
+            "path": {
+              "edges": [
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.state.ts.3.0.9.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.service.ts.4.0.20.1",
+                  "type": "DEPENDS_ON"
+                },
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.service.ts.4.0.20.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/config.service.ts.2.0.10.1",
+                  "type": "DEPENDS_ON"
+                },
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/config.service.ts.2.0.10.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/config.service.ts.12.0.17.1",
+                  "type": "DEPENDS_ON"
+                }
+              ],
+              "length": 3
+            }
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigService",
+            "hops": 3,
+            "path": {
+              "edges": [
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/app.component.ts.6.0.30.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.state.ts.3.0.9.1",
+                  "type": "DEPENDS_ON"
+                },
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.state.ts.3.0.9.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.service.ts.4.0.20.1",
+                  "type": "DEPENDS_ON"
+                },
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.service.ts.4.0.20.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/config.service.ts.2.0.10.1",
+                  "type": "DEPENDS_ON"
+                }
+              ],
+              "length": 3
+            }
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigDefault",
+            "hops": 4,
+            "path": {
+              "edges": [
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/app.component.ts.6.0.30.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.state.ts.3.0.9.1",
+                  "type": "DEPENDS_ON"
+                },
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.state.ts.3.0.9.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.service.ts.4.0.20.1",
+                  "type": "DEPENDS_ON"
+                },
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.service.ts.4.0.20.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/config.service.ts.2.0.10.1",
+                  "type": "DEPENDS_ON"
+                },
+                {
+                  "source": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/config.service.ts.2.0.10.1",
+                  "target": "/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/config.service.ts.12.0.17.1",
+                  "type": "DEPENDS_ON"
+                }
+              ],
+              "length": 4
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "004",
+      "source": "runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "call_e0863d77b5f64507b945c2f9",
+      "cypher": "MATCH (c:ClassDeclaration) WHERE c.id = '/Users/greg/Desktop/projects/lowgular/vibe-projects/gen-examples/runs/agent-code-graph/search-dependency-chain/7f27bbff-49be-4e4e-b2f9-d6095ed076a3/web/src/app/analytics/analytics.state.ts.3.0.9.1' RETURN c.name",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.name": "AnalyticsState"
+          }
+        ]
+      }
+    },
+    {
+      "id": "005",
+      "source": "runs/agent-code-graph/search-dependency-chain/7ff4d457-0759-4211-9443-d7567c57fac6/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "call_2SJoVDsxpQCEnzCdSKHOQb05",
+      "cypher": "MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id <> c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS '/web/' AND c2.filePath CONTAINS '/web/' RETURN c1.name AS classA, c1.filePath AS classAFilePath, c2.name AS classB, c2.filePath AS classBFilePath LIMIT 200",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id <> c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS '/web/' AND c2.filePath CONTAINS '/web/' RETURN c1.name AS classA, c1.filePath AS classAFilePath, c2.name AS classB, c2.filePath AS classBFilePath LIMIT 200\nError: Unexpected token type for WHERE value: GT\n\nstderr: Error: Unexpected token type for WHERE value: GT\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "006",
+      "source": "runs/agent-code-graph/search-dependency-chain/7ff4d457-0759-4211-9443-d7567c57fac6/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "call_hjJYoB0M2K6k7TnFwQtMNgrk",
+      "cypher": "MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration) WHERE c1.id != c2.id AND NOT c1.filePath CONTAINS 'node_modules' AND NOT c2.filePath CONTAINS 'node_modules' AND c1.filePath CONTAINS '/web/' AND c2.filePath CONTAINS '/web/' RETURN c1.name AS classA, c1.filePath AS classAFilePath, c2.name AS classB, c2.filePath AS classBFilePath LIMIT 200",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "classA": "AnalyticsState",
+            "classAFilePath": "web/src/app/analytics/analytics.state.ts",
+            "classB": "ConfigDefault",
+            "classBFilePath": "web/src/app/config.service.ts"
+          },
+          {
+            "classA": "AppComponent",
+            "classAFilePath": "web/src/app/app.component.ts",
+            "classB": "ConfigService",
+            "classBFilePath": "web/src/app/config.service.ts"
+          },
+          {
+            "classA": "AppComponent",
+            "classAFilePath": "web/src/app/app.component.ts",
+            "classB": "ConfigDefault",
+            "classBFilePath": "web/src/app/config.service.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "007",
+      "source": "runs/agent-code-graph/search-dependency-chain/a9dcf397-7370-4905-84aa-2844e5c726d0/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "call_Ue44vN3o2JDLXhAQERdrRE9G",
+      "cypher": "MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration)\nWHERE c1.id != c2.id\nAND NOT c1.filePath CONTAINS 'node_modules'\nAND NOT c2.filePath CONTAINS 'node_modules'\nRETURN c1.name, c2.name, length(path) as hops, c1.filePath, c2.filePath\nLIMIT 50",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c1.name": "AnalyticsState",
+            "c2.name": "ConfigDefault",
+            "hops": 3,
+            "c1.filePath": "web/src/app/analytics/analytics.state.ts",
+            "c2.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigService",
+            "hops": 3,
+            "c1.filePath": "web/src/app/app.component.ts",
+            "c2.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigDefault",
+            "hops": 4,
+            "c1.filePath": "web/src/app/app.component.ts",
+            "c2.filePath": "web/src/app/config.service.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "008",
+      "source": "runs/agent-code-graph/search-dependency-chain/bac4ca83-f243-49e1-99a8-2c840a8a87b3/agents.jsonl",
+      "taskId": "search-dependency-chain",
+      "toolCallId": "tool_code-graph-query_XPQw2qi007Vv3WoRCrdl",
+      "cypher": "MATCH path = (c1:ClassDeclaration)-[:DEPENDS_ON*3..5]->(c2:ClassDeclaration)\nWHERE c1.filePath CONTAINS '/web/'\nAND c2.filePath CONTAINS '/web/'\nAND NOT c1.filePath CONTAINS 'node_modules'\nAND NOT c2.filePath CONTAINS 'node_modules'\nRETURN c1.name, c2.name, length(path) as hops\nLIMIT 20",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c1.name": "AnalyticsState",
+            "c2.name": "ConfigDefault",
+            "hops": 3
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigService",
+            "hops": 3
+          },
+          {
+            "c1.name": "AppComponent",
+            "c2.name": "ConfigDefault",
+            "hops": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "009",
+      "source": "runs/agent-code-graph/search-services/2b9fcf55-f15c-44b7-9437-e216a7608f36/agents.jsonl",
+      "taskId": "search-services",
+      "toolCallId": "call_4e2ed01a280042ecb11237fc",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Injectable' })-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) RETURN c.id, c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.id": "api/src/app/app.service.ts.2.0.7.1",
+            "c.name": "AppService",
+            "c.filePath": "api/src/app/app.service.ts"
+          },
+          {
+            "c.id": "web/src/app/teams/teams.service.ts.5.0.33.1",
+            "c.name": "TeamsService",
+            "c.filePath": "web/src/app/teams/teams.service.ts"
+          },
+          {
+            "c.id": "web/src/app/config.service.ts.2.0.10.1",
+            "c.name": "ConfigService",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.id": "web/src/app/config.service.ts.12.0.17.1",
+            "c.name": "ConfigDefault",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.id": "web/src/app/analytics/analytics.service.ts.4.0.20.1",
+            "c.name": "AnalyticsService",
+            "c.filePath": "web/src/app/analytics/analytics.service.ts"
+          },
+          {
+            "c.id": "web/src/app/analytics/analytics.state.ts.3.0.9.1",
+            "c.name": "AnalyticsState",
+            "c.filePath": "web/src/app/analytics/analytics.state.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "010",
+      "source": "runs/agent-code-graph/search-services/5060fc83-b562-492a-92f4-1cb9e3018427/agents.jsonl",
+      "taskId": "search-services",
+      "toolCallId": "call_bRxGhCI1QwSS7U9jja7hw1b8",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator) MATCH (cd)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Injectable' }) MATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) RETURN c.id, c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.id": "api/src/app/app.service.ts.2.0.7.1",
+            "c.name": "AppService",
+            "c.filePath": "api/src/app/app.service.ts"
+          },
+          {
+            "c.id": "web/src/app/teams/teams.service.ts.5.0.33.1",
+            "c.name": "TeamsService",
+            "c.filePath": "web/src/app/teams/teams.service.ts"
+          },
+          {
+            "c.id": "web/src/app/config.service.ts.2.0.10.1",
+            "c.name": "ConfigService",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.id": "web/src/app/config.service.ts.12.0.17.1",
+            "c.name": "ConfigDefault",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.id": "web/src/app/analytics/analytics.service.ts.4.0.20.1",
+            "c.name": "AnalyticsService",
+            "c.filePath": "web/src/app/analytics/analytics.service.ts"
+          },
+          {
+            "c.id": "web/src/app/analytics/analytics.state.ts.3.0.9.1",
+            "c.name": "AnalyticsState",
+            "c.filePath": "web/src/app/analytics/analytics.state.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "011",
+      "source": "runs/agent-code-graph/search-services/f8133a59-d771-43f6-a5c5-df8e706d4597/agents.jsonl",
+      "taskId": "search-services",
+      "toolCallId": "tool_code-graph-query_uTWnb6WcO70HZ7MQQCwL",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Injectable'})\nWHERE (i)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})\nRETURN c.name, c.filePath",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Injectable'})\nWHERE (i)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})\nRETURN c.name, c.filePath\nError: Unsupported operator at position 122.\n\nstderr: Error: Unsupported operator at position 122.\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "012",
+      "source": "runs/agent-code-graph/search-services/f8133a59-d771-43f6-a5c5-df8e706d4597/agents.jsonl",
+      "taskId": "search-services",
+      "toolCallId": "tool_code-graph-query_zuQxCLItF6o6JfZghPXA",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Injectable'})\nMATCH (i)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration {moduleSpecifier: '@angular/core'})\nRETURN c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.name": "AppService",
+            "c.filePath": "api/src/app/app.service.ts"
+          },
+          {
+            "c.name": "TeamsService",
+            "c.filePath": "web/src/app/teams/teams.service.ts"
+          },
+          {
+            "c.name": "ConfigService",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.name": "ConfigDefault",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.name": "AnalyticsService",
+            "c.filePath": "web/src/app/analytics/analytics.service.ts"
+          },
+          {
+            "c.name": "AnalyticsState",
+            "c.filePath": "web/src/app/analytics/analytics.state.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "013",
+      "source": "runs/agent-code-graph/search-services/ffc184b1-fe0f-41cd-928a-48f4a0d9d3df/agents.jsonl",
+      "taskId": "search-services",
+      "toolCallId": "call_9GA0DjUaMsnS3pEmX0XJJGHm",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Injectable' })-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) RETURN c.id, c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.id": "api/src/app/app.service.ts.2.0.7.1",
+            "c.name": "AppService",
+            "c.filePath": "api/src/app/app.service.ts"
+          },
+          {
+            "c.id": "web/src/app/teams/teams.service.ts.5.0.33.1",
+            "c.name": "TeamsService",
+            "c.filePath": "web/src/app/teams/teams.service.ts"
+          },
+          {
+            "c.id": "web/src/app/config.service.ts.2.0.10.1",
+            "c.name": "ConfigService",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.id": "web/src/app/config.service.ts.12.0.17.1",
+            "c.name": "ConfigDefault",
+            "c.filePath": "web/src/app/config.service.ts"
+          },
+          {
+            "c.id": "web/src/app/analytics/analytics.service.ts.4.0.20.1",
+            "c.name": "AnalyticsService",
+            "c.filePath": "web/src/app/analytics/analytics.service.ts"
+          },
+          {
+            "c.id": "web/src/app/analytics/analytics.state.ts.3.0.9.1",
+            "c.name": "AnalyticsState",
+            "c.filePath": "web/src/app/analytics/analytics.state.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "014",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/a2bb2184-b0b3-477b-aa8f-f7aa1527c3bf/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_2fc678b1a44a46a7962a8cb0",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)\nMATCH (cd)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' })\nMATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:TypeAliasDeclaration|InterfaceDeclaration)\nWHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core'\nMATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p)\nRETURN c.name AS componentName, p.name AS propertyName, c.filePath AS filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "componentName": "ButtonComponent",
+            "propertyName": "label",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "componentName": "ButtonComponent",
+            "propertyName": "disabled",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "componentName": "MemberComponent",
+            "propertyName": "member",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "componentName": "MemberComponent",
+            "propertyName": "stateRead",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "componentName": "MemberComponent",
+            "propertyName": "org",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "componentName": "TeamsPageComponent",
+            "propertyName": "teams",
+            "filePath": "web/src/app/teams/teams-page.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "015",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/a4c6aac9-3619-444a-a613-37e81358a27d/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "tool_code-graph-query_uM53YQpeL32tlIk1lqVM",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Component'})\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_TYPE]->(t:TypeReference)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration {moduleSpecifier: '@angular/core'})\nWHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal']\nMATCH (c)-[:HAS_TEMPLATE_REFERENCE]->(p)\nRETURN p.name, c.filePath",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Component'})\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_TYPE]->(t:TypeReference)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration {moduleSpecifier: '@angular/core'})\nWHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal']\nMATCH (c)-[:HAS_TEMPLATE_REFERENCE]->(p)\nRETURN p.name, c.filePath\nError: Unsupported relationship type: \"HAS_TYPE\". Auto-config supports: HAS_DESCENDANT, HAS_ANCESTOR, HAS_NAME, HAS_INITIALIZER, HAS_PARAMETER, HAS_EXPRESSION, HAS_TYPE_ANNOTATION, HAS_BODY, HAS_MEMBER, HAS_PROPERTY, HAS_ELEMENT, HAS_ARGUMENT, HAS_DECORATOR, HAS_MODIFIER, HAS_TEMPLATE_BINDING, HAS_SYMBOL_DECLARATION, HAS_SYMBOL_IMPORT, HAS_TYPE_DECLARATION, HAS_DESCENDANT_TYPE_ANNOTATION, HAS_DESCENDANT_TYPE_DECLARATION, EXTENDS, IMPLEMENTS, BINDS_INPUT\n\nstderr: Error: Unsupported relationship type: \"HAS_TYPE\". Auto-config supports: HAS_DESCENDANT, HAS_ANCESTOR, HAS_NAME, HAS_INITIALIZER, HAS_PARAMETER, HAS_EXPRESSION, HAS_TYPE_ANNOTATION, HAS_BODY, HAS_MEMBER, HAS_PROPERTY, HAS_ELEMENT, HAS_ARGUMENT, HAS_DECORATOR, HAS_MODIFIER, HAS_TEMPLATE_BINDING, HAS_SYMBOL_DECLARATION, HAS_SYMBOL_IMPORT, HAS_TYPE_DECLARATION, HAS_DESCENDANT_TYPE_ANNOTATION, HAS_DESCENDANT_TYPE_DECLARATION, EXTENDS, IMPLEMENTS, BINDS_INPUT\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "016",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/a4c6aac9-3619-444a-a613-37e81358a27d/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "tool_code-graph-query_IkjupLKT26NGH4hKhBki",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Component'})\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_TYPE_ANNOTATION]->(ta:TypeAnnotation)-[:HAS_DESCENDANT]->(t:Identifier)\nWHERE t.text IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal']\nMATCH (c)-[:HAS_TEMPLATE_BINDING]->(p)\nRETURN p.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": []
+      }
+    },
+    {
+      "id": "017",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/a4c6aac9-3619-444a-a613-37e81358a27d/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "tool_code-graph-query_QZKN4ajHhXPIrrOoOhW1",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Component'})\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (c)-[:HAS_TEMPLATE_BINDING]->(p)\nRETURN p.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": []
+      }
+    },
+    {
+      "id": "018",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/a4c6aac9-3619-444a-a613-37e81358a27d/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "tool_code-graph-query_XnVYrgA4vSrZr9HHinSn",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Component'})\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (c)-[:HAS_TEMPLATE_BINDING]->(p)\nRETURN p.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": []
+      }
+    },
+    {
+      "id": "019",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/a4c6aac9-3619-444a-a613-37e81358a27d/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "tool_code-graph-query_neJFipdhQE9rZF2PKkhW",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(i:Identifier {text: 'Component'})\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nRETURN p.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "p.name": "label",
+            "c.filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "p.name": "disabled",
+            "c.filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "p.name": "clicked",
+            "c.filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "p.name": "member",
+            "c.filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "p.name": "state",
+            "c.filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "p.name": "stateRead",
+            "c.filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "p.name": "org",
+            "c.filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "p.name": "teamsService",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "fb",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "teams",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "selectedTeam",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "fetchedTeam",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "errorMessage",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "isLoading",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "lookupId",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "form",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "p.name": "title",
+            "c.filePath": "web/src/app/app.component.ts"
+          },
+          {
+            "p.name": "analyticsState",
+            "c.filePath": "web/src/app/app.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "020",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/cad7f1a2-3a05-49d7-b73c-180eff354fad/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_9AOpbCXEhIl38hxa0ms9YF73",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:ClassDeclaration|TypeAliasDeclaration|InterfaceDeclaration) WHERE t.filePath CONTAINS '@angular/core' AND t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "className": "ButtonComponent",
+            "propertyName": "label",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "className": "ButtonComponent",
+            "propertyName": "disabled",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "className": "MemberComponent",
+            "propertyName": "member",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "className": "MemberComponent",
+            "propertyName": "stateRead",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "className": "MemberComponent",
+            "propertyName": "org",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "className": "TeamsPageComponent",
+            "propertyName": "teams",
+            "filePath": "web/src/app/teams/teams-page.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "021",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/dc8ba4c5-9453-474c-9d87-fddb2dffcb9f/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_c415f882c9fc4b1587c2ff98",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' })-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:ClassDeclaration|TypeAliasDeclaration|InterfaceDeclaration) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' })-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:ClassDeclaration|TypeAliasDeclaration|InterfaceDeclaration) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "022",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/dc8ba4c5-9453-474c-9d87-fddb2dffcb9f/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_481bf397a42b493faf43fcac",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100\nError: Invalid unlabeled relationship target in Cypher query.\n\nNode (t) introduced by a relationship must have a label unless it was bound in a prior MATCH.\n\nQuery: MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100\n\nstderr: Error: Invalid unlabeled relationship target in Cypher query.\n\nNode (t) introduced by a relationship must have a label unless it was bound in a prior MATCH.\n\nQuery: MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "023",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/dc8ba4c5-9453-474c-9d87-fddb2dffcb9f/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_RM5RoAuEE39YL1LLK4jC4FTD",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:ClassDeclaration|TypeAliasDeclaration|InterfaceDeclaration) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(i:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:ClassDeclaration|TypeAliasDeclaration|InterfaceDeclaration) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' MATCH (c)-[:HAS_TEMPLATE_BINDING]->(i:Identifier)-[:HAS_ANCESTOR]->(p) RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath LIMIT 100\nError: Maximum call stack size exceeded\n\nstderr: Error: Maximum call stack size exceeded\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "024",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/dc8ba4c5-9453-474c-9d87-fddb2dffcb9f/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_d454514eabcd45b18f6616b4",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:TypeAliasDeclaration) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' RETURN c.name AS className, p.name AS propertyName, c.filePath AS filePath, p.id AS propId LIMIT 100",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "className": "MemberComponent",
+            "propertyName": "stateRead",
+            "filePath": "web/src/app/teams/member.component.ts",
+            "propId": "web/src/app/teams/member.component.ts.23.2.23.38"
+          },
+          {
+            "className": "MemberComponent",
+            "propertyName": "org",
+            "filePath": "web/src/app/teams/member.component.ts",
+            "propId": "web/src/app/teams/member.component.ts.25.2.25.41"
+          },
+          {
+            "className": "TeamsPageComponent",
+            "propertyName": "teams",
+            "filePath": "web/src/app/teams/teams-page.component.ts",
+            "propId": "web/src/app/teams/teams-page.component.ts.29.2.29.71"
+          }
+        ]
+      }
+    },
+    {
+      "id": "025",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/dc8ba4c5-9453-474c-9d87-fddb2dffcb9f/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_90c30cf2d20e4edf96317a92",
+      "cypher": "MATCH (c:ClassDeclaration {name: 'MemberComponent'})-[:HAS_TEMPLATE_BINDING]->(i:Identifier)-[:HAS_ANCESTOR]->(p:PropertyDeclaration) WHERE p.name IN ['stateRead', 'org'] RETURN p.name AS propertyName, c.filePath AS filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "propertyName": "stateRead",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "propertyName": "org",
+            "filePath": "web/src/app/teams/member.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "026",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/dc8ba4c5-9453-474c-9d87-fddb2dffcb9f/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_sNDeaoraTy7V1ZsJByHOMpcD",
+      "cypher": "MATCH (c:ClassDeclaration {name: 'TeamsPageComponent'})-[:HAS_TEMPLATE_BINDING]->(i:Identifier)-[:HAS_ANCESTOR]->(p:PropertyDeclaration) WHERE p.name = 'teams' RETURN p.name AS propertyName, c.filePath AS filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "propertyName": "teams",
+            "filePath": "web/src/app/teams/teams-page.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "027",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/ecdbbb59-5f12-4db2-bc13-f73adca3e22a/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_Ihf7yTt1Qi4u5l48ASCE41CH",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'}) MATCH (compId)-[:HAS_SYMBOL_IMPORT]->(compImp:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:TypeAliasDeclaration|InterfaceDeclaration|ClassDeclaration) MATCH (p)-[:HAS_DESCENDANT]->(sigId:Identifier)-[:HAS_SYMBOL_IMPORT]->(sigImp:ImportDeclaration {moduleSpecifier: '@angular/core'}) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] RETURN p.id AS id, p.name AS name, p.filePath AS filePath LIMIT 200",
+      "expected": {
+        "kind": "text",
+        "value": "ERROR: code-graph query failed:\nCommand failed: code-graph query MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'}) MATCH (compId)-[:HAS_SYMBOL_IMPORT]->(compImp:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:TypeAliasDeclaration|InterfaceDeclaration|ClassDeclaration) MATCH (p)-[:HAS_DESCENDANT]->(sigId:Identifier)-[:HAS_SYMBOL_IMPORT]->(sigImp:ImportDeclaration {moduleSpecifier: '@angular/core'}) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] RETURN p.id AS id, p.name AS name, p.filePath AS filePath LIMIT 200\nError: Maximum call stack size exceeded\n\nstderr: Error: Maximum call stack size exceeded\n\n\nFix the query and retry."
+      }
+    },
+    {
+      "id": "028",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/ecdbbb59-5f12-4db2-bc13-f73adca3e22a/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_86dUYvK8UmrizFguBVkSZ6pX",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'}) MATCH (compId)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'}) MATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p:PropertyDeclaration) MATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:TypeAliasDeclaration|InterfaceDeclaration|ClassDeclaration) WHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core' RETURN p.id AS id, p.name AS name, p.filePath AS filePath LIMIT 200",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "id": "web/src/app/shared/button.ts.11.2.11.35",
+            "name": "label",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "id": "web/src/app/shared/button.ts.13.2.13.35",
+            "name": "disabled",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "id": "web/src/app/teams/member.component.ts.16.2.16.36",
+            "name": "member",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "id": "web/src/app/teams/member.component.ts.23.2.23.38",
+            "name": "stateRead",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "id": "web/src/app/teams/member.component.ts.25.2.25.41",
+            "name": "org",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "id": "web/src/app/teams/teams-page.component.ts.29.2.29.71",
+            "name": "teams",
+            "filePath": "web/src/app/teams/teams-page.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "029",
+      "source": "runs/agent-code-graph/search-signal-properties-in-template/f008b1a9-c6e1-4ba2-8f96-db0dc133bcac/agents.jsonl",
+      "taskId": "search-signal-properties-in-template",
+      "toolCallId": "call_4b85f80fb3994deaafb2b183",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)\nMATCH (cd)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' })\nMATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (c)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:TypeAliasDeclaration|InterfaceDeclaration)\nWHERE t.name IN ['Signal', 'WritableSignal', 'InputSignal', 'ModelSignal'] AND t.filePath CONTAINS '@angular/core'\nMATCH (c)-[:HAS_TEMPLATE_BINDING]->(:Identifier)-[:HAS_ANCESTOR]->(p)\nRETURN c.name AS componentName, p.name AS propertyName, c.filePath AS filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "componentName": "ButtonComponent",
+            "propertyName": "label",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "componentName": "ButtonComponent",
+            "propertyName": "disabled",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "componentName": "MemberComponent",
+            "propertyName": "member",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "componentName": "MemberComponent",
+            "propertyName": "stateRead",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "componentName": "MemberComponent",
+            "propertyName": "org",
+            "filePath": "web/src/app/teams/member.component.ts"
+          },
+          {
+            "componentName": "TeamsPageComponent",
+            "propertyName": "teams",
+            "filePath": "web/src/app/teams/teams-page.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "030",
+      "source": "runs/agent-code-graph/search-standalone-components/2ac861ae-c6ca-42c0-96b2-cbec84e7a17f/agents.jsonl",
+      "taskId": "search-standalone-components",
+      "toolCallId": "call_e6b7658545af454d8a21f83e",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator) MATCH (cd)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' }) MATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) MATCH (cd)-[:HAS_DESCENDANT]->(cdo:ObjectLiteralExpression) OPTIONAL MATCH (cdo)-[:HAS_PROPERTY]->(cdoprop:PropertyAssignment { name: 'standalone' }) WHERE cdoprop IS NULL OR cdoprop.initializer = 'true' RETURN c.id, c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.id": "web/src/app/shared/button.ts.2.0.16.1",
+            "c.name": "ButtonComponent",
+            "c.filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "c.id": "web/src/app/teams/teams-page.component.ts.14.0.116.1",
+            "c.name": "TeamsPageComponent",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "c.id": "web/src/app/app.component.ts.6.0.30.1",
+            "c.name": "AppComponent",
+            "c.filePath": "web/src/app/app.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "031",
+      "source": "runs/agent-code-graph/search-standalone-components/6556b688-a945-42b4-8463-f6d74a837e63/agents.jsonl",
+      "taskId": "search-standalone-components",
+      "toolCallId": "call_HyYftC0x7C1ET4DCeUM3NfHc",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator) MATCH (cd)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' }) MATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) MATCH (cd)-[:HAS_DESCENDANT]->(cdo:ObjectLiteralExpression) OPTIONAL MATCH (cdo)-[:HAS_PROPERTY]->(cdoprop:PropertyAssignment { name: 'standalone' }) WHERE cdoprop IS NULL OR cdoprop.initializer = 'true' RETURN c.id AS id, c.name AS name, c.filePath AS filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "id": "web/src/app/shared/button.ts.2.0.16.1",
+            "name": "ButtonComponent",
+            "filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "id": "web/src/app/teams/teams-page.component.ts.14.0.116.1",
+            "name": "TeamsPageComponent",
+            "filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "id": "web/src/app/app.component.ts.6.0.30.1",
+            "name": "AppComponent",
+            "filePath": "web/src/app/app.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "032",
+      "source": "runs/agent-code-graph/search-standalone-components/7150f3e5-654e-4515-8c25-dcf3f6596f39/agents.jsonl",
+      "taskId": "search-standalone-components",
+      "toolCallId": "tool_code-graph-query_jocZVaurWwfescKswyc2",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' })\nMATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (cd)-[:HAS_DESCENDANT]->(cdo:ObjectLiteralExpression)\nOPTIONAL MATCH (cdo)-[:HAS_PROPERTY]->(cdoprop:PropertyAssignment { name: 'standalone' })\nWHERE cdoprop IS NULL OR cdoprop.initializer = 'true'\nRETURN c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.name": "ButtonComponent",
+            "c.filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "c.name": "TeamsPageComponent",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "c.name": "AppComponent",
+            "c.filePath": "web/src/app/app.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "033",
+      "source": "runs/agent-code-graph/search-standalone-components/a517b763-3aee-4e76-851d-a344329535c8/agents.jsonl",
+      "taskId": "search-standalone-components",
+      "toolCallId": "call_760f6230d3934b18b92939a6",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier { text: 'Component' })-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' }) MATCH (cd)-[:HAS_DESCENDANT]->(cdo:ObjectLiteralExpression) OPTIONAL MATCH (cdo)-[:HAS_PROPERTY]->(cdoprop:PropertyAssignment { name: 'standalone' }) WHERE cdoprop IS NULL OR cdoprop.initializer = 'true' RETURN c.id, c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.id": "web/src/app/shared/button.ts.2.0.16.1",
+            "c.name": "ButtonComponent",
+            "c.filePath": "web/src/app/shared/button.ts"
+          },
+          {
+            "c.id": "web/src/app/teams/teams-page.component.ts.14.0.116.1",
+            "c.name": "TeamsPageComponent",
+            "c.filePath": "web/src/app/teams/teams-page.component.ts"
+          },
+          {
+            "c.id": "web/src/app/app.component.ts.6.0.30.1",
+            "c.name": "AppComponent",
+            "c.filePath": "web/src/app/app.component.ts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "034",
+      "source": "runs/agent-code-graph/search-standalone-components/ead14a93-0962-49ce-800c-1c7b272dad70/agents.jsonl",
+      "taskId": "search-standalone-components",
+      "toolCallId": "tool_code-graph-query_MkuR5XkiBBGjrvOn2VnP",
+      "cypher": "MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(cd:Decorator)-[:HAS_DESCENDANT]->(cdi:Identifier {text: 'Component'})\nMATCH (cdi)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (cd)-[:HAS_DESCENDANT]->(cdo:ObjectLiteralExpression)\nMATCH (cdo)-[:HAS_PROPERTY]->(p:PropertyAssignment {name: 'standalone', initializer: 'true'})\nRETURN c.name, c.filePath",
+      "expected": {
+        "kind": "json",
+        "value": [
+          {
+            "c.name": "AppComponent",
+            "c.filePath": "web/src/app/app.component.ts"
+          }
+        ]
+      }
+    }
+  ]
+}

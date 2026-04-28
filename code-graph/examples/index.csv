@@ -1,0 +1,66 @@
+cypher,intent
+"MATCH (ta:TypeAliasDeclaration) WHERE ta.name contains 'Model'
+RETURN ta","Find TypeAliasDeclaration where TypeAliasDeclaration name contains 'Model'"
+"MATCH (pae:PropertyAccessExpression {name: 'subscribe'})
+RETURN pae","Find PropertyAccessExpression with name 'subscribe'"
+"MATCH (p:PropertyDeclaration) RETURN p","Find PropertyDeclaration"
+"MATCH (d:Decorator)-[:HAS_DESCENDANT]->(obj:ObjectLiteralExpression)-[:HAS_PROPERTY]->(prop {name: 'changeDetection'})
+WHERE d.firstIdentifier = 'Component'
+RETURN d, prop","Find Decorator that has descendant ObjectLiteralExpression that has property with name 'changeDetection' where Decorator firstIdentifier equals 'Component"
+"MATCH (d:Decorator {firstIdentifier: 'Component'})-[:HAS_DESCENDANT]->(obj:ObjectLiteralExpression)
+OPTIONAL MATCH (obj)-[:HAS_PROPERTY]->(prop {name: 'changeDetection'})
+RETURN d, prop","Find Decorator with firstIdentifier 'Component' that has descendant ObjectLiteralExpression and optionally find this ObjectLiteralExpression that has property with name 'changeDetection"
+"MATCH (d:Decorator {firstIdentifier: 'Component'})-[:HAS_DESCENDANT]->(obj:ObjectLiteralExpression)-[:HAS_PROPERTY]->(prop)
+WHERE prop.name IN ['templateUrl', 'styleUrls', 'styleUrl', 'template', 'styles']
+RETURN d, prop","Find Decorator with firstIdentifier 'Component' that has descendant ObjectLiteralExpression that has property where property name is ['templateUrl', 'styleUrls', 'styleUrl', 'template', 'styles']"
+"MATCH (c:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)-[:HAS_MEMBER]->(prop:PropertyDeclaration)
+OPTIONAL MATCH (prop)-[:HAS_MODIFIER]->(mod:ReadonlyKeyword)
+RETURN prop, mod","Find ClassDeclaration or InterfaceDeclaration or TypeAliasDeclaration that has member PropertyDeclaration and optionally find this PropertyDeclaration that has modifier ReadonlyKeyword"
+"MATCH (d:Decorator {firstIdentifier: 'Injectable'})-[:HAS_DESCENDANT]->(obj:ObjectLiteralExpression)
+OPTIONAL MATCH (obj)-[:HAS_PROPERTY]->(prop {name: 'providedIn'})
+RETURN d, prop","Find Decorator with firstIdentifier 'Injectable' that has descendant ObjectLiteralExpression and optionally find this ObjectLiteralExpression that has property with name 'providedIn"
+"MATCH (d:Decorator)-[:HAS_DESCENDANT]->(obj:ObjectLiteralExpression)
+OPTIONAL MATCH (obj)-[:HAS_PROPERTY]->(prop {name: 'standalone'})
+WHERE d.firstIdentifier IN ['Component', 'Directive', 'Pipe']
+RETURN d, prop","Find Decorator that has descendant ObjectLiteralExpression and optionally find this ObjectLiteralExpression that has property with name 'standalone' where Decorator firstIdentifier is ['Component', 'Directive', 'Pipe']"
+"MATCH (pe:PropertyAccessExpression)-[:HAS_DESCENDANT]->(:CallExpression {firstIdentifier: 'pipe'})-[:HAS_ARGUMENT]->(op:CallExpression) RETURN op","Find PropertyAccessExpression that has descendant CallExpression with firstIdentifier 'pipe' that has argument CallExpression"
+"MATCH (c:ClassDeclaration)-[:HAS_MEMBER]->(m:MethodDeclaration|PropertyDeclaration|GetAccessor)
+OPTIONAL MATCH (m)-[:HAS_INITIALIZER]->(init)
+RETURN m, init","Find ClassDeclaration that has member either MethodDeclaration or PropertyDeclaration or GetAccessor and optionally find this member that has initializer"
+"MATCH (c:ClassDeclaration {name: 'App'})-[:HAS_MEMBER]->(m:MethodDeclaration)-[:HAS_DESCENDANT]->(ret:ReturnStatement)
+RETURN m, ret","Find ClassDeclaration with name 'App' that has member MethodDeclaration that has descendant ReturnStatement"
+"MATCH (c:ClassDeclaration)-[:HAS_MEMBER]->(prop:PropertyDeclaration)
+WHERE prop.name STARTS WITH '_'
+RETURN prop","Find ClassDeclaration that has member PropertyDeclaration where PropertyDeclaration name starts with '_"
+"MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)
+WHERE d.firstIdentifier = 'Injectable' AND c.name ENDS WITH 'Service'
+RETURN c, d","Find ClassDeclaration that has decorator where decorator firstIdentifier equals 'Injectable' and ClassDeclaration name ends with 'Service"
+"MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(id:Identifier)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+MATCH (c)-[:HAS_MEMBER]->(:Constructor)-[:HAS_PARAMETER]->(n:Parameter)
+WHERE id.text IN ['Component', 'Directive', 'Pipe', 'Injectable']
+RETURN c, n","Find ClassDeclaration that has decorator that has descendant Identifier that has symbol import from '@angular/core' and also find this ClassDeclaration that has member Constructor that has parameter where Identifier text is ['Component', 'Directive', 'Pipe', 'Injectable']"
+"MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(id:Identifier)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+MATCH (c)-[:HAS_MEMBER]->(prop:PropertyDeclaration)-[:HAS_INITIALIZER]->(init:CallExpression)-[:HAS_EXPRESSION]->(injectId:Identifier {text: 'inject'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+WHERE id.text IN ['Component', 'Directive', 'Pipe', 'Injectable']
+RETURN c, prop","Find ClassDeclaration that has decorator that has descendant Identifier that has symbol import from '@angular/core' and also find this ClassDeclaration that has member PropertyDeclaration that has initializer CallExpression that has expression Identifier with text 'inject' that has symbol import from '@angular/core' where decorator Identifier text is ['Component', 'Directive', 'Pipe', 'Injectable']"
+"MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(id:Identifier)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+OPTIONAL MATCH (c)-[:HAS_MEMBER]->(:Constructor)-[:HAS_PARAMETER]->(param:Parameter)
+OPTIONAL MATCH (c)-[:HAS_MEMBER]->(prop:PropertyDeclaration)-[:HAS_INITIALIZER]->(init:CallExpression)-[:HAS_EXPRESSION]->(injectId:Identifier {text: 'inject'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+WHERE id.text IN ['Component', 'Directive', 'Pipe', 'Injectable']
+RETURN c, param, prop","Find ClassDeclaration that has decorator that has descendant Identifier that has symbol import from '@angular/core' and optionally find this ClassDeclaration that has member Constructor that has parameter and optionally find this ClassDeclaration that has member PropertyDeclaration that has initializer CallExpression that has expression Identifier with text 'inject' that has symbol import from '@angular/core' where Identifier text is ['Component', 'Directive', 'Pipe', 'Injectable']"
+"MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(id:Identifier {text: 'NgModule'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+OPTIONAL MATCH (rD:Decorator)-[:HAS_DESCENDANT]->(:ObjectLiteralExpression)-[:HAS_PROPERTY]->(prop:PropertyAssignment {name: 'imports'})-[:HAS_INITIALIZER]->(arr:ArrayLiteralExpression)-[:HAS_ELEMENT]->(rId:Identifier {text: c.name})
+RETURN d, rD","Find ClassDeclaration that has decorator that has descendant Identifier with text 'NgModule' that has symbol import from '@angular/core' and optionally find Decorator that has descendant ObjectLiteralExpression that has property with name 'imports' that has initializer ArrayLiteralExpression that has element Identifier with text matching this ClassDeclaration name"
+"MATCH (moduleClass:ClassDeclaration)-[:HAS_DECORATOR]->(moduleDecorator:Decorator)-[:HAS_DESCENDANT]->(id:Identifier {text: 'NgModule'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+MATCH (moduleDecorator)-[:HAS_DESCENDANT]->(:ObjectLiteralExpression)-[:HAS_PROPERTY]->(prop:PropertyAssignment {name: 'declarations'})-[:HAS_INITIALIZER]->(:ArrayLiteralExpression)-[:HAS_ELEMENT]->(declaredId:Identifier)
+MATCH (declaredClass:ClassDeclaration {name: declaredId.text})-[:HAS_DECORATOR]->(declaredDecorator:Decorator)
+OPTIONAL MATCH (consumerDecorator:Decorator)-[:HAS_DESCENDANT]->(:ObjectLiteralExpression)-[:HAS_PROPERTY]->(imp:PropertyAssignment {name: 'imports'})-[:HAS_INITIALIZER]->(:ArrayLiteralExpression)-[:HAS_ELEMENT]->(:Identifier {text: moduleClass.name})
+OPTIONAL MATCH (consumerDecorator)-[:HAS_DESCENDANT]->(:ObjectLiteralExpression)-[:HAS_PROPERTY]->(decl:PropertyAssignment {name: 'declarations'})-[:HAS_INITIALIZER]->(:ArrayLiteralExpression)-[:HAS_ELEMENT]->(:Identifier)
+RETURN moduleDecorator, declaredClass, declaredDecorator, consumerDecorator, decl","Find ClassDeclaration that has decorator that has descendant Identifier with text 'NgModule' that has symbol import from '@angular/core' and also find this decorator that has descendant ObjectLiteralExpression that has property with name 'declarations' that has initializer ArrayLiteralExpression that has element Identifier and also find ClassDeclaration with name matching this Identifier text and also find this ClassDeclaration decorator and optionally find Decorator that has descendant ObjectLiteralExpression that has property with name 'imports' that has element Identifier with text matching this NgModule ClassDeclaration name and optionally find this consumer Decorator that has descendant ObjectLiteralExpression that has property with name 'declarations' that has element Identifier"
+"MATCH (c:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(id:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+MATCH (c)-[:HAS_MEMBER]->(m:MethodDeclaration|PropertyDeclaration|GetAccessor)
+OPTIONAL MATCH (m)-[:HAS_DESCENDANT]->(ret:ReturnStatement)-[:HAS_EXPRESSION]->(retExpr)
+OPTIONAL MATCH (m)-[:HAS_DESCENDANT]->(arrow:ArrowFunction)-[:HAS_BODY]->(bodyExpr:BinaryExpression|TemplateExpression|CallExpression|PropertyAccessExpression)
+OPTIONAL MATCH (d)-[:HAS_DESCENDANT]->(template:PropertyAssignment {name: 'template'})
+OPTIONAL MATCH (d)-[:HAS_DESCENDANT]->(templateUrl:PropertyAssignment {name: 'templateUrl'})
+RETURN c, d, m, retExpr, bodyExpr, template, templateUrl","Find ClassDeclaration that has decorator that has descendant Identifier with text 'Component' and also find this ClassDeclaration that has member either MethodDeclaration or PropertyDeclaration or GetAccessor and optionally find this member that has descendant ReturnStatement that has expression and optionally find this member that has descendant ArrowFunction that has body either BinaryExpression or TemplateExpression or CallExpression or PropertyAccessExpression and optionally find this Decorator that has descendant PropertyAssignment with name 'template' and optionally find this Decorator that has descendant PropertyAssignment with name 'templateUrl"

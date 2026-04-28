@@ -1,0 +1,191 @@
+{
+  "builtAt": "2026-03-31T10:00:00.000Z",
+  "entries": [
+    {
+      "id": "class-basic",
+      "aliases": [
+        "class",
+        "classes",
+        "all classes",
+        "class declarations"
+      ],
+      "tags": [
+        "class",
+        "declaration"
+      ],
+      "contextPath": ".code-graph/cypher/class-basic.md"
+    },
+    {
+      "id": "class-decorator",
+      "aliases": [
+        "class decorator",
+        "decorated class",
+        "decorator identifier",
+        "injectable",
+        "component",
+        "directive",
+        "pipe",
+        "ngmodule"
+      ],
+      "tags": [
+        "class",
+        "decorator",
+        "identifier",
+        "import",
+        "angular",
+        "source",
+        "injectable",
+        "component"
+      ],
+      "contextPath": ".code-graph/cypher/class-decorator.md"
+    },
+    {
+      "id": "class-depends-on-class",
+      "aliases": [
+        "class injects class",
+        "component injects service",
+        "class depends on class",
+        "class uses dependency",
+        "inject property resolves to class",
+        "component with injected dependency",
+        "class depending on class",
+        "type resolves to"
+      ],
+      "tags": [
+        "inject",
+        "depepends on",
+        "dependency",
+        "class",
+        "property",
+        "type",
+        "resolution",
+        "type declaration"
+      ],
+      "contextPath": ".code-graph/cypher/class-depends-on-class.md"
+    },
+    {
+      "id": "method-basic",
+      "aliases": [
+        "method",
+        "methods",
+        "all methods",
+        "class method",
+        "member method"
+      ],
+      "tags": [
+        "method",
+        "declaration",
+        "class",
+        "member"
+      ],
+      "contextPath": ".code-graph/cypher/method-basic.md"
+    },
+    {
+      "id": "method-calls-property",
+      "aliases": [
+        "method calls property",
+        "method using dependency",
+        "method calling member",
+        "method returns property call",
+        "method delegates to property",
+        "method calls HttpClient",
+        "service method calls dependency"
+      ],
+      "tags": [
+        "method",
+        "call",
+        "property",
+        "dependency",
+        "return",
+        "callexpression",
+        "propertyaccessexpression",
+        "httpclient",
+        "service"
+      ],
+      "contextPath": ".code-graph/cypher/method-calls-property.md"
+    },
+    {
+      "id": "property-basic",
+      "aliases": [
+        "property",
+        "properties",
+        "class property",
+        "field",
+        "member property",
+        "interface property",
+        "property with type",
+        "property from package"
+      ],
+      "tags": [
+        "property",
+        "field",
+        "member",
+        "class",
+        "interface",
+        "type",
+        "declaration"
+      ],
+      "contextPath": ".code-graph/cypher/property-basic.md"
+    },
+    {
+      "id": "template-binding-basic",
+      "aliases": [
+        "template property",
+        "bound property",
+        "used in template",
+        "referenced in template",
+        "template binding",
+        "property in template"
+      ],
+      "tags": [
+        "template",
+        "binding",
+        "property",
+        "component",
+        "angular"
+      ],
+      "contextPath": ".code-graph/cypher/template-binding-basic.md"
+    },
+    {
+      "id": "template-input-binding",
+      "aliases": [
+        "template input binding",
+        "used in template input",
+        "used in template",
+        "components inputs to component",
+        "components inputs to directive"
+      ],
+      "tags": [
+        "input",
+        "binding",
+        "component",
+        "directive"
+      ],
+      "contextPath": ".code-graph/cypher/template-input-binding.md"
+    },
+    {
+      "id": "variable-length-chain",
+      "aliases": [
+        "injection chain",
+        "dependency chain",
+        "longest chain",
+        "longest injection path",
+        "deepest dependency",
+        "chain depth",
+        "transitive dependencies",
+        "class dependency depth"
+      ],
+      "tags": [
+        "chain",
+        "depth",
+        "path",
+        "length",
+        "traversal",
+        "injection",
+        "dependency",
+        "variable"
+      ],
+      "contextPath": ".code-graph/cypher/variable-length-chain.md"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "expectedNodes": [
+    {
+      "name": "label",
+      "filePath": "web/src/app/shared/button.ts"
+    },
+    {
+      "name": "disabled",
+      "filePath": "web/src/app/shared/button.ts"
+    },
+    {
+      "name": "member",
+      "filePath": "web/src/app/teams/member.component.ts"
+    },
+    {
+      "name": "stateRead",
+      "filePath": "web/src/app/teams/member.component.ts"
+    },
+    {
+      "name": "org",
+      "filePath": "web/src/app/teams/member.component.ts"
+    },
+    {
+      "name": "teams",
+      "filePath": "web/src/app/teams/teams-page.component.ts"
+    }
+  ]
+}

@@ -100,10 +100,10 @@ const parseActualNodesFromResponse = (markdown: string): NodeMatch[] => {
   const nodes: NodeMatch[] = [];
 
   for (const line of lines) {
-    if (!line.startsWith("- ")) continue;
-    if (/^- (Stages|Tools used):/i.test(line)) continue;
+    const normalizedLine = line.startsWith("- ") ? line : `- ${line}`;
+    if (/^- (Stages|Tools used):/i.test(normalizedLine)) continue;
 
-    const match = line.match(/^- (.+?)\s+[—-]\s+(.+)$/);
+    const match = normalizedLine.match(/^- (.+?)\s+[—-]\s+(.+)$/);
     if (!match) continue;
 
     const [, name, filePathRaw] = match;

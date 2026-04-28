@@ -1,0 +1,77 @@
+{
+  "builtAt": "2026-03-31T12:30:00.000Z",
+  "entries": [
+    {
+      "id": "standalone-property",
+      "aliases": [
+        "standalone property",
+        "standalone true",
+        "standalone false",
+        "find standalone components",
+        "not standalone",
+        "without standalone",
+        "standalone missing",
+        "non-standalone"
+      ],
+      "contextPath": ".code-graph/patterns/constraints/standalone-property.md"
+    },
+    {
+      "id": "data-service",
+      "aliases": [
+        "data service",
+        "http service",
+        "api service",
+        "rest service",
+        "service with http",
+        "service that calls http"
+      ],
+      "tags": [
+        "service",
+        "http",
+        "angular",
+        "injectable",
+        "httpclient"
+      ],
+      "contextPath": ".code-graph/patterns/constraints/data-service.md"
+    },
+    {
+      "id": "smart-component",
+      "aliases": [
+        "smart component",
+        "smart components",
+        "component with data service",
+        "component using http",
+        "component injecting data service",
+        "component with http dependency"
+      ],
+      "tags": [
+        "component",
+        "smart",
+        "inject",
+        "data",
+        "service",
+        "httpclient",
+        "angular"
+      ],
+      "contextPath": ".code-graph/patterns/constraints/smart-component.md"
+    },
+    {
+      "id": "signal-type",
+      "aliases": [
+        "signal",
+        "signal type",
+        "signal property",
+        "signal property type",
+        "writable signal",
+        "input signal",
+        "model signal"
+      ],
+      "tags": [
+        "signal",
+        "type",
+        "property"
+      ],
+      "contextPath": ".code-graph/patterns/constraints/signal-type.md"
+    }
+  ]
+}

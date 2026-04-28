@@ -39,18 +39,8 @@ MATCH (m:MethodDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(t:TypeAliasDecl
 find component signal properties that are used in template
 
 ```cypher
-MATCH (c:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:TypeAliasDeclaration {name: 'Signal'})
-WHERE t.filePath CONTAINS '@angular/core'
-MATCH (c)-[:HAS_TEMPLATE_BINDING]->(id:Identifier)
-MATCH (id)-[:HAS_ANCESTOR]->(p)
-RETURN c, p, t
-```
-
-find all properties that are used in template and are not signal based
-
-```cypher
-MATCH (c:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:TypeAliasDeclaration)
-WHERE t.filePath CONTAINS '@angular/core' AND t.name IS NOT 'Signal'
+MATCH (c:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:TypeAliasDeclaration|InterfaceDeclaration|ClassDeclaration)
+WHERE t.name IN ["WritableSignal", "Signal", "InputSignal"] AND t.filePath CONTAINS '@angular/core'
 MATCH (c)-[:HAS_TEMPLATE_BINDING]->(id:Identifier)
 MATCH (id)-[:HAS_ANCESTOR]->(p)
 RETURN c, p, t
@@ -66,6 +56,19 @@ find components that pass on data via "x" input
 find data services
 
 ## Level 3
+
+find models that are used in component and service
+
+```cypher
+MATCH (component:ClassDeclaration)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(cid:Identifier {text: 'Component'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+MATCH (component)-[:HAS_MEMBER]->(componentMember:PropertyDeclaration|MethodDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration)
+MATCH (service:ClassDeclaration)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(sid:Identifier {text: 'Injectable'})-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})
+MATCH (service)-[:HAS_MEMBER]->(serviceMember:PropertyDeclaration|MethodDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(model)
+WHERE component.filePath CONTAINS 'web/src/app'
+AND service.filePath CONTAINS 'web/src/app'
+AND model.filePath CONTAINS 'web/src/app'
+RETURN DISTINCT model.name, model.filePath, component.name, component.filePath, service.name, service.filePath
+```
 
 find smart components (component + data service)
 

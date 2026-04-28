@@ -1,0 +1,16 @@
+{
+  "expectedNodes": [
+    {
+      "name": "AnalyticsState",
+      "filePath": "ConfigDefault"
+    },
+    {
+      "name": "AppComponent",
+      "filePath": "ConfigService"
+    },
+    {
+      "name": "AppComponent",
+      "filePath": "ConfigDefault"
+    }
+  ]
+}

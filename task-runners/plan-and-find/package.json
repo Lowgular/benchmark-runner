@@ -6,6 +6,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "regression:extract": "node scripts/extract-code-graph-regression.cjs",
+    "regression:test": "node scripts/run-code-graph-regression.cjs",
     "start": "node dist/main.js"
   },
   "dependencies": {
