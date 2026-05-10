@@ -11,6 +11,10 @@
     {
       "name": "AnalyticsState",
       "filePath": "web/src/app/analytics/analytics.state.ts"
+    },
+    {
+      "name": "TeamCacheUiState",
+      "filePath": "web/src/app/teams/team-cache.ui-state.ts"
     }
   ]
 }

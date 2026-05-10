@@ -1,0 +1,8 @@
+{
+  "expectedNodes": [
+    {
+      "name": "MemberComponent",
+      "filePath": "web/src/app/teams/member.component.ts"
+    }
+  ]
+}

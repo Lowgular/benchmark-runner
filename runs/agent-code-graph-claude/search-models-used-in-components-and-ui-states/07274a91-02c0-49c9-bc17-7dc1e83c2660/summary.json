@@ -6,58 +6,21 @@
         "name": "search-models-used-in-components-and-ui-states",
         "prompt": "Find model declarations that are used by both Angular components and UI states.\n\nOutput it in this format:\n\nModel - filePath\n"
       },
-      "score": {
-        "categories": [
-          {
-            "id": "high-impact",
-            "name": "High Impact",
-            "maxPoints": 100,
-            "points": 0,
-            "assessments": [
-              {
-                "id": "recall",
-                "name": "Recall",
-                "state": 0,
-                "message": "Partial Pass (50%)\nRecall: 2/4 (50%)",
-                "category": "high-impact",
-                "description": "Measures how many expected nodes were found in the final answer.",
-                "groupingLabels": [
-                  "Retrieval"
-                ],
-                "scoreReduction": "50%",
-                "successPercentage": 0.5
-              },
-              {
-                "id": "precision",
-                "name": "Precision",
-                "state": 0,
-                "message": "Partial Pass (67%)\nPrecision: 2/3 (67%)",
-                "category": "high-impact",
-                "description": "Measures how many returned nodes in the final answer are correct.",
-                "groupingLabels": [
-                  "Retrieval"
-                ],
-                "scoreReduction": "50%",
-                "successPercentage": 0.6666666666666666
-              }
-            ]
-          }
-        ]
-      }
+      "score": null
     }
   ],
   "details": {
     "summary": {
       "taskId": "search-models-used-in-components-and-ui-states",
       "prompt": "Find model declarations that are used by both Angular components and UI states.\n\nOutput it in this format:\n\nModel - filePath\n",
-      "taskRunId": "99f49a80-013a-45bb-a953-475194c738ef",
+      "taskRunId": "be84b311-7924-435b-956b-9d4e9bf9d753",
       "environmentId": "angular-nest-team-crud",
       "model": "claude-opus-4-7",
       "runner": {
         "id": "claude-agent-sdk"
       },
       "pipelineId": "code-graph",
-      "elapsedMs": 76435,
+      "elapsedMs": 400053,
       "toolCalls": [
         {
           "name": "ToolSearch",
@@ -75,10 +38,20 @@
           "input": {
             "queryKeywords": [
               "model",
-              "model declaration",
-              "data model"
+              "model declaration"
             ],
             "topK": 2
+          }
+        },
+        {
+          "name": "mcp__code-graph__search_constraint_context",
+          "input": {
+            "constraintKeywords": [
+              "component",
+              "ui state",
+              "used by",
+              "type usage"
+            ]
           }
         },
         {
@@ -88,24 +61,18 @@
               "component",
               "angular component"
             ],
-            "topK": 2
+            "topK": 1
           }
         },
         {
           "name": "mcp__code-graph__search_constraint_context",
           "input": {
             "constraintKeywords": [
-              "UI state",
               "state",
-              "used by",
-              "type usage"
+              "ui-state",
+              "view state",
+              "viewmodel"
             ]
-          }
-        },
-        {
-          "name": "mcp__code-graph__code-graph-query",
-          "input": {
-            "cypher": "MATCH (c:ClassDeclaration) WHERE c.name =~ '.*([Ss]tate|UiState).*' RETURN c.id, c.name, c.filePath LIMIT 50"
           }
         },
         {
@@ -113,10 +80,10 @@
           "input": {
             "needles": [
               "model",
-              "type",
-              "type alias",
-              "interface",
-              "class"
+              "type usage",
+              "HAS_TYPE_DECLARATION",
+              "PropertyDeclaration",
+              "shared declaration"
             ],
             "topK": 3
           }
@@ -127,34 +94,353 @@
             "needles": [
               "component",
               "decorator",
-              "type usage",
-              "HAS_TYPE_DECLARATION"
+              "Component",
+              "@angular/core",
+              "ClassDeclaration"
             ],
-            "topK": 3
+            "topK": 2
           }
         },
         {
           "name": "mcp__code-graph__code-graph-query",
           "input": {
-            "cypher": "MATCH (component:ClassDeclaration)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (component)-[:HAS_MEMBER]->(compProp:PropertyDeclaration)\nMATCH (compProp)-[:HAS_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)\nMATCH (d)-[:HAS_DESCENDANT]->(di:Identifier { text: 'Component' })\nMATCH (di)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (comp)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
           }
         },
         {
           "name": "mcp__code-graph__code-graph-query",
           "input": {
-            "cypher": "MATCH (uiState:ClassDeclaration)-[:HAS_MEMBER]->(uiProp:PropertyDeclaration)\nWHERE uiState.filePath CONTAINS '.ui-state.ts'\nMATCH (uiProp)-[:HAS_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE s.name CONTAINS 'State'\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
           }
         },
         {
           "name": "mcp__code-graph__code-graph-query",
           "input": {
-            "cypher": "MATCH (uiState:ClassDeclaration)-[:HAS_MEMBER]->(uiProp:PropertyDeclaration)\nWHERE uiState.filePath CONTAINS '.ui-state.ts'\nMATCH (uiProp)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)\nMATCH (d)-[:HAS_DESCENDANT]->(di:Identifier { text: 'Component' })\nMATCH (di)-[:HAS_SYMBOL_IMPORT]->(imp:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (comp)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
           }
         },
         {
           "name": "mcp__code-graph__code-graph-query",
           "input": {
-            "cypher": "MATCH (component:ClassDeclaration)-[:HAS_DECORATOR]->(:Decorator)-[:HAS_DESCENDANT]->(compId:Identifier {text: 'Component'})\nMATCH (compId)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration {moduleSpecifier: '@angular/core'})\nMATCH (component)-[:HAS_MEMBER]->(compProp:PropertyDeclaration)\nMATCH (compProp)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(model:InterfaceDeclaration|TypeAliasDeclaration|ClassDeclaration)\nOPTIONAL MATCH (model)-[:HAS_DECORATOR]->(modelDec:Decorator)\nWHERE modelDec IS NULL\nRETURN DISTINCT model.id, model.name, model.filePath\nLIMIT 500"
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE s.name CONTAINS 'State'\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nMATCH (m)<-[:HAS_TYPE_DECLARATION]-(p:PropertyDeclaration)\nMATCH (comp:ClassDeclaration)-[:HAS_MEMBER]->(p)\nMATCH (comp)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(di:Identifier { text: 'Component' })\nMATCH (di)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration { moduleSpecifier: '@angular/core' })\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nMATCH (m)<-[:HAS_TYPE_DECLARATION]-(p:PropertyDeclaration|PropertySignature)\nMATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)-[:HAS_MEMBER]->(p)\nWHERE s.name CONTAINS 'State'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE s.name CONTAINS 'State' AND NOT s.filePath CONTAINS 'node_modules'\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)\nMATCH (d)-[:HAS_DESCENDANT]->(di:Identifier { text: 'Component' })\nMATCH (di)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (comp)-[:HAS_MEMBER]->(p:PropertyDeclaration)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE s.name CONTAINS 'State' AND NOT s.filePath CONTAINS 'node_modules'\nRETURN DISTINCT s.id AS id, s.name AS name, s.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE s.name CONTAINS 'UiState' AND NOT s.filePath CONTAINS 'node_modules'\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration { name: 'TeamListUiState' })\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration { name: 'TeamCacheUiState' })\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration { name: 'TeamSubjectUiState' })\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration { name: 'AnalyticsState' })\nMATCH (s)-[:HAS_MEMBER]->(p:PropertyDeclaration|PropertySignature)\nMATCH (p)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamListUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:ClassDeclaration { name: 'Team' })<-[:HAS_DESCENDANT_TYPE_DECLARATION]-(p:PropertyDeclaration)\nMATCH (s:ClassDeclaration)-[:HAS_MEMBER]->(p)\nWHERE s.name CONTAINS 'UiState' OR s.name CONTAINS 'State'\nRETURN DISTINCT s.name AS name, s.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:InterfaceDeclaration { name: 'TeamFilterModel' })<-[:HAS_DESCENDANT_TYPE_DECLARATION]-(p:PropertyDeclaration)\nMATCH (s:ClassDeclaration)-[:HAS_MEMBER]->(p)\nWHERE s.name CONTAINS 'UiState' OR s.name CONTAINS 'State'\nRETURN DISTINCT s.name AS name, s.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE m.name = 'Team' AND NOT m.filePath CONTAINS 'node_modules'\nRETURN m.id AS id, labels(m) AS labels, m.filePath AS filePath\nLIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE m.name IN ['ViewingPreferences','TeamFilterModel','TeamActionModel','Team'] AND NOT m.filePath CONTAINS 'node_modules'\nRETURN m.id AS id, m.name AS name, labels(m) AS labels, m.filePath AS filePath\nLIMIT 50"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamListUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nRETURN DISTINCT t.id AS id, t.name AS name, t.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamCacheUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nRETURN DISTINCT t.id AS id, t.name AS name, t.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamSubjectUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nRETURN DISTINCT t.id AS id, t.name AS name, t.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'AnalyticsState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(t:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nRETURN DISTINCT t.id AS id, t.name AS name, t.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:ClassDeclaration { name: 'Team', filePath: 'web/src/app/teams/team.ts' })<-[:HAS_DESCENDANT_TYPE_DECLARATION]-(p:PropertyDeclaration)<-[:HAS_MEMBER]-(owner:ClassDeclaration)\nRETURN DISTINCT owner.name AS name, owner.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:InterfaceDeclaration { name: 'Team' })<-[:HAS_DESCENDANT_TYPE_DECLARATION]-(p:PropertyDeclaration)<-[:HAS_MEMBER]-(owner:ClassDeclaration)\nRETURN DISTINCT owner.name AS name, owner.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:TypeAliasDeclaration { name: 'Team' })<-[:HAS_DESCENDANT_TYPE_DECLARATION]-(p:PropertyDeclaration)<-[:HAS_MEMBER]-(owner:ClassDeclaration)\nRETURN DISTINCT owner.name AS name, owner.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:ClassDeclaration { name: 'Team' })\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 10"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:InterfaceDeclaration { name: 'Team' })\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 10"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:TypeAliasDeclaration { name: 'Team' })\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 10"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:TypeAliasDeclaration { name: 'Team', filePath: 'web/src/app/teams/team.ts' })<-[:HAS_DESCENDANT_TYPE_DECLARATION]-(p:PropertyDeclaration)<-[:HAS_MEMBER]-(owner:ClassDeclaration)\nRETURN DISTINCT owner.name AS name, owner.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:TypeAliasDeclaration { name: 'Team' })<-[:HAS_TYPE_DECLARATION]-(p:PropertyDeclaration)<-[:HAS_MEMBER]-(owner:ClassDeclaration)\nRETURN DISTINCT owner.name AS name, owner.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:TypeAliasDeclaration { name: 'Team' })<-[:HAS_TYPE_DECLARATION]-(p:PropertyDeclaration)\nRETURN DISTINCT p.id AS pid, p.name AS pname\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (m:TypeAliasDeclaration { name: 'Team' })<-[r:HAS_DESCENDANT_TYPE_DECLARATION]-(n)\nRETURN DISTINCT n.id AS nid\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(m:TypeAliasDeclaration { name: 'Team' })\nRETURN DISTINCT p.id AS pid, p.name AS pname, m.id AS mid\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (p:PropertyDeclaration)-[:HAS_TYPE_DECLARATION]->(m:TypeAliasDeclaration)\nWHERE m.name = 'Team'\nRETURN DISTINCT p.id AS pid, p.name AS pname\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamListUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)\nRETURN p.id AS pid, p.name AS pname\nLIMIT 100"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamCacheUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)\nRETURN p.id AS pid, p.name AS pname\nLIMIT 100"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamSubjectUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)\nRETURN p.id AS pid, p.name AS pname\nLIMIT 100"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE p.id IN ['web/src/app/teams/team-list.ui-state.ts.6.2.7.30','web/src/app/teams/team-list.ui-state.ts.8.2.11.5','web/src/app/teams/team-list.ui-state.ts.12.2.13.41','web/src/app/teams/team-cache.ui-state.ts.8.2.9.30','web/src/app/teams/team-subject.ui-state.ts.4.2.4.73']\nAND NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nWHERE p.id = 'web/src/app/teams/team-list.ui-state.ts.6.2.7.30'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (p:PropertyDeclaration { id: 'web/src/app/teams/team-list.ui-state.ts.6.2.7.30' })-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:TypeAliasDeclaration)\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (p:PropertyDeclaration { id: 'web/src/app/teams/team-list.ui-state.ts.6.2.7.30' })-[:HAS_DESCENDANT]->(d:Identifier)\nRETURN DISTINCT d.text AS text, d.id AS id\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (p:PropertyDeclaration)-[:HAS_DESCENDANT]->(d:Identifier)\nWHERE p.id = 'web/src/app/teams/team-list.ui-state.ts.6.2.7.30'\nRETURN DISTINCT d.text AS text\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamListUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration { name: 'selectedTeam' })-[:HAS_DESCENDANT]->(d:Identifier)\nRETURN DISTINCT d.text AS text\nLIMIT 100"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamListUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration { name: 'selectedTeam' })-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration|InterfaceDeclaration|TypeAliasDeclaration)\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 100"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamListUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration { name: 'selectedTeam' })-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:TypeAliasDeclaration)\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 100"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:TypeAliasDeclaration)\nWHERE s.name CONTAINS 'UiState' AND NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:InterfaceDeclaration)\nWHERE s.name CONTAINS 'UiState' AND NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration)\nWHERE s.name CONTAINS 'UiState' AND NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:TypeAliasDeclaration)\nWHERE s.name = 'AnalyticsState' AND NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 500"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamListUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamCacheUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'TeamSubjectUiState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'AnalyticsState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:InterfaceDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (s:ClassDeclaration { name: 'AnalyticsState' })-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:ClassDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(di:Identifier { text: 'Component' })\nMATCH (di)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (comp)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:TypeAliasDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
+          }
+        },
+        {
+          "name": "mcp__code-graph__code-graph-query",
+          "input": {
+            "cypher": "MATCH (comp:ClassDeclaration)-[:HAS_DECORATOR]->(d:Decorator)-[:HAS_DESCENDANT]->(di:Identifier { text: 'Component' })\nMATCH (di)-[:HAS_SYMBOL_IMPORT]->(:ImportDeclaration { moduleSpecifier: '@angular/core' })\nMATCH (comp)-[:HAS_MEMBER]->(p:PropertyDeclaration)-[:HAS_DESCENDANT_TYPE_DECLARATION]->(m:InterfaceDeclaration)\nWHERE NOT m.filePath CONTAINS 'node_modules'\nRETURN DISTINCT m.id AS id, m.name AS name, m.filePath AS filePath\nLIMIT 200"
           }
         }
       ]

@@ -1,0 +1,12 @@
+{
+  "expectedNodes": [
+    {
+      "name": "AlertDirective",
+      "filePath": "web/src/app/shared/disabled.ts"
+    },
+    {
+      "name": "DisabledDirective",
+      "filePath": "web/src/app/shared/disabled.ts"
+    }
+  ]
+}

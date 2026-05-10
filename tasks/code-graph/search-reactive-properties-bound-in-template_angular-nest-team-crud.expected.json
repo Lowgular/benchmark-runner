@@ -1,0 +1,16 @@
+{
+  "expectedNodes": [
+    {
+      "name": "label",
+      "filePath": "web/src/app/shared/button.ts"
+    },
+    {
+      "name": "disabled",
+      "filePath": "web/src/app/shared/button.ts"
+    },
+    {
+      "name": "member",
+      "filePath": "web/src/app/teams/member.component.ts"
+    }
+  ]
+}

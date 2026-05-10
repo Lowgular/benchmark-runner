@@ -1,0 +1,16 @@
+{
+  "name": "plan-and-find-claude-qmd",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "run": "bun run src/main.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.121"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.0",
+    "typescript": "^5.7.0"
+  }
+}

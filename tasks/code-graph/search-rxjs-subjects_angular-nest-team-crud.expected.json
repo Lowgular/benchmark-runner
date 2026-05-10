@@ -1,0 +1,8 @@
+{
+  "expectedNodes": [
+    {
+      "name": "TeamSubjectUiState",
+      "filePath": "web/src/app/teams/team-subject.ui-state.ts"
+    }
+  ]
+}

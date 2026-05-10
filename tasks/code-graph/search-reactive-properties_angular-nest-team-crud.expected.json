@@ -1,0 +1,36 @@
+{
+  "expectedNodes": [
+    {
+      "name": "ButtonComponent",
+      "filePath": "web/src/app/shared/button.ts"
+    },
+    {
+      "name": "AlertDirective",
+      "filePath": "web/src/app/shared/disabled.ts"
+    },
+    {
+      "name": "DisabledDirective",
+      "filePath": "web/src/app/shared/disabled.ts"
+    },
+    {
+      "name": "MemberComponent",
+      "filePath": "web/src/app/teams/member.component.ts"
+    },
+    {
+      "name": "MemberSelection",
+      "filePath": "web/src/app/teams/member-selection.ts"
+    },
+    {
+      "name": "TeamCacheUiState",
+      "filePath": "web/src/app/teams/team-cache.ui-state.ts"
+    },
+    {
+      "name": "TeamListUiState",
+      "filePath": "web/src/app/teams/team-list.ui-state.ts"
+    },
+    {
+      "name": "TeamSubjectUiState",
+      "filePath": "web/src/app/teams/team-subject.ui-state.ts"
+    }
+  ]
+}

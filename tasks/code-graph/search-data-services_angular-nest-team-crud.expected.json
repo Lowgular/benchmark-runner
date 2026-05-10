@@ -1,0 +1,16 @@
+{
+  "expectedNodes": [
+    {
+      "name": "TeamsService",
+      "filePath": "web/src/app/teams/teams.service.ts"
+    },
+    {
+      "name": "AnalyticsService",
+      "filePath": "web/src/app/analytics/analytics.service.ts"
+    },
+    {
+      "name": "TeamCacheUiState",
+      "filePath": "web/src/app/teams/team-cache.ui-state.ts"
+    }
+  ]
+}
