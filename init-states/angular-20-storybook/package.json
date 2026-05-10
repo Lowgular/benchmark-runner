@@ -7,8 +7,10 @@
     "ng:build": "ng build",
     "start": "ng run app:storybook",
     "build": "ng run app:build-storybook",
-    "verify": "bun run tools/verify/run.ts",
+    "verify": "npm run build && playwright test tools/verify/vrt.spec.ts",
+    "verify:update": "npm run build && playwright test tools/verify/vrt.spec.ts --update-snapshots",
     "validate": "bun run tools/validate/run.ts",
+    "validate:axe": "playwright test tools/validate/axe.spec.ts",
     "lint": "static-analysis run"
   },
   "private": true,

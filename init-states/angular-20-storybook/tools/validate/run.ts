@@ -3,6 +3,9 @@
  * Validator — soft scoring after verifiers pass.
  *
  *   axe              accessibility violations against the running story
+ *                    (delegates to tools/validate/axe.spec.ts via @playwright/test
+ *                    so the user sees a nice live report; pass criterion is
+ *                    zero violations against WCAG 2.1 AAA + best-practice)
  *   tokens           regex/AST scan for arbitrary values & inline styles
  *   htmlValidate     semantic HTML linting
  *   stylelint        CSS quality (banning !important, inline-style escape hatches)
@@ -16,13 +19,17 @@
  *   BENCH_SKIP_AXE         "1" to skip axe (no live story available)
  *
  * Output: <BENCH_OUTPUT_DIR>/validate.json
+ *         exit 0 always (this is a SCORE, not a gate); the verifier is the gate.
  */
-import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { spawn } from "node:child_process";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
-import { chromium } from "playwright";
-import AxeBuilder from "@axe-core/playwright";
-import { scanTokens, type TokenViolation } from "./token-scan.ts";
+import { scanTokens, type TokenViolation } from "./token-scan";
 
 const CWD = process.cwd();
 const OUTPUT_DIR = resolve(process.env["BENCH_OUTPUT_DIR"] ?? ".bench");
@@ -30,14 +37,17 @@ const STORY_ID = process.env["BENCH_STORY_ID"] ?? "";
 const AGENT_DIR = resolve(process.env["BENCH_AGENT_DIR"] ?? "src/lib");
 const SKIP_AXE = process.env["BENCH_SKIP_AXE"] === "1";
 
+interface AxeViolation {
+  id: string;
+  impact: string | null;
+  help: string;
+  nodeCount: number;
+}
+
 interface AxeResult {
   ran: boolean;
-  violations: Array<{
-    id: string;
-    impact: string | null;
-    help: string;
-    nodeCount: number;
-  }>;
+  aaaPassed: boolean;
+  violations: AxeViolation[];
   countsByImpact: Record<string, number>;
   reason?: string;
 }
@@ -102,14 +112,28 @@ interface CmdResult {
   stderr: string;
 }
 
-async function runCmd(
+async function runCmdInherit(
   cmd: string,
   args: string[],
-  opts: { cwd?: string; timeoutMs?: number } = {},
+): Promise<{ exitCode: number | null }> {
+  return new Promise((res) => {
+    const proc = spawn(cmd, args, {
+      cwd: CWD,
+      stdio: "inherit",
+      env: process.env,
+    });
+    proc.on("exit", (exitCode) => res({ exitCode }));
+  });
+}
+
+async function runCmdCapture(
+  cmd: string,
+  args: string[],
+  opts: { timeoutMs?: number } = {},
 ): Promise<CmdResult> {
   return new Promise((res) => {
     const proc = spawn(cmd, args, {
-      cwd: opts.cwd ?? CWD,
+      cwd: CWD,
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stdout = "";
@@ -126,73 +150,77 @@ async function runCmd(
   });
 }
 
-async function runAxe(): Promise<AxeResult> {
-  if (SKIP_AXE || !STORY_ID) {
+async function runAxeViaPlaywright(): Promise<AxeResult> {
+  if (SKIP_AXE) {
     return {
       ran: false,
+      aaaPassed: false,
       violations: [],
       countsByImpact: {},
-      reason: SKIP_AXE ? "skipped via BENCH_SKIP_AXE" : "BENCH_STORY_ID not set",
+      reason: "skipped via BENCH_SKIP_AXE",
+    };
+  }
+  if (!STORY_ID) {
+    return {
+      ran: false,
+      aaaPassed: false,
+      violations: [],
+      countsByImpact: {},
+      reason: "BENCH_STORY_ID not set",
     };
   }
   if (!existsSync(join(CWD, "storybook-static", "iframe.html"))) {
     return {
       ran: false,
+      aaaPassed: false,
       violations: [],
       countsByImpact: {},
-      reason: "storybook-static missing — run verify first",
+      reason: "storybook-static missing — run `npm run build` first",
     };
   }
-  const port = 6007;
-  const proc: ChildProcess = spawn(
-    "npx",
-    ["http-server", "storybook-static", "-p", String(port), "-s", "-c-1", "--cors"],
-    { cwd: CWD, stdio: ["ignore", "pipe", "pipe"] },
-  );
-  try {
-    const deadline = Date.now() + 30_000;
-    while (Date.now() < deadline) {
-      try {
-        const r = await fetch(`http://127.0.0.1:${port}/`);
-        if (r.ok || r.status === 404) break;
-      } catch {
-        /* not ready */
-      }
-      await new Promise((r) => setTimeout(r, 250));
-    }
-    const browser = await chromium.launch();
-    const ctx = await browser.newContext({
-      viewport: { width: 1280, height: 800 },
-      deviceScaleFactor: 1,
-    });
-    const page = await ctx.newPage();
-    const url = `http://127.0.0.1:${port}/iframe.html?id=${encodeURIComponent(
-      STORY_ID,
-    )}&viewMode=story`;
-    await page.goto(url, { waitUntil: "networkidle" });
-    await page.evaluate(() => document.fonts.ready);
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"])
-      .analyze();
-    await browser.close();
-    const countsByImpact: Record<string, number> = {};
-    for (const v of results.violations) {
-      const k = v.impact ?? "unknown";
-      countsByImpact[k] = (countsByImpact[k] ?? 0) + 1;
-    }
+
+  console.error("─── axe (playwright + WCAG AAA) " + "─".repeat(40));
+  const { exitCode } = await runCmdInherit("npx", [
+    "playwright",
+    "test",
+    "tools/validate/axe.spec.ts",
+  ]);
+  console.error("─".repeat(72) + "\n");
+
+  const axeResultPath = join(OUTPUT_DIR, "axe-result.json");
+  if (!existsSync(axeResultPath)) {
     return {
       ran: true,
-      violations: results.violations.map((v) => ({
-        id: v.id,
-        impact: v.impact ?? null,
-        help: v.help,
-        nodeCount: v.nodes.length,
-      })),
-      countsByImpact,
+      aaaPassed: exitCode === 0,
+      violations: [],
+      countsByImpact: {},
+      reason: "axe-result.json not written by spec",
     };
-  } finally {
-    proc.kill("SIGTERM");
   }
+  const full = JSON.parse(readFileSync(axeResultPath, "utf8")) as {
+    violations: Array<{
+      id: string;
+      impact: string | null;
+      help: string;
+      nodes: unknown[];
+    }>;
+  };
+  const countsByImpact: Record<string, number> = {};
+  for (const v of full.violations) {
+    const k = v.impact ?? "unknown";
+    countsByImpact[k] = (countsByImpact[k] ?? 0) + 1;
+  }
+  return {
+    ran: true,
+    aaaPassed: exitCode === 0,
+    violations: full.violations.map((v) => ({
+      id: v.id,
+      impact: v.impact ?? null,
+      help: v.help,
+      nodeCount: v.nodes.length,
+    })),
+    countsByImpact,
+  };
 }
 
 function runTokens(): TokenResult {
@@ -203,13 +231,9 @@ function runTokens(): TokenResult {
 }
 
 async function runHtmlValidate(): Promise<LintResult> {
-  const result = await runCmd(
+  const result = await runCmdCapture(
     "npx",
-    [
-      "html-validate",
-      "--formatter=json",
-      `${AGENT_DIR}/**/*.html`,
-    ],
+    ["html-validate", "--formatter=json", `${AGENT_DIR}/**/*.html`],
     { timeoutMs: 60_000 },
   );
   if (!result.stdout.trim()) {
@@ -257,13 +281,9 @@ async function runHtmlValidate(): Promise<LintResult> {
 }
 
 async function runStylelint(): Promise<LintResult> {
-  const result = await runCmd(
+  const result = await runCmdCapture(
     "npx",
-    [
-      "stylelint",
-      "--formatter=json",
-      `${AGENT_DIR}/**/*.{css,scss}`,
-    ],
+    ["stylelint", "--formatter=json", `${AGENT_DIR}/**/*.{css,scss}`],
     { timeoutMs: 60_000 },
   );
   if (!result.stdout.trim()) {
@@ -310,7 +330,7 @@ async function runStylelint(): Promise<LintResult> {
 }
 
 async function runNgEslint(): Promise<LintResult> {
-  const result = await runCmd(
+  const result = await runCmdCapture(
     "npx",
     [
       "eslint",
@@ -374,9 +394,11 @@ async function runTamper(): Promise<TamperResult> {
   if (!existsSync(join(CWD, ".git"))) {
     return { ran: false, modifiedFiles: [], reason: ".git not present" };
   }
-  const result = await runCmd("git", ["diff", "--name-only", "HEAD"], {
-    timeoutMs: 30_000,
-  });
+  const result = await runCmdCapture(
+    "git",
+    ["diff", "--name-only", "HEAD"],
+    { timeoutMs: 30_000 },
+  );
   if (result.exitCode !== 0) {
     return {
       ran: false,
@@ -392,10 +414,75 @@ async function runTamper(): Promise<TamperResult> {
   return { ran: true, modifiedFiles: outsideAgent };
 }
 
+function printSummary(out: ValidateOutput): void {
+  console.error("─── validate summary ".padEnd(72, "─"));
+  const fmt = (label: string, body: string): void =>
+    console.error(`  ${label.padEnd(14)} ${body}`);
+
+  fmt(
+    "axe",
+    out.axe.ran
+      ? `${out.axe.aaaPassed ? "PASS (AAA)" : "FAIL"} — ${out.axe.violations.length} violation(s) ${
+          out.axe.violations.length
+            ? `(${Object.entries(out.axe.countsByImpact)
+                .map(([k, v]) => `${k}:${v}`)
+                .join(", ")})`
+            : ""
+        }`
+      : `skipped — ${out.axe.reason ?? "unknown"}`,
+  );
+  fmt(
+    "tokens",
+    out.tokens.count === 0
+      ? "PASS — no arbitrary values or inline styles"
+      : `${out.tokens.count} violation(s) (${Object.entries(out.tokens.countsByKind)
+          .map(([k, v]) => `${k}:${v}`)
+          .join(", ")})`,
+  );
+  fmt(
+    "html-validate",
+    out.htmlValidate.ran
+      ? `${out.htmlValidate.errorCount} error(s), ${out.htmlValidate.warningCount} warning(s)`
+      : `not run — ${out.htmlValidate.reason ?? "unknown"}`,
+  );
+  fmt(
+    "stylelint",
+    out.stylelint.ran
+      ? `${out.stylelint.errorCount} error(s), ${out.stylelint.warningCount} warning(s)`
+      : `not run — ${out.stylelint.reason ?? "unknown"}`,
+  );
+  fmt(
+    "ng-eslint",
+    out.ngEslint.ran
+      ? `${out.ngEslint.errorCount} error(s), ${out.ngEslint.warningCount} warning(s)`
+      : `not run — ${out.ngEslint.reason ?? "unknown"}`,
+  );
+  fmt(
+    "tamper",
+    out.tamper.ran
+      ? out.tamper.modifiedFiles.length === 0
+        ? "no scaffold modifications"
+        : `${out.tamper.modifiedFiles.length} file(s) modified outside agent dir`
+      : `not run — ${out.tamper.reason ?? "unknown"}`,
+  );
+  console.error(`  ${"".padEnd(14)} (${out.durationMs} ms)`);
+  console.error("─".repeat(72));
+  console.error(`  full report: ${join(OUTPUT_DIR, "validate.json")}`);
+  if (out.axe.ran && existsSync(join(OUTPUT_DIR, "playwright-report"))) {
+    console.error(
+      `  axe HTML report: npx playwright show-report ${join(OUTPUT_DIR, "playwright-report")}`,
+    );
+  }
+}
+
 async function main(): Promise<void> {
   const t0 = Date.now();
-  const [axe, htmlValidate, stylelint, ngEslint, tamper] = await Promise.all([
-    runAxe(),
+
+  // axe is run first so its live output streams to the user before the
+  // static linters' aggregated summary.
+  const axe = await runAxeViaPlaywright();
+
+  const [htmlValidate, stylelint, ngEslint, tamper] = await Promise.all([
     runHtmlValidate(),
     runStylelint(),
     runNgEslint(),
@@ -416,6 +503,7 @@ async function main(): Promise<void> {
     tamper,
   };
   writeOutput(out);
+  printSummary(out);
   process.exit(0);
 }
 
@@ -424,14 +512,7 @@ main().catch((err: unknown) => {
   ensureOutputDir();
   writeFileSync(
     join(OUTPUT_DIR, "validate.json"),
-    `${JSON.stringify(
-      {
-        schemaVersion: 1,
-        error: message,
-      },
-      null,
-      2,
-    )}\n`,
+    `${JSON.stringify({ schemaVersion: 1, error: message }, null, 2)}\n`,
     "utf8",
   );
   console.error("validate failed:", message);
