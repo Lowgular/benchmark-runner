@@ -145,6 +145,68 @@ save(imageCrop, "tasks/vrt/atom-image/tests/visual/atoms-image--default/desktop.
 results["atom-image"] = image;
 
 // ---------------------------------------------------------------------------
+// Ink bounding box — for text-only atoms (Price). Finds all non-white pixels
+// (luminance below the threshold catches glyph ink plus its anti-aliasing)
+// inside the search region. The region must contain only the target's ink.
+// ---------------------------------------------------------------------------
+function findInkRect(region: {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}): { x: number; y: number; w: number; h: number } {
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -1,
+    maxY = -1;
+  for (let y = region.y0; y < region.y1; y++) {
+    for (let x = region.x0; x < region.x1; x++) {
+      const [r, g, b] = px(x, y);
+      if (r < 240 || g < 240 || b < 240) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) throw new Error("no ink found in region");
+  return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+
+const NEUTRAL_300: [number, number, number] = [0xd9, 0xd9, 0xd9]; // Select/Accordion border
+
+// Price — "$50" glyph ink directly below the Tag (region bounded by the Tag's
+// bottom edge and the description text ~66px lower).
+const price = findInkRect({
+  x0: 600,
+  y0: tag.y + tag.h + 2,
+  x1: 900,
+  y1: tag.y + tag.h + 66,
+});
+save(crop(price), "tasks/vrt/atom-price/tests/visual/atoms-price--default/desktop.png");
+results["atom-price"] = price;
+
+// Select Field (first instance) — label ink + neutral-300-bordered select box.
+// The 1px border anti-aliases to a ~#ececec band (Figma exports on a half-pixel
+// grid), so the ink-threshold bbox is the right detector: the border is the
+// outermost ink, and the label sits within the same x range.
+const selectField = findInkRect({ x0: 600, y0: 245, x1: 880, y1: 340 });
+save(
+  crop(selectField),
+  "tasks/vrt/molecule-select-field/tests/visual/molecules-select-field--default/desktop.png",
+);
+results["molecule-select-field"] = selectField;
+
+// Accordion Item — bordered box below the Button; border is the outermost ink.
+const accordion = findInkRect({ x0: 600, y0: 400, x1: 1150, y1: 560 });
+save(
+  crop(accordion),
+  "tasks/vrt/molecule-accordion-item/tests/visual/molecules-accordion-item--default/desktop.png",
+);
+results["molecule-accordion-item"] = accordion;
+
+// ---------------------------------------------------------------------------
 // Report — these exact dimensions go verbatim into each atom's task spec.
 // ---------------------------------------------------------------------------
 for (const [name, r] of Object.entries(results)) {

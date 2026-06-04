@@ -1,0 +1,6 @@
+{
+  "default": 0.02,
+  "overrides": {
+    "molecules-select-field--default": 0.08
+  }
+}

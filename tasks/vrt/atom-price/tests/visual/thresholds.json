@@ -1,0 +1,6 @@
+{
+  "default": 0.02,
+  "overrides": {
+    "atoms-price--default": 0.06
+  }
+}
