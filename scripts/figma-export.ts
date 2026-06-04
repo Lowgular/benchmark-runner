@@ -98,10 +98,15 @@ function stripPngTextChunks(bytes: Uint8Array): Uint8Array {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const parts: Uint8Array[] = [bytes.slice(0, 8)]; // PNG signature
   let offset = 8;
-  while (offset < bytes.length) {
+  // Bounded walk: require room for the 12-byte chunk frame (len + type + CRC)
+  // before reading, and stop if a declared chunk length runs past the buffer.
+  // This prevents an unbounded loop or out-of-range getUint32 on a truncated
+  // or malformed payload that slipped past the signature check (WR-02).
+  while (offset + 12 <= bytes.length) {
     const length = view.getUint32(offset, false);
-    const type = String.fromCharCode(...bytes.slice(offset + 4, offset + 8));
     const chunkEnd = offset + 12 + length; // len + type + data + CRC
+    if (chunkEnd > bytes.length) break; // truncated chunk — stop
+    const type = String.fromCharCode(...bytes.slice(offset + 4, offset + 8));
     if (!STRIPPED_CHUNKS.has(type)) {
       parts.push(bytes.slice(offset, chunkEnd));
     }
