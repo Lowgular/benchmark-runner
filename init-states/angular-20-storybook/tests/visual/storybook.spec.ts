@@ -29,9 +29,16 @@ const VISUAL_DIR = dirname(fileURLToPath(import.meta.url));
 const EXPECTED_PATH = join(VISUAL_DIR, "..", "stories", "expected.json");
 
 // Two breakpoints per D-02: mobile 375 + desktop 1200. Tablet (768) dropped.
+// Only `width` drives layout. Captures use `fullPage: true` (see below), which
+// records the entire document scroll-height, so the viewport *height* does not
+// clip the image — baselines are full-component-height Figma exports
+// (desktop 1200×863, mobile 375×1282). A viewport height is still required by
+// page.setViewportSize(); INITIAL_VIEWPORT_HEIGHT is an arbitrary starting box
+// the page is free to grow beyond, deliberately decoupled from the breakpoint.
+const INITIAL_VIEWPORT_HEIGHT = 800;
 const VIEWPORTS = [
-  { id: "mobile", width: 375, height: 812 },
-  { id: "desktop", width: 1200, height: 800 },
+  { id: "mobile", width: 375 },
+  { id: "desktop", width: 1200 },
 ] as const;
 
 // Load per-task threshold config (D-04): task default + per-story overrides.
@@ -74,9 +81,13 @@ for (const storyId of STORY_IDS) {
 
   test.describe(storyId, () => {
     for (const vp of activeViewports) {
-      test(`${vp.id} (${vp.width}×${vp.height})`, async ({ page }) => {
+      test(`${vp.id} (${vp.width}px wide)`, async ({ page }) => {
         test.setTimeout(20_000);
-        await page.setViewportSize({ width: vp.width, height: vp.height });
+        // Height is the initial box only; `fullPage: true` captures full scroll height.
+        await page.setViewportSize({
+          width: vp.width,
+          height: INITIAL_VIEWPORT_HEIGHT,
+        });
 
         const url = `/iframe.html?id=${encodeURIComponent(storyId)}&viewMode=story`;
         await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10_000 });
