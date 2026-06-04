@@ -172,11 +172,32 @@ for (const exp of EXPORTS) {
 
   const pngBytes = new Uint8Array(await pngRes.arrayBuffer());
 
-  // Step 3: Verify it is actually a PNG
-  const signature = String.fromCharCode(...pngBytes.slice(1, 4));
-  if (signature !== "PNG") {
+  // Step 3: Verify it is actually a PNG — check the full 8-byte signature
+  // (89 50 4E 47 0D 0A 1A 0A), not just the ASCII "PNG" substring. A truncated
+  // or non-PNG payload (e.g. an S3 error doc or HTML body) must fail here with
+  // a clear message rather than slipping through to a cryptic offset read.
+  const PNG_SIG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  const validSignature =
+    pngBytes.length >= 8 && PNG_SIG.every((b, i) => pngBytes[i] === b);
+  if (!validSignature) {
     throw new Error(
-      `Downloaded bytes for node ${exp.nodeId} are not a valid PNG (got header: ${signature})`
+      `Downloaded bytes for node ${exp.nodeId} are not a valid PNG ` +
+        `(signature mismatch — got ${pngBytes.length} bytes)`
+    );
+  }
+
+  // Step 3b: Confirm the first chunk is IHDR before trusting the fixed
+  // width/height offsets (16/20). A spec-compliant PNG always places IHDR
+  // first; asserting it guards against a malformed payload whose offsets
+  // would otherwise be misread as bogus dimensions (WR-06).
+  const firstChunkType =
+    pngBytes.length >= 16
+      ? String.fromCharCode(...pngBytes.slice(12, 16))
+      : "";
+  if (firstChunkType !== "IHDR") {
+    throw new Error(
+      `Downloaded bytes for node ${exp.nodeId} are not a valid PNG ` +
+        `(first chunk is "${firstChunkType}", expected "IHDR")`
     );
   }
 
