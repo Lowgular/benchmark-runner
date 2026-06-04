@@ -53,3 +53,4 @@ Thumbs.db
 # NX
 .nx
 runs/
+.planning/
