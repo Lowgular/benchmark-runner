@@ -73,10 +73,20 @@ test.describe("Tailwind discipline", () => {
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10_000 });
 
       // Wait for the Angular component to mount inside the story root.
+      // Wait on the SAME root the checks scan (#storybook-root) so the wait
+      // cannot succeed against a root the checks ignore — otherwise an empty
+      // #storybook-root would scan zero nodes and falsely pass (WR-05).
       await page
-        .locator("#storybook-root *, #root *")
+        .locator("#storybook-root *")
         .first()
         .waitFor({ state: "attached", timeout: 5_000 });
+
+      // Fail loudly if the root is empty — never scan (and pass) nothing.
+      const rootHtml = await page.locator("#storybook-root").innerHTML();
+      expect(
+        rootHtml.trim().length,
+        `Story "${storyId}" rendered empty markup under #storybook-root`,
+      ).toBeGreaterThan(0);
 
       const violations: string[] = [];
 

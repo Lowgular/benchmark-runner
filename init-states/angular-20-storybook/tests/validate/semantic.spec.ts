@@ -64,13 +64,20 @@ test.describe("semantic HTML", () => {
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10_000 });
 
       // Wait for the Angular component to mount inside the story root.
+      // Wait on the SAME root the assertions target (#storybook-root) so the
+      // wait cannot succeed against a root the checks ignore (WR-05).
       await page
-        .locator("#storybook-root *, #root *")
+        .locator("#storybook-root *")
         .first()
         .waitFor({ state: "attached", timeout: 5_000 });
 
       // Extract the story's rendered markup.
       const html = await page.locator("#storybook-root").innerHTML();
+      // Fail loudly if the root is empty — never validate (and pass) nothing.
+      expect(
+        html.trim().length,
+        `Story "${storyId}" rendered empty markup under #storybook-root`,
+      ).toBeGreaterThan(0);
 
       // Page-level stories must have exactly one H1; atom/molecule fragments
       // do not (VALID-02: "single h1 on page stories").

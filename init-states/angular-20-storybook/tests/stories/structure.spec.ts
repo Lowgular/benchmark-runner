@@ -85,8 +85,11 @@ test.describe("structure", () => {
       const url = `/iframe.html?id=${encodeURIComponent(pageStoryId)}&viewMode=story`;
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10_000 });
 
+      // Wait on the SAME root the composition assertions target so the wait
+      // cannot succeed against a root the checks ignore (WR-05); a missing
+      // #storybook-root render fails here rather than passing vacuously.
       await page
-        .locator("#storybook-root *, #root *")
+        .locator("#storybook-root *")
         .first()
         .waitFor({ state: "attached", timeout: 5_000 });
 

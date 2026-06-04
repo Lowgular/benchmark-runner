@@ -47,8 +47,10 @@ test.describe("a11y", () => {
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10_000 });
 
       // Wait for the Angular component to mount inside the story root.
+      // Wait on the SAME root the assertions target (#storybook-root) so the
+      // wait cannot succeed against a root the checks ignore (WR-05).
       await page
-        .locator("#storybook-root *, #root *")
+        .locator("#storybook-root *")
         .first()
         .waitFor({ state: "attached", timeout: 5_000 });
 
