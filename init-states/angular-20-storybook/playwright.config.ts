@@ -10,6 +10,7 @@ export default defineConfig({
     ["list"],
     ["html", { open: "never", outputFolder: "test-results/html" }],
     ["./vrt-summary-reporter.ts"],
+    ["./json-summary-reporter.ts"],
   ],
   // Baselines live at tests/visual/<story-id>/<viewport>.png.
   // The spec passes `${storyId}/${vp.id}.png` as the snapshot name.
@@ -29,7 +30,7 @@ export default defineConfig({
     {
       name: "desktop",
       use: {
-        viewport: { width: 1280, height: 800 },
+        viewport: { width: 1200, height: 800 },
         deviceScaleFactor: 1,
       },
     },
