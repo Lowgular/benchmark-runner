@@ -67,11 +67,16 @@ Match the ids in `expected.json` exactly. The Storybook preview is preconfigured
    npm run verify            # all six, with a single Storybook build
    ```
 6. **Read `test-results/SUMMARY.md`** after each run — your iteration anchor. It lists per-test pass/fail (with pixel-diff ratios for visual failures and artifact paths). Each script also writes its own JSON envelope to `test-results/<script>.json` (e.g. `test-results/verify-visual.json`, `test-results/validate-a11y.json`) so you can read the detailed output for exactly the dimension you just ran.
+
+   You MAY keep a working notes file (e.g. `notes.md`) in the workspace root to track your progress across long runs — useful for retaining context if the conversation is compacted. No specific structure is required.
+
 7. **For visual failures, view the diff artifacts** with the `Read` tool:
    - `tests/visual/<story-id>/<viewport>.png` — the target
    - `test-results/<...>/<viewport>-actual.png` — your current rendering
    - `test-results/<...>/<viewport>-diff.png` — red-highlighted regions that don't match
-8. **Adjust and repeat from step 5** until SUMMARY.md shows everything passing. Start with the worst-diff viewport.
+8. **Iterate in two stages:**
+   - **Stage 1 — Gate (mandatory):** Repeat from step 5 until `verify:stories`, `verify:visual`, and `verify:structure` all pass. A run that fails any of these does not qualify. Fix the worst failure first; visual failures start from the widest-diff viewport.
+   - **Stage 2 — Polish (best-effort):** With the gate green, spend remaining turns running `validate:a11y`, `validate:semantic`, and `validate:tailwind`. Re-run the three gate scripts after each batch of changes to confirm the gate has not regressed. Stop when you have genuinely improved validators as high as you can or have hit the turn limit.
 
 The HTML report at `test-results/html/index.html` exists for humans; you don't need it — `SUMMARY.md` plus the PNGs is everything.
 
