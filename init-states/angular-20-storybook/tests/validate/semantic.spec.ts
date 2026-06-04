@@ -7,9 +7,9 @@
 //   - no-inline-style       : no style= attributes on any element
 //   - require-heading-level-one : exactly one <h1> per page story (only
 //                             applied to stories whose id begins with "pages-")
-//   - label                 : every <input>/<select>/<textarea> has an
+//   - input-missing-label   : every <input>/<select>/<textarea> has an
 //                             associated <label> or aria-labelledby
-//   - button-type           : every <button> carries an explicit type=
+//   - no-implicit-button-type : every <button> carries an explicit type=
 //   - element-permitted-content : no div-soup (elements nesting against spec)
 //
 // Failure message lists ruleId + message per error so the agent can locate
@@ -34,8 +34,8 @@ const expectedIds: string[] = existsSync(EXPECTED_PATH)
 // Shared rules applied to every story level.
 const BASE_RULES: Record<string, string | [string, ...unknown[]]> = {
   "no-inline-style": "error",   // no style= attributes (VALID-02 + Pitfall 2 anti-gaming)
-  "label": "error",             // every input/select/textarea must be associated with a label
-  "button-type": "error",       // every <button> must carry an explicit type attribute
+  "input-missing-label": "error",     // every input/select/textarea must be associated with a label
+  "no-implicit-button-type": "error", // every <button> must carry an explicit type attribute
   "element-permitted-content": "error", // catch div-soup (invalid nesting per HTML spec)
   // Disable rules that produce irrelevant noise on extracted story fragments:
   "require-sri": "off",

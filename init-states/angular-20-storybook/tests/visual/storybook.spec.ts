@@ -131,11 +131,29 @@ for (const storyId of STORY_IDS) {
         await page.waitForTimeout(200);
 
         if (mode === "element") {
-          // Element capture: the component host is the first rendered element
-          // inside the Storybook root. Its bounding box must match the
-          // baseline's natural dimensions exactly.
-          const host = page.locator("#storybook-root > *, #root > *").first();
-          await expect(host).toHaveScreenshot([storyId, `${vp.id}.png`], {
+          // Element capture: screenshot a baseline-sized region anchored at
+          // the OUTERMOST ELEMENT OF THE STORY TEMPLATE. Storybook Angular
+          // injects its own wrapper component as the direct child of
+          // #storybook-root (a display:block host that spans the viewport),
+          // so the story's real root is one level deeper:
+          // #storybook-root > wrapper > <template root>.
+          //
+          // The clip is sized from the baseline PNG's IHDR dimensions, not the
+          // element's own box: if the rendered component is a pixel off in
+          // size, the mismatch shows up as a graded pixel diff at the edges
+          // (absorbed or flagged by maxDiffPixelRatio) instead of an opaque
+          // binary "size mismatch" failure.
+          const host = page
+            .locator("#storybook-root > * > *, #root > * > *")
+            .first();
+          const box = await host.boundingBox();
+          if (!box) throw new Error(`story template root not visible for ${storyId}`);
+          const baseline = readFileSync(join(VISUAL_DIR, storyId, `${vp.id}.png`));
+          const view = new DataView(baseline.buffer, baseline.byteOffset, baseline.byteLength);
+          const clipW = view.getUint32(16, false); // PNG IHDR width
+          const clipH = view.getUint32(20, false); // PNG IHDR height
+          await expect(page).toHaveScreenshot([storyId, `${vp.id}.png`], {
+            clip: { x: box.x, y: box.y, width: clipW, height: clipH },
             maxDiffPixelRatio,
           });
         } else {

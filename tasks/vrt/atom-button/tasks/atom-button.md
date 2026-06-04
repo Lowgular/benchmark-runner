@@ -26,14 +26,14 @@ All colors, radii, and type sizes come from the design tokens in `src/styles/tok
 
 ## Story setup (required for visual verification)
 
-The visual verifier screenshots **the first element inside the Storybook story root** and compares it against a baseline that is exactly 504×40. Wrap the component in a fixed-width container so the captured element measures exactly 504×40:
+The visual verifier screenshots a **504×40 region anchored at the top-left of your story template's outermost element**. Wrap the component in a fixed-width container so that element measures exactly 504×40:
 
 ```ts
 // atoms-button--default story template (shape, adjust to your component API):
-// <div style="width: 504px"><app-button>Button</app-button></div>
+// <div class="w-[504px]"><app-button>Button</app-button></div>
 ```
 
-If the captured element's size differs from 504×40 the diff fails immediately — fix sizing first, pixels second.
+If your rendered size is off, the mismatch shows up as a diff band along the right/bottom edges — fix sizing first, pixels second.
 
 ## Verification
 
