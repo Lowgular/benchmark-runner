@@ -4,6 +4,10 @@
  *
  * Yields Message events in real time as the SDK stream produces them, and
  * a final `result` event with totals at the end.
+ *
+ * Cost visibility (LOOP-02): per-turn token usage is present on every assistant
+ * event; final costUsd is present on the result event. Both land in agent.jsonl
+ * via the framework writer — no extra instrumentation needed.
  */
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
@@ -38,6 +42,9 @@ function stringifyToolResultContent(content: unknown): string {
   return String(content ?? "");
 }
 
+/** Hard backstop — generous ceiling sized well above healthy converging runs. Tune from observed data. Also serves as the per-run cost guard for the autonomous convergence loop. */
+const MAX_TURNS = 150;
+
 export async function* run(params: HarnessParams): AsyncGenerator<Message> {
   yield { t: "user", text: params.task };
 
@@ -49,6 +56,7 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
       model: params.model,
       permissionMode: "bypassPermissions",
       allowedTools: params.allowedTools,
+      maxTurns: MAX_TURNS,
       mcpServers: params.mcpServers as Record<
         string,
         { type?: "stdio"; command: string; args?: string[]; env?: Record<string, string> }
