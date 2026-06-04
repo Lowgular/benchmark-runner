@@ -7,7 +7,10 @@
     "ng:build": "ng build",
     "start": "ng run app:storybook",
     "build": "ng run app:build-storybook",
-    "verify:visual": "npm run build && playwright test"
+    "verify:visual": "npm run build && playwright test tests/visual",
+    "verify:stories": "npm run build && playwright test tests/stories",
+    "verify": "npm run build && playwright test",
+    "postinstall": "playwright install chromium"
   },
   "private": true,
   "dependencies": {

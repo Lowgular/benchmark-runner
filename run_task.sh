@@ -75,8 +75,8 @@ cd "$RUN_DIR"
 echo "[setup] syncing init-state into cwd (excludes from .gitignore)…"
 rsync -a --checksum --filter=":- .gitignore" "$INIT_STATE/" "$RUN_DIR/"
 
-echo "[setup] running npm install…"
-npm install --no-audit --no-fund
+echo "[setup] running npm ci…"
+npm ci --no-audit --no-fund
 
 echo "[setup] overlaying task files from ${TASK_DIR}…"
 rsync -a --checksum "$TASK_DIR/" "$RUN_DIR/"

@@ -8,7 +8,7 @@ const preview: Preview = {
         date: /Date$/,
       },
     },
-    layout: "centered",
+    layout: "fullscreen",
     viewport: {
       viewports: {
         mobile: {
