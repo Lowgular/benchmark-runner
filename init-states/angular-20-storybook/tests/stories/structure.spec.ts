@@ -67,6 +67,16 @@ test("storybook index is available", () => {
   ).toBe(true);
 });
 
+// Fail-closed guard — a missing expected.json silently empties pageStoryIds,
+// disabling the anti-monolith gate (D-08) while still reporting pass. Assert
+// the manifest exists so its absence FAILS rather than vacuously passes.
+test("expected.json is present", () => {
+  expect(
+    existsSync(EXPECTED_PATH),
+    "tests/stories/expected.json not found — overlay the task directory first",
+  ).toBe(true);
+});
+
 test.describe("structure", () => {
   for (const pageStoryId of pageStoryIds) {
     test(`${pageStoryId} DOM composition`, async ({ page }) => {

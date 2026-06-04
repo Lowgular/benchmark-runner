@@ -26,6 +26,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const VISUAL_DIR = dirname(fileURLToPath(import.meta.url));
+const EXPECTED_PATH = join(VISUAL_DIR, "..", "stories", "expected.json");
 
 // Two breakpoints per D-02: mobile 375 + desktop 1200. Tablet (768) dropped.
 const VIEWPORTS = [
@@ -40,6 +41,16 @@ interface ThresholdsConfig {
 }
 const thresholdsRaw = readFileSync(join(VISUAL_DIR, "thresholds.json"), "utf8");
 const thresholds: ThresholdsConfig = JSON.parse(thresholdsRaw) as ThresholdsConfig;
+
+// Fail-closed guard — the visual sweep discovers stories from baseline dirs,
+// not expected.json, so a missing manifest would let the sweep run zero diffs
+// and still report pass. Assert the manifest exists so its absence FAILS.
+test("expected.json is present", () => {
+  expect(
+    existsSync(EXPECTED_PATH),
+    "tests/stories/expected.json not found — overlay the task directory first",
+  ).toBe(true);
+});
 
 const STORY_IDS = readdirSync(VISUAL_DIR, { withFileTypes: true })
   .filter(

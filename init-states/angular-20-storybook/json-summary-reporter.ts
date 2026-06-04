@@ -60,9 +60,19 @@ export default class JsonSummaryReporter implements Reporter {
     const passed = this.rows.filter((r) => r.status === "passed");
     const failed = this.rows.filter((r) => r.status !== "passed");
 
+    // Fail-closed: a run that produced zero test rows must never report
+    // "pass" — an empty run means the scoring substrate (e.g. expected.json)
+    // silently vanished, not that everything passed.
+    const status =
+      this.rows.length === 0
+        ? "fail"
+        : failed.length === 0
+          ? "pass"
+          : "fail";
+
     const envelope = {
       script: this.scriptName,
-      status: failed.length === 0 ? "pass" : "fail",
+      status,
       summary: {
         total: this.rows.length,
         passed: passed.length,
