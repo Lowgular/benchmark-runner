@@ -1,34 +1,26 @@
 import { defineConfig } from "@playwright/test";
 
-const BASE_URL = process.env["BENCH_BASE_URL"] ?? "http://127.0.0.1:6006";
-const REUSE_SERVER = process.env["BENCH_REUSE_SERVER"] === "1";
-const BASELINES_DIR = process.env["BENCH_BASELINES_DIR"];
-
 export default defineConfig({
-  testDir: "./tools",
+  testDir: "./tests",
   testMatch: /\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   retries: 0,
   reporter: [
     ["list"],
-    ["html", { open: "never", outputFolder: ".bench/playwright-report" }],
-    ["json", { outputFile: ".bench/playwright-report.json" }],
+    ["html", { open: "never", outputFolder: "test-results/html" }],
+    ["./vrt-summary-reporter.ts"],
   ],
-  // Where toHaveScreenshot() reads/writes baselines.
-  // When BENCH_BASELINES_DIR is set (per-task baselines from `tasks/vrt/...`),
-  // each snapshot lives at <BASELINES_DIR>/<arg><ext>. Otherwise we fall back
-  // to a colocated __baselines__ directory next to the spec.
-  snapshotPathTemplate: BASELINES_DIR
-    ? `${BASELINES_DIR}/{arg}{ext}`
-    : "{testFileDir}/__baselines__/{arg}{ext}",
+  // Baselines live at tests/visual/<story-id>/<viewport>.png.
+  // The spec passes `${storyId}/${vp.id}.png` as the snapshot name.
+  snapshotPathTemplate: "tests/visual/{arg}{ext}",
   expect: {
     toHaveScreenshot: {
       maxDiffPixelRatio: 0.02,
     },
   },
   use: {
-    baseURL: BASE_URL,
+    baseURL: "http://127.0.0.1:6006",
     trace: "off",
     screenshot: "off",
     video: "off",
@@ -42,12 +34,10 @@ export default defineConfig({
       },
     },
   ],
-  webServer: REUSE_SERVER
-    ? undefined
-    : {
-        command: "npx http-server storybook-static -p 6006 -s -c-1",
-        url: "http://127.0.0.1:6006",
-        reuseExistingServer: true,
-        timeout: 60_000,
-      },
+  webServer: {
+    command: "npx http-server storybook-static -p 6006 -s -c-1",
+    url: "http://127.0.0.1:6006",
+    reuseExistingServer: true,
+    timeout: 60_000,
+  },
 });

@@ -1,0 +1,258 @@
+#!/usr/bin/env bun
+/**
+ * Harness framework — the only CLI entrypoint. Owns everything *except* the
+ * agent loop itself:
+ *   - CLI parsing
+ *   - reading agent file + task file
+ *   - resolving model alias
+ *   - banner + verbose logging
+ *   - writing agent.jsonl (one line per Message yielded by the harness)
+ *   - writing RESPONSE.md
+ *
+ * The actual agent loop lives in <harness>/src/index.ts as an async generator
+ * yielding standard Message events. Framework dynamic-imports it.
+ *
+ * Usage:
+ *   bun run harness/framework.ts \
+ *     --harness anthropic-sdk \
+ *     --agent <agent-file> \
+ *     --task <task-file> \
+ *     --model <name> \
+ *     [--verbose|-v]
+ */
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { parse as parseYaml } from "yaml";
+
+import { C, fmtToolResult, fmtToolUse, truncate } from "./tool-format.ts";
+
+// ---------- Standard event types every harness must yield ----------
+
+export interface Usage {
+  input: number;
+  output: number;
+  cacheRead: number;
+  cacheCreate: number;
+}
+
+export type Message =
+  | { t: "user"; text: string }
+  | { t: "assistant"; turn: number; text: string; usage: Usage }
+  | { t: "thinking"; turn: number; text: string }
+  | { t: "tool_use"; turn: number; id: string; name: string; input: unknown }
+  | { t: "tool_result"; turn: number; toolUseId: string; isError: boolean; content: string }
+  | { t: "result"; status: "completed" | "error"; turnCount: number; totalUsage: Usage; model: string; costUsd?: number }
+  | { t: "error"; message: string };
+
+export interface McpServerConfig {
+  type: "stdio" | "http" | "sse";
+  command?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  url?: string;
+}
+
+export interface HarnessParams {
+  task: string;
+  systemPrompt: string;
+  model: string;
+  cwd: string;
+  allowedTools: string[];
+  mcpServers: Record<string, McpServerConfig>;
+}
+
+export type Harness = (params: HarnessParams) => AsyncIterable<Message>;
+
+// ---------- Agent file + model ----------
+
+export interface AgentDef {
+  name: string;
+  description: string;
+  tools: string[];
+  mcpServers: Record<string, McpServerConfig>;
+  body: string;
+}
+
+function parseAgentFile(filePath: string): AgentDef {
+  const content = readFileSync(filePath, "utf8");
+  const fm = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+  if (!fm) throw new Error(`No YAML frontmatter found in ${filePath}`);
+  const [, frontmatterStr = "", body = ""] = fm;
+  const frontmatter = (parseYaml(frontmatterStr) ?? {}) as Record<string, unknown>;
+  const tools = Array.isArray(frontmatter["tools"])
+    ? (frontmatter["tools"] as unknown[]).map(String)
+    : [];
+  const mcpServers =
+    (frontmatter["mcpServers"] as Record<string, McpServerConfig> | undefined) ?? {};
+  return {
+    name: String(frontmatter["name"] ?? ""),
+    description: String(frontmatter["description"] ?? ""),
+    tools,
+    mcpServers,
+    body: body.trim(),
+  };
+}
+
+const MODEL_ALIASES: Record<string, string> = {
+  haiku: "claude-haiku-4-5",
+  sonnet: "claude-sonnet-4-6",
+  opus: "claude-opus-4-7",
+};
+
+function resolveModel(input: string): string {
+  return MODEL_ALIASES[input.toLowerCase()] ?? input;
+}
+
+// ---------- CLI ----------
+
+interface CliArgs {
+  harness: string;
+  agentFile: string;
+  taskFile: string;
+  modelName: string;
+  verbose: boolean;
+}
+
+const USAGE =
+  "Usage: bun run harness/framework.ts \\\n" +
+  "         --harness <name> --agent <file> --task <file> --model <name> [--verbose|-v]\n";
+
+function parseArgs(argv: string[]): CliArgs {
+  let harness = "";
+  let agentFile = "";
+  let taskFile = "";
+  let modelName = "";
+  let verbose = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--verbose" || a === "-v") {
+      verbose = true;
+    } else if (a === "--harness") {
+      harness = argv[++i] ?? "";
+    } else if (a === "--agent") {
+      agentFile = argv[++i] ?? "";
+    } else if (a === "--task") {
+      taskFile = argv[++i] ?? "";
+    } else if (a === "--model") {
+      modelName = argv[++i] ?? "";
+    } else {
+      console.error(`Unknown arg: ${a}`);
+      console.error(USAGE);
+      process.exit(1);
+    }
+  }
+
+  const missing: string[] = [];
+  if (!harness) missing.push("--harness");
+  if (!agentFile) missing.push("--agent");
+  if (!taskFile) missing.push("--task");
+  if (!modelName) missing.push("--model");
+  if (missing.length) {
+    console.error(`Missing args: ${missing.join(", ")}`);
+    console.error(USAGE);
+    process.exit(1);
+  }
+
+  return { harness, agentFile, taskFile, modelName, verbose };
+}
+
+// ---------- Verbose logging dispatch ----------
+
+function logMessage(msg: Message): void {
+  switch (msg.t) {
+    case "thinking":
+      console.log(`\n${C.magenta}● Thinking${C.reset}\n${C.dim}${truncate(msg.text, 600)}${C.reset}`);
+      break;
+    case "assistant":
+      if (msg.text.trim()) console.log(`\n${C.bold}● Assistant${C.reset}\n${msg.text}`);
+      break;
+    case "tool_use":
+      console.log(`\n${C.dim}[turn ${msg.turn}]${C.reset} ${fmtToolUse(msg.name, msg.input)}`);
+      break;
+    case "tool_result": {
+      const { body, lineCount } = fmtToolResult(msg.content, msg.isError);
+      const tag = msg.isError ? `${C.red}✗ error${C.reset}` : `${C.green}✓${C.reset}`;
+      console.log(
+        `${tag} ${C.dim}(${lineCount} line${lineCount === 1 ? "" : "s"})${C.reset}\n${body}`,
+      );
+      break;
+    }
+    case "result":
+      console.error(`${C.dim}[result] status=${msg.status} turns=${msg.turnCount}${C.reset}`);
+      break;
+    case "error":
+      console.error(`${C.red}[error]${C.reset} ${msg.message}`);
+      break;
+    case "user":
+      // first user message is the task; usually too noisy to print
+      break;
+  }
+}
+
+// ---------- Main ----------
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+async function main(): Promise<void> {
+  const args = parseArgs(process.argv.slice(2));
+
+  const agentAbs = resolve(args.agentFile);
+  const taskFileAbs = resolve(args.taskFile);
+  if (!existsSync(agentAbs)) throw new Error(`Agent file not found: ${agentAbs}`);
+  if (!existsSync(taskFileAbs)) throw new Error(`Task file not found: ${taskFileAbs}`);
+
+  const agent = parseAgentFile(agentAbs);
+  const task = readFileSync(taskFileAbs, "utf8");
+  const resolvedModel = resolveModel(args.modelName);
+  const cwd = process.cwd();
+
+  const mcpNames = Object.keys(agent.mcpServers);
+  console.error(`harness     : ${args.harness}`);
+  console.error(`agent       : ${agent.name} (${agent.tools.length} tools${mcpNames.length ? `, ${mcpNames.length} MCP: ${mcpNames.join(",")}` : ""})`);
+  console.error(`task        : ${taskFileAbs}`);
+  console.error(`workdir     : ${cwd}`);
+  console.error(
+    `model       : ${resolvedModel}${args.modelName !== resolvedModel ? ` (alias: ${args.modelName})` : ""}`,
+  );
+  console.error("");
+
+  const harnessEntry = join(HERE, args.harness, "src", "index.ts");
+  if (!existsSync(harnessEntry)) {
+    throw new Error(`Harness not found: ${harnessEntry}`);
+  }
+  const { run } = (await import(harnessEntry)) as { run: Harness };
+
+  const traceFile = join(cwd, "agent.jsonl");
+  writeFileSync(traceFile, "", "utf8");
+
+  const startedAt = Date.now();
+  let finalAssistantText = "";
+
+  for await (const msg of run({
+    task,
+    systemPrompt: agent.body,
+    model: resolvedModel,
+    cwd,
+    allowedTools: agent.tools,
+    mcpServers: agent.mcpServers,
+  })) {
+    const line = JSON.stringify({ ts: new Date().toISOString(), ...msg });
+    appendFileSync(traceFile, `${line}\n`, "utf8");
+    if (msg.t === "assistant" && msg.text.trim()) finalAssistantText = msg.text;
+    if (args.verbose) logMessage(msg);
+    else if (msg.t === "tool_use") console.error(`[turn ${msg.turn}] tool_use: ${msg.name}`);
+  }
+
+  writeFileSync(join(cwd, "RESPONSE.md"), `${finalAssistantText.trim()}\n`, "utf8");
+  console.error(
+    `\nDone in ${Date.now() - startedAt}ms. Wrote RESPONSE.md + agent.jsonl to ${cwd}`,
+  );
+}
+
+main().catch((err: unknown) => {
+  console.error("Framework failed:", err);
+  process.exit(1);
+});

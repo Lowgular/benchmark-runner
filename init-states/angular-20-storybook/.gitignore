@@ -6,10 +6,6 @@
 /out-tsc
 /bazel-out
 /storybook-static
-/.bench/actual
-/.bench/diff
-/.bench/*.json
-/.bench/playwright-vrt.json
 
 # Node
 /node_modules

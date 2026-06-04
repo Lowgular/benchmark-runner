@@ -7,11 +7,7 @@
     "ng:build": "ng build",
     "start": "ng run app:storybook",
     "build": "ng run app:build-storybook",
-    "verify": "npm run build && playwright test tools/verify/vrt.spec.ts",
-    "verify:update": "npm run build && playwright test tools/verify/vrt.spec.ts --update-snapshots",
-    "validate": "bun run tools/validate/run.ts",
-    "validate:axe": "playwright test tools/validate/axe.spec.ts",
-    "lint": "static-analysis run"
+    "verify:visual": "npm run build && playwright test"
   },
   "private": true,
   "dependencies": {
@@ -36,10 +32,8 @@
     "@angular/build": "^20.1.1",
     "@angular/cli": "^20.1.1",
     "@angular/compiler-cli": "^20.1.2",
-    "@axe-core/playwright": "^4.10.0",
     "@compodoc/compodoc": "^1.1.26",
     "@eslint/js": "^9.20.0",
-    "@lowgular/static-analysis": "file:/Users/greg/Desktop/projects/lowgular/lowgular-internal/dist/apps/static-analysis",
     "@playwright/test": "^1.50.0",
     "@storybook/addon-a11y": "^10.3.6",
     "@storybook/angular": "^10.3.6",
