@@ -1,40 +1,34 @@
 /*
  * Design tokens — Tailwind v4 @theme block.
+ * Derived from SDS (Simple Design System, file B5WEwfU8fqq6i994PEh2LL)
+ * Foundations: Color 226:13679, Typography 226:13829, Size 226:13680, Effects 226:13682.
+ *
  * Edit this file to tune the visual language; consumers should reference
- * these tokens via Tailwind utility classes (e.g. `bg-brand-500`, `p-4`,
- * `rounded-lg`, `shadow-md`) rather than hardcoded values.
+ * these tokens via Tailwind utility classes (e.g. `bg-neutral-900`, `p-4`,
+ * `rounded-base`, `shadow-sm`) rather than hardcoded values.
  */
 @theme {
-  /* ---------- Color: brand ---------- */
-  --color-brand-50: oklch(0.97 0.02 250);
-  --color-brand-100: oklch(0.93 0.05 250);
-  --color-brand-200: oklch(0.86 0.1 250);
-  --color-brand-300: oklch(0.78 0.14 250);
-  --color-brand-400: oklch(0.68 0.18 250);
-  --color-brand-500: oklch(0.58 0.22 250);
-  --color-brand-600: oklch(0.48 0.21 250);
-  --color-brand-700: oklch(0.38 0.18 250);
-  --color-brand-800: oklch(0.28 0.13 250);
-  --color-brand-900: oklch(0.18 0.07 250);
-
   /* ---------- Color: neutral ---------- */
-  --color-neutral-0: oklch(1 0 0);
+  --color-neutral-0: oklch(1 0 0);           /* #ffffff — page bg, select bg, accordion bg */
   --color-neutral-50: oklch(0.98 0 0);
   --color-neutral-100: oklch(0.96 0 0);
-  --color-neutral-200: oklch(0.92 0 0);
-  --color-neutral-300: oklch(0.86 0 0);
+  --color-neutral-200: oklch(0.90 0 0);      /* #e3e3e3 — image placeholder bg */
+  --color-neutral-300: oklch(0.86 0 0);      /* #d9d9d9 — select / accordion border */
   --color-neutral-400: oklch(0.72 0 0);
-  --color-neutral-500: oklch(0.55 0 0);
+  --color-neutral-500: oklch(0.52 0 0);      /* #757575 — secondary / description text */
   --color-neutral-600: oklch(0.42 0 0);
   --color-neutral-700: oklch(0.32 0 0);
-  --color-neutral-800: oklch(0.2 0 0);
-  --color-neutral-900: oklch(0.12 0 0);
+  --color-neutral-800: oklch(0.22 0 0);      /* #2c2c2c — dark button & icon-button bg */
+  --color-neutral-900: oklch(0.14 0 0);      /* #1e1e1e — headings, body text, price */
   --color-neutral-1000: oklch(0 0 0);
 
-  /* ---------- Color: semantic ---------- */
+  /* ---------- Color: success (SDS green scale — used in Tag component) ---------- */
+  --color-success-100: oklch(0.94 0.07 145); /* #cff7d3 — Tag background */
   --color-success-500: oklch(0.62 0.18 145);
   --color-success-700: oklch(0.4 0.14 145);
-  --color-success-900: oklch(0.28 0.1 145);
+  --color-success-900: oklch(0.31 0.11 145); /* #02542d — Tag text */
+
+  /* ---------- Color: semantic ---------- */
   --color-warning-500: oklch(0.78 0.16 80);
   --color-warning-700: oklch(0.55 0.14 80);
   --color-danger-500: oklch(0.58 0.23 25);
@@ -42,38 +36,33 @@
   --color-info-500: oklch(0.65 0.16 220);
   --color-info-700: oklch(0.45 0.14 220);
 
-  /* ---------- Typography ---------- */
+  /* ---------- Typography (SDS Inter — sizes from Typography Foundation node) ---------- */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
+  /* SDS type scale — sizes match Typography Foundation measurements */
+  --text-xs: 0.75rem;       /* 12px */
+  --text-sm: 0.875rem;      /* 14px — Body Small (weight 400/600) */
+  --text-base: 1rem;        /* 16px — Body Base, Select label, Accordion title */
   --text-lg: 1.125rem;
   --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
+  --text-2xl: 1.5rem;       /* 24px — Heading (weight 600), price $ symbol */
   --text-3xl: 1.875rem;
   --text-4xl: 2.25rem;
-  --text-5xl: 3rem;
+  --text-5xl: 3rem;         /* 48px — price number */
 
   /* ---------- Spacing (4px grid — drives the full linear scale: p-1 = 0.25rem, p-4 = 1rem, p-8 = 2rem, …) ---------- */
   --spacing: 0.25rem;
 
-  /* ---------- Radius ---------- */
+  /* ---------- Radius (SDS Size Foundation — Base=8px, Small=4px, Large=16px, Full=9999px) ---------- */
   --radius-none: 0;
-  --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-full: 9999px;
+  --radius-sm: 0.25rem;     /* 4px — Small */
+  --radius-base: 0.5rem;    /* 8px — Base: Button, Accordion item, Tag, Select */
+  --radius-lg: 1rem;        /* 16px — Large */
+  --radius-full: 9999px;    /* Full — Icon Button */
 
-  /* ---------- Elevation ---------- */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md:
-    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg:
-    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl:
-    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* ---------- Elevation (SDS Effects Foundation — Drop Shadow values) ---------- */
+  --shadow-sm: 0 1px 4px 0 oklch(0 0 0 / 0.05);
+  --shadow-md: 0 1px 4px 0 oklch(0 0 0 / 0.10);
+  --shadow-lg: 0 4px 4px -1px oklch(0 0 0 / 0.10);
 }
