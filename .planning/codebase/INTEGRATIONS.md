@@ -66,7 +66,7 @@
 
 **Logs:**
 - Harness writes structured JSONL to `<run-dir>/agent.jsonl` — one JSON line per `Message` event (user, assistant, thinking, tool_use, tool_result, result, error)
-- `write-summary.ts` (`harness/write-summary.ts`) reads the last `{ t: "result" }` line from `agent.jsonl` to extract `turnCount`, `totalUsage`, `costUsd`
+- `framework.ts` writes `summary.json` from the final `{ t: "result" }` event it streamed; `write-summary.ts` (regen tool) can rebuild it from `agent.jsonl` for historical runs
 - Console output to stderr for progress; stdout for content
 - VRT summary written to `test-results/SUMMARY.md` by the custom Playwright reporter (`vrt-summary-reporter.ts`)
 
@@ -79,7 +79,7 @@
 **Run orchestration:**
 - Entry point: `run_task.sh` (Bash) at repo root
 - Usage: `./run_task.sh <bench> <task> <model> [--harness=<name>]`
-- Creates GUID workdir, rsyncs init-state, runs `npm install`, overlays task files, invokes `bun run harness/framework.ts`, then calls `write-summary.ts`
+- Validates harness env (`--check-env`), creates GUID workdir, rsyncs init-state, runs `npm ci`, overlays task files, invokes `bun run harness/framework.ts` (which writes agent.jsonl, RESPONSE.md, summary.json)
 
 ## Webhooks & Callbacks
 

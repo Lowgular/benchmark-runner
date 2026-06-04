@@ -104,7 +104,7 @@
 **Production:**
 - No server deployment; the repo is a local benchmark runner
 - Each task run creates a GUID-named directory under `runs/<bench>/<task>/`
-- Init-state is `rsync`'d into the run directory; `npm install` is executed per run
+- Init-state is `rsync`'d into the run directory; `npm ci` is executed per run
 
 ---
 

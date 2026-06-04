@@ -11,8 +11,11 @@ benchmark-runner/
 ├── package-lock.json
 │
 ├── harness/                            # Active pipeline — all harness code lives here
-│   ├── framework.ts                    # CLI + streaming core; harness-agnostic
-│   ├── write-summary.ts                # Pass-1 summary.json writer (reads agent.jsonl)
+│   ├── framework.ts                    # CLI + streaming core; harness-agnostic; writes agent.jsonl/RESPONSE.md/summary.json
+│   ├── summary.ts                      # Shared buildSummary() — WCS Pass-1 shape
+│   ├── models.ts                       # Model alias + OpenRouter slug tables (single source)
+│   ├── write-summary.ts                # Standalone summary.json regen tool for historical runs
+│   ├── harness-contract.test.ts        # Enforces plugin boundary (no fs/argv/env/console in plugins)
 │   ├── tool-format.ts                  # Verbose logging helpers (ANSI, truncation)
 │   ├── package.json                    # Harness shared deps (@anthropic-ai/claude-agent-sdk, ai, langchain, …)
 │   ├── tsconfig.json                   # Bun/ESM TypeScript config; includes */src/**
@@ -60,7 +63,7 @@ benchmark-runner/
 │   ├── angular-20-legacy/              # Angular with legacy patterns
 │   └── angular-nest-team-crud/         # Angular + NestJS full-stack CRUD scaffold
 │
-├── runs/                               # Per-run workspaces (mostly gitignored)
+├── runs/                               # Per-run workspaces (gitignored — results live in backend storage)
 │   └── vrt/
 │       └── pricing/
 │           └── <guid>/                 # Full workspace: init-state + task overlay + agent outputs
@@ -98,8 +101,8 @@ benchmark-runner/
 
 **`harness/`:**
 - Purpose: The active benchmark pipeline — framework core + harness plugins
-- Contains: `framework.ts` (the only CLI entry), `write-summary.ts`, `tool-format.ts`, and one subdirectory per harness plugin
-- Key files: `harness/framework.ts`, `harness/write-summary.ts`, `harness/package.json`
+- Contains: `framework.ts` (the only CLI entry), `summary.ts`, `models.ts`, `write-summary.ts` (regen tool), `tool-format.ts`, `harness-contract.test.ts`, and one subdirectory per harness plugin
+- Key files: `harness/framework.ts`, `harness/summary.ts`, `harness/models.ts`, `harness/package.json`
 
 **`harness/<name>/src/`:**
 - Purpose: One harness plugin per SDK/approach
@@ -124,14 +127,14 @@ benchmark-runner/
 **`runs/`:**
 - Purpose: Runtime output — one GUID dir per benchmark run
 - Contains: Full workspace (init-state + task overlay) + agent outputs
-- Gitignored (except curated showcases if added in future)
+- Gitignored entirely (since 2026-06-04); canonical results live in backend storage (Firebase/Supabase)
 
 ## Key File Locations
 
 **Entry Points:**
 - `run_task.sh`: Shell orchestration; the human-facing command
 - `harness/framework.ts`: Bun script; invoked by `run_task.sh`; sole CLI entry for the harness pipeline
-- `harness/write-summary.ts`: Bun script; invoked by `run_task.sh` after harness exits
+- `harness/write-summary.ts`: Bun script; standalone regen tool for historical runs (no longer invoked by `run_task.sh` — framework writes summary.json)
 
 **Harness Plugins:**
 - `harness/anthropic-sdk/src/index.ts`: Default harness (Anthropic SDK direct)
@@ -198,7 +201,7 @@ benchmark-runner/
 **`runs/`:**
 - Purpose: Live benchmark run workspaces; one GUID subdir per invocation
 - Generated: Yes (by `run_task.sh`)
-- Committed: No (gitignored; exception possible for `runs/showcase/` in future)
+- Committed: No — entire `runs/` tree gitignored since 2026-06-04 (commit `da6b56f`); canonical results are standardized in backend storage (Firebase/Supabase), local dirs kept only for short-term harness-tuning inspection
 
 **`harness/node_modules/`:**
 - Purpose: Harness runtime dependencies (separate package from root)

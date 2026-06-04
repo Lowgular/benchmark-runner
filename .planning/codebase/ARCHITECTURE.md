@@ -48,7 +48,7 @@
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| `run_task.sh` | Orchestration: GUID dir setup, rsync init-state, npm install, overlay task, invoke framework (with `--run-id`/`--init-state`) | `run_task.sh` |
+| `run_task.sh` | Orchestration: env preflight (`--check-env`), GUID dir setup, rsync init-state, npm ci, overlay task, invoke framework (with `--run-id`/`--init-state`) | `run_task.sh` |
 | `framework.ts` | CLI parsing, reads agent/task files, resolves model aliases, dynamic-imports harness, streams + writes agent.jsonl / RESPONSE.md / summary.json | `harness/framework.ts` |
 | `anthropic-sdk` harness | Agent loop via `@anthropic-ai/claude-agent-sdk`; translates SDK stream to standard Message events | `harness/anthropic-sdk/src/index.ts` |
 | `ai-sdk` harness | Agent loop via Vercel AI SDK + OpenRouter; spawns MCP servers via `@modelcontextprotocol/sdk` | `harness/ai-sdk/src/index.ts` |
@@ -76,8 +76,8 @@
 **Orchestration Layer:**
 - Purpose: Sets up the per-run workspace, sequences setup steps, invokes the pipeline
 - Location: `run_task.sh`
-- Contains: Bash scripting, rsync, npm install, framework invocation, write-summary invocation
-- Depends on: `harness/framework.ts`, `harness/write-summary.ts`, `init-states/`, `tasks/`, `agents/`
+- Contains: Bash scripting, env preflight, rsync, npm ci, framework invocation
+- Depends on: `harness/framework.ts`, `init-states/`, `tasks/`, `agents/`
 - Used by: Human operator / CI
 
 **Framework Layer:**
@@ -111,7 +111,7 @@
 
 1. Operator invokes `./run_task.sh vrt pricing sonnet` (`run_task.sh:14-113`)
 2. Shell creates `runs/vrt/pricing/<guid>/` and rsyncs `init-states/angular-20-storybook/` into it (`run_task.sh:72`)
-3. Shell runs `npm install` in run dir, then rsyncs `tasks/vrt/pricing/` overlay (`run_task.sh:75-78`)
+3. Shell runs `npm ci` in run dir, then rsyncs `tasks/vrt/pricing/` overlay (`run_task.sh`)
 4. Shell invokes `bun run harness/framework.ts --harness anthropic-sdk --agent agents/vrt/AGENTS.md --task tasks/vrt/pricing/tasks/pricing.md --model sonnet --run-id <guid> --init-state <dir>` (`run_task.sh`)
 5. `framework.ts` parses CLI, reads agent YAML frontmatter → `AgentDef`, reads task text, resolves `sonnet` → `claude-sonnet-4-6`
 6. Framework dynamic-imports `harness/anthropic-sdk/src/index.ts` and calls `run(params)`
@@ -174,7 +174,7 @@
 **`run_task.sh`:**
 - Location: `run_task.sh`
 - Triggers: Human operator / CI; accepts `<bench> <task> <model> [--harness=<name>]`
-- Responsibilities: Full run lifecycle — workspace setup, npm install, framework invocation, write-summary invocation
+- Responsibilities: Full run lifecycle — env preflight, workspace setup, npm ci, framework invocation
 
 **`harness/framework.ts`:**
 - Location: `harness/framework.ts`

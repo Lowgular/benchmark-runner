@@ -80,13 +80,13 @@
 **`runs/` directory accumulates 6.7 GB of workspace data:**
 - Problem: Each benchmark run rsync-copies a full init-state (~200MB+ with `node_modules`) into a GUID-named directory. No cleanup is performed after runs.
 - Files: `run_task.sh:72,75`, `runs/` (6.7 GB on disk)
-- Cause: `npm install` runs inside each ephemeral `runs/<bench>/<task>/<guid>/` directory, creating a full `node_modules` tree per run.
+- Cause: `npm ci` runs inside each ephemeral `runs/<bench>/<task>/<guid>/` directory, creating a full `node_modules` tree per run.
 - Note: As of 2026-06-04 this is a disk-only concern — `runs/` is gitignored (commit `da6b56f`) and no longer affects the repo.
 - Improvement path: Use a shared `node_modules` cache via `npm ci --cache`, or rsync without copying `node_modules` and symlink to a shared install. Add a `cleanup` script or document manual pruning.
 
-**`npm install` runs on every benchmark run regardless of whether packages changed:**
-- Problem: Each `run_task.sh` invocation runs `npm install --no-audit --no-fund` unconditionally, adding 30–90 seconds per run.
-- Files: `run_task.sh:75`
+**`npm ci` runs on every benchmark run regardless of whether packages changed:**
+- Problem: Each `run_task.sh` invocation runs `npm ci --no-audit --no-fund` unconditionally, adding 30–90 seconds per run. (Switched from `npm install` to `npm ci` 2026-06-04 for reproducible installs; the per-run cost remains.)
+- Files: `run_task.sh`
 - Cause: The rsync of the init-state does not preserve the `node_modules` — they are gitignored and thus filtered from the rsync.
 - Improvement path: Pre-build init-state tarballs with `node_modules` baked in, or use `--offline` with a pre-populated npm cache.
 
