@@ -31,7 +31,7 @@ const EXPECTED_PATH = join(VISUAL_DIR, "..", "stories", "expected.json");
 // Two breakpoints per D-02: mobile 375 + desktop 1200. Tablet (768) dropped.
 // Only `width` drives layout. Captures use `fullPage: true` (see below), which
 // records the entire document scroll-height, so the viewport *height* does not
-// clip the image — baselines are full-component-height Figma exports
+// clip the image — baselines are full-component-height design exports
 // (desktop 1200×863, mobile 375×1282). A viewport height is still required by
 // page.setViewportSize(); INITIAL_VIEWPORT_HEIGHT is an arbitrary starting box
 // the page is free to grow beyond, deliberately decoupled from the breakpoint.
