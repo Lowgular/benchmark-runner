@@ -1,10 +1,12 @@
 #!/usr/bin/env bun
 /**
- * Writes summary.json into the run workdir after the harness exits.
+ * Standalone regen tool: rebuilds summary.json for an EXISTING run dir from
+ * its agent.jsonl trace. Normal runs don't need this — framework.ts writes
+ * summary.json itself (pass --run-id/--init-state). Use this only to
+ * re-generate summaries for historical runs.
  *
- * Inputs (all required, passed as flags by run_task.sh):
+ * Inputs (all required, passed as flags):
  *   --cwd <path>            run workdir
- *   --bench <name>          e.g. "vrt"
  *   --task <name>           e.g. "pricing"
  *   --task-run-id <guid>
  *   --model <resolved>      e.g. "claude-opus-4-7"
@@ -21,9 +23,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, parse } from "node:path";
 
+import { buildSummary, type ResultEvent } from "./summary.ts";
+
 interface Args {
   cwd: string;
-  bench: string;
   task: string;
   taskRunId: string;
   model: string;
@@ -51,7 +54,6 @@ function parseArgs(argv: string[]): Args {
   };
   return {
     cwd: need("cwd"),
-    bench: need("bench"),
     task: need("task"),
     taskRunId: need("task-run-id"),
     model: need("model"),
@@ -70,21 +72,15 @@ function readAgentName(agentFile: string): string {
 }
 
 function readTaskFile(cwd: string, task: string): string {
-  const candidate = join(cwd, "tasks", `${task}.md`);
-  if (!existsSync(candidate)) {
-    console.warn(`[write-summary] task file not found at ${candidate} — prompt will be empty`);
-    return "";
+  // Task overlays place the brief at tasks/<task>/<task>.md (VRT) or tasks/<task>.md.
+  const candidates = [join(cwd, "tasks", task, `${task}.md`), join(cwd, "tasks", `${task}.md`)];
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return readFileSync(candidate, "utf8");
   }
-  return readFileSync(candidate, "utf8");
-}
-
-interface ResultEvent {
-  t: "result";
-  status: "completed" | "error";
-  turnCount: number;
-  totalUsage: { input: number; output: number; cacheRead: number; cacheCreate: number };
-  model?: string;
-  costUsd?: number;
+  console.warn(
+    `[write-summary] task file not found at ${candidates.join(" or ")} — prompt will be empty`,
+  );
+  return "";
 }
 
 function readLastResult(tracePath: string): ResultEvent | null {
@@ -105,42 +101,19 @@ function readLastResult(tracePath: string): ResultEvent | null {
 
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
-  const pipelineId = readAgentName(args.agentFile);
-  const prompt = readTaskFile(args.cwd, args.task);
-  const environmentId = parse(args.initState).name;
-  const tracePath = join(args.cwd, "agent.jsonl");
-  const result = readLastResult(tracePath);
 
-  const summary = {
-    version: "1",
-    results: [
-      {
-        promptDef: { name: args.task, prompt },
-        score: null,
-      },
-    ],
-    details: {
-      summary: {
-        taskId: args.task,
-        prompt,
-        taskRunId: args.taskRunId,
-        environmentId,
-        model: result?.model ?? args.model,
-        pipelineId,
-        runner: { id: args.harnessId },
-        elapsedMs: args.elapsedMs,
-        timestamp: args.startedAt,
-        ...(result
-          ? {
-              status: result.status,
-              turnCount: result.turnCount,
-              usage: result.totalUsage,
-              ...(result.costUsd !== undefined ? { costUsd: result.costUsd } : {}),
-            }
-          : { status: "unknown" }),
-      },
-    },
-  };
+  const summary = buildSummary({
+    taskId: args.task,
+    prompt: readTaskFile(args.cwd, args.task),
+    taskRunId: args.taskRunId,
+    environmentId: parse(args.initState).name,
+    model: args.model,
+    pipelineId: readAgentName(args.agentFile),
+    harnessId: args.harnessId,
+    elapsedMs: args.elapsedMs,
+    startedAt: args.startedAt,
+    result: readLastResult(join(args.cwd, "agent.jsonl")),
+  });
 
   const outPath = join(args.cwd, "summary.json");
   writeFileSync(outPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");

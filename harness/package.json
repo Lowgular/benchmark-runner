@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "check:contract": "bun test harness-contract.test.ts"
+  },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.121",
     "@langchain/core": "^1.0.0",

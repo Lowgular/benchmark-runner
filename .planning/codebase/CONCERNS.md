@@ -54,11 +54,8 @@
 
 ## Known Bugs
 
-**`write-summary.ts` silently emits empty `prompt` field for VRT tasks:**
-- Symptoms: `summary.json` field `details.summary.prompt` and `results[0].promptDef.prompt` will be empty strings with a `console.warn`.
-- Files: `harness/write-summary.ts:72-78`
-- Trigger: `write-summary` looks for the task file at `<cwd>/tasks/<task>.md`, but the VRT task overlay places it at `<cwd>/tasks/<task>/<task>.md` (one deeper). The path construction is wrong for VRT tasks.
-- Workaround: The prompt is also passed to the framework directly from `run_task.sh`, so the agent runs correctly; only the summary JSON is affected.
+**~~`write-summary.ts` silently emits empty `prompt` field for VRT tasks~~ (FIXED 2026-06-04):**
+- Resolution: `framework.ts` now writes `summary.json` itself from the task file it already read (`--run-id`/`--init-state` flags), so the prompt is always populated. The standalone regen tool `write-summary.ts` also checks both `tasks/<task>/<task>.md` and `tasks/<task>.md`.
 
 **`deepagents` harness always emits `isError: false` for tool results:**
 - Symptoms: Tool errors from MCP servers are logged to the event trace as successful tool results. Error signals are invisible in `agent.jsonl` review.
@@ -66,11 +63,8 @@
 - Trigger: `ToolMessage` error status is not mapped to `isError`; the field is hardcoded `false`.
 - Workaround: None — errors can only be detected by reading the raw `content` string in `agent.jsonl`.
 
-**`run_task.sh` elapsed timing has 1-second granularity:**
-- Symptoms: `elapsedMs` in `summary.json` is always a multiple of 1000ms. Short runs appear to take 0ms.
-- Files: `run_task.sh:83,97,98`
-- Trigger: `date +%s` returns seconds. `ELAPSED_MS=$(( (END_S - START_S) * 1000 ))` cannot produce sub-second resolution.
-- Workaround: Use `date +%s%N` (nanoseconds) on Linux, or `gdate` on macOS with Homebrew coreutils.
+**~~`run_task.sh` elapsed timing has 1-second granularity~~ (FIXED 2026-06-04):**
+- Resolution: shell timing removed; `framework.ts` measures `elapsedMs` in-process with `Date.now()` (millisecond resolution) and writes it into `summary.json` directly.
 
 ## Security Considerations
 
@@ -151,8 +145,9 @@
 - Risk: Scoring logic (precision, recall, false positive/negative classification) can silently regress. A format change in RESPONSE.md would silently produce 0-score results.
 - Priority: High — this is the ground truth scorer for the entire benchmark.
 
-**`harness/` framework and harness plug-ins have zero tests:**
-- What's not tested: `parseAgentFile`, `resolveModel`, `parseArgs`, message normalization in all three harnesses, `writeResponseMarkdownFromJsonl`.
+**`harness/` framework and harness plug-ins have almost zero tests:**
+- Covered: harness plugin contract (`harness/harness-contract.test.ts` — no fs/CLI/console in plugins, type-only framework imports; run via `bun test harness/`).
+- What's not tested: `parseAgentFile`, `resolveModel`, `parseArgs`, `buildSummary`, message normalization in all three harnesses, `writeResponseMarkdownFromJsonl`.
 - Files: `harness/framework.ts`, `harness/anthropic-sdk/src/index.ts`, `harness/ai-sdk/src/index.ts`, `harness/deepagents/src/index.ts`, `task-runners/plan-and-find/src/response-markdown.ts`
 - Risk: YAML frontmatter parsing regressions, broken model alias resolution, and incorrect JSONL event serialization will only be caught at runtime against a live model API.
 - Priority: Medium — at minimum, `parseAgentFile` and `resolveModel` are pure functions that should have unit tests.

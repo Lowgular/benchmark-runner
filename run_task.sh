@@ -6,8 +6,9 @@
 #   ./run_task.sh vrt pricing sonnet --harness=deepagents         # via OpenRouter + langgraph
 #
 # Creates a fresh GUID-named workdir under runs/<bench>/<task>/, prepares it
-# (rsync init-state → npm install → overlay task), invokes the chosen harness,
-# and writes summary.json (Pass-1: run metadata + usage from agent.jsonl, score=null).
+# (rsync init-state → npm install → overlay task), and invokes the chosen
+# harness via framework.ts, which writes agent.jsonl + RESPONSE.md +
+# summary.json (Pass-1: run metadata + usage, score=null).
 # A separate eval step amplifies summary.json with results[0].score later.
 set -euo pipefail
 
@@ -79,35 +80,13 @@ rsync -a --checksum "$TASK_DIR/" "$RUN_DIR/"
 
 echo ""
 
-STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-START_S=$(date +%s)
-
 TASK_FILE="$TASK_DIR/tasks/$TASK.md"
 
-set +e
 bun run "$FRAMEWORK" \
   --harness "$HARNESS_ID" \
   --agent "$AGENT" \
   --task "$TASK_FILE" \
   --model "$MODEL" \
-  --verbose "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
-HARNESS_EXIT=$?
-set -e
-
-END_S=$(date +%s)
-ELAPSED_MS=$(( (END_S - START_S) * 1000 ))
-
-echo ""
-bun run "$ROOT/harness/write-summary.ts" \
-  --cwd "$RUN_DIR" \
-  --bench "$BENCH" \
-  --task "$TASK" \
-  --task-run-id "$GUID" \
-  --model "$MODEL" \
-  --agent-file "$AGENT" \
+  --run-id "$GUID" \
   --init-state "$INIT_STATE" \
-  --harness-id "$HARNESS_ID" \
-  --elapsed-ms "$ELAPSED_MS" \
-  --started-at "$STARTED_AT"
-
-exit "$HARNESS_EXIT"
+  --verbose "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"

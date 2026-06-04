@@ -18,7 +18,7 @@
 │         (CLI + file I/O layer; never changes per harness)            │
 │  Parses args → reads agents/*.md + tasks/**/*.md → dynamic-imports  │
 │  harness plugin → streams Message events → writes agent.jsonl +     │
-│  RESPONSE.md                                                         │
+│  RESPONSE.md + summary.json                                          │
 └────────┬───────────────────────────────────────────────────────────┘
          │  dynamic import: harness/<name>/src/index.ts
          ▼
@@ -38,12 +38,9 @@
 │                         Run Workspace                                │
 │              runs/<bench>/<task>/<guid>/                             │
 │  agent.jsonl  RESPONSE.md  summary.json  test-results/              │
-└────────┬───────────────────────────────────────────────────────────┘
-         │  bun run harness/write-summary.ts
-         ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                         summary.json (Pass-1)                        │
-│  WCS-compatible shape: results[].score = null until Pass-2 eval     │
+│                                                                      │
+│  summary.json (Pass-1) written by framework.ts from the final       │
+│  result event — WCS shape: results[].score = null until Pass-2 eval │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -51,12 +48,13 @@
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| `run_task.sh` | Orchestration: GUID dir setup, rsync init-state, npm install, overlay task, invoke framework, invoke write-summary | `run_task.sh` |
-| `framework.ts` | CLI parsing, reads agent/task files, resolves model aliases, dynamic-imports harness, streams + writes agent.jsonl / RESPONSE.md | `harness/framework.ts` |
+| `run_task.sh` | Orchestration: GUID dir setup, rsync init-state, npm install, overlay task, invoke framework (with `--run-id`/`--init-state`) | `run_task.sh` |
+| `framework.ts` | CLI parsing, reads agent/task files, resolves model aliases, dynamic-imports harness, streams + writes agent.jsonl / RESPONSE.md / summary.json | `harness/framework.ts` |
 | `anthropic-sdk` harness | Agent loop via `@anthropic-ai/claude-agent-sdk`; translates SDK stream to standard Message events | `harness/anthropic-sdk/src/index.ts` |
 | `ai-sdk` harness | Agent loop via Vercel AI SDK + OpenRouter; spawns MCP servers via `@modelcontextprotocol/sdk` | `harness/ai-sdk/src/index.ts` |
 | `deepagents` harness | Agent loop via LangChain JS `createReactAgent` + OpenRouter; wires MCP via `@langchain/mcp-adapters` | `harness/deepagents/src/index.ts` |
-| `write-summary.ts` | Reads agent.jsonl last `result` event, writes WCS-compatible `summary.json` (Pass-1, score=null) | `harness/write-summary.ts` |
+| `write-summary.ts` | Standalone regen tool: rebuilds `summary.json` for an existing run from its agent.jsonl (shares `buildSummary` from `harness/summary.ts`) | `harness/write-summary.ts` |
+| `summary.ts` | Shared `buildSummary()` — single source of truth for the WCS-compatible Pass-1 shape | `harness/summary.ts` |
 | `tool-format.ts` | Verbose logging helpers: ANSI colors, tool_use/tool_result formatting, truncation | `harness/tool-format.ts` |
 | `agents/vrt/AGENTS.md` | Recipe definition: YAML frontmatter (name, tools, MCP servers) + body = system prompt for the agent | `agents/vrt/AGENTS.md` |
 | `init-states/angular-20-storybook/` | Workspace scaffold rsynced into each run dir; contains Angular 20 + Storybook + Playwright VRT verifier | `init-states/angular-20-storybook/` |
@@ -70,7 +68,7 @@
 - The framework (`framework.ts`) is harness-agnostic; all SDK-specific logic lives in separate plugin modules
 - Communication between framework and harness uses a standardized streaming `Message` union type
 - Run isolation: each run gets a fresh GUID directory populated via rsync from a committed init-state
-- Two-pass evaluation model: Pass-1 (run metadata + usage) written by `write-summary.ts`; Pass-2 (score) not yet automated
+- Two-pass evaluation model: Pass-1 (run metadata + usage) written by `framework.ts` from the final `result` event; Pass-2 (score) not yet automated
 - Agent recipes defined as Markdown files with YAML frontmatter (`agents/*/AGENTS.md`) — decoupled from code
 
 ## Layers
@@ -114,14 +112,13 @@
 1. Operator invokes `./run_task.sh vrt pricing sonnet` (`run_task.sh:14-113`)
 2. Shell creates `runs/vrt/pricing/<guid>/` and rsyncs `init-states/angular-20-storybook/` into it (`run_task.sh:72`)
 3. Shell runs `npm install` in run dir, then rsyncs `tasks/vrt/pricing/` overlay (`run_task.sh:75-78`)
-4. Shell invokes `bun run harness/framework.ts --harness anthropic-sdk --agent agents/vrt/AGENTS.md --task tasks/vrt/pricing/tasks/pricing.md --model sonnet` (`run_task.sh:88-94`)
-5. `framework.ts` parses CLI, reads agent YAML frontmatter → `AgentDef`, reads task text, resolves `sonnet` → `claude-sonnet-4-6` (`harness/framework.ts:200-209`)
-6. Framework dynamic-imports `harness/anthropic-sdk/src/index.ts` and calls `run(params)` (`harness/framework.ts:222-226`)
-7. Harness yields `Message` events; framework appends each to `agent.jsonl` as a JSON line (`harness/framework.ts:228-248`)
-8. Harness yields final `{ t: "result", status, turnCount, totalUsage, model, costUsd }` event
-9. Framework writes `RESPONSE.md` with final assistant text (`harness/framework.ts:249`)
-10. Shell invokes `bun run harness/write-summary.ts` with all run metadata flags (`run_task.sh:101-111`)
-11. `write-summary.ts` reads `agent.jsonl`, finds last `result` event, writes `runs/vrt/pricing/<guid>/summary.json` (`harness/write-summary.ts:106-148`)
+4. Shell invokes `bun run harness/framework.ts --harness anthropic-sdk --agent agents/vrt/AGENTS.md --task tasks/vrt/pricing/tasks/pricing.md --model sonnet --run-id <guid> --init-state <dir>` (`run_task.sh`)
+5. `framework.ts` parses CLI, reads agent YAML frontmatter → `AgentDef`, reads task text, resolves `sonnet` → `claude-sonnet-4-6`
+6. Framework dynamic-imports `harness/anthropic-sdk/src/index.ts` and calls `run(params)`
+7. Harness yields `Message` events; framework appends each to `agent.jsonl` as a JSON line (live, one per event)
+8. Harness yields final `{ t: "result", status, turnCount, totalUsage, model, costUsd }` event; framework captures it
+9. Framework writes `RESPONSE.md` with final assistant text
+10. Framework writes `runs/vrt/pricing/<guid>/summary.json` from the captured `result` event via `buildSummary()` (`harness/summary.ts`) — no second process, no re-parse of agent.jsonl
 
 ### VRT Evaluation Flow (agent-driven, within a run)
 
@@ -182,8 +179,8 @@
 
 **`harness/write-summary.ts`:**
 - Location: `harness/write-summary.ts`
-- Triggers: `bun run harness/write-summary.ts` with flags from `run_task.sh`
-- Responsibilities: Reads agent.jsonl, writes WCS-compatible summary.json into run dir
+- Triggers: manual — regen tool for historical runs only (normal runs get summary.json from framework.ts)
+- Responsibilities: Reads agent.jsonl of an existing run, rebuilds WCS-compatible summary.json via shared `buildSummary()`
 
 ## Architectural Constraints
 
@@ -201,6 +198,7 @@
 **What happens:** A harness writes files (agent.jsonl, RESPONSE.md) directly inside its `run()` generator
 **Why it's wrong:** Duplicates framework responsibility; breaks the single source of truth for traces
 **Do this instead:** Yield only `Message` events from `harness/<name>/src/index.ts`; let `harness/framework.ts` own all file I/O
+**Enforced by:** `harness/harness-contract.test.ts` (`bun test harness/`) — fails on fs imports, `process.argv`, `console.*`, or non-type framework imports in any plugin
 
 ### Adding CLI parsing to a harness plugin
 

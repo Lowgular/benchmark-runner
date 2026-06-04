@@ -8,6 +8,7 @@
  *   - banner + verbose logging
  *   - writing agent.jsonl (one line per Message yielded by the harness)
  *   - writing RESPONSE.md
+ *   - writing summary.json (when --run-id is passed; Pass-1, score=null)
  *
  * The actual agent loop lives in <harness>/src/index.ts as an async generator
  * yielding standard Message events. Framework dynamic-imports it.
@@ -18,14 +19,16 @@
  *     --agent <agent-file> \
  *     --task <task-file> \
  *     --model <name> \
+ *     [--run-id <guid> --init-state <dir>] \
  *     [--verbose|-v]
  */
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, parse as parsePath, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parse as parseYaml } from "yaml";
 
+import { buildSummary, type ResultEvent } from "./summary.ts";
 import { C, fmtToolResult, fmtToolUse, truncate } from "./tool-format.ts";
 
 // ---------- Standard event types every harness must yield ----------
@@ -112,18 +115,25 @@ interface CliArgs {
   agentFile: string;
   taskFile: string;
   modelName: string;
+  /** Client-generated GUID for this run; enables summary.json writing. */
+  runId: string;
+  /** Init-state dir; its basename becomes environmentId in summary.json. */
+  initState: string;
   verbose: boolean;
 }
 
 const USAGE =
   "Usage: bun run harness/framework.ts \\\n" +
-  "         --harness <name> --agent <file> --task <file> --model <name> [--verbose|-v]\n";
+  "         --harness <name> --agent <file> --task <file> --model <name> \\\n" +
+  "         [--run-id <guid> --init-state <dir>] [--verbose|-v]\n";
 
 function parseArgs(argv: string[]): CliArgs {
   let harness = "";
   let agentFile = "";
   let taskFile = "";
   let modelName = "";
+  let runId = "";
+  let initState = "";
   let verbose = false;
 
   for (let i = 0; i < argv.length; i++) {
@@ -138,6 +148,10 @@ function parseArgs(argv: string[]): CliArgs {
       taskFile = argv[++i] ?? "";
     } else if (a === "--model") {
       modelName = argv[++i] ?? "";
+    } else if (a === "--run-id") {
+      runId = argv[++i] ?? "";
+    } else if (a === "--init-state") {
+      initState = argv[++i] ?? "";
     } else {
       console.error(`Unknown arg: ${a}`);
       console.error(USAGE);
@@ -155,8 +169,13 @@ function parseArgs(argv: string[]): CliArgs {
     console.error(USAGE);
     process.exit(1);
   }
+  if (runId && !initState) {
+    console.error("--run-id requires --init-state (environmentId for summary.json)");
+    console.error(USAGE);
+    process.exit(1);
+  }
 
-  return { harness, agentFile, taskFile, modelName, verbose };
+  return { harness, agentFile, taskFile, modelName, runId, initState, verbose };
 }
 
 // ---------- Verbose logging dispatch ----------
@@ -229,7 +248,9 @@ async function main(): Promise<void> {
   writeFileSync(traceFile, "", "utf8");
 
   const startedAt = Date.now();
+  const startedAtIso = new Date(startedAt).toISOString();
   let finalAssistantText = "";
+  let resultEvent: ResultEvent | null = null;
 
   for await (const msg of run({
     task,
@@ -242,13 +263,33 @@ async function main(): Promise<void> {
     const line = JSON.stringify({ ts: new Date().toISOString(), ...msg });
     appendFileSync(traceFile, `${line}\n`, "utf8");
     if (msg.t === "assistant" && msg.text.trim()) finalAssistantText = msg.text;
+    if (msg.t === "result") resultEvent = msg;
     if (args.verbose) logMessage(msg);
     else if (msg.t === "tool_use") console.error(`[turn ${msg.turn}] tool_use: ${msg.name}`);
   }
 
   writeFileSync(join(cwd, "RESPONSE.md"), `${finalAssistantText.trim()}\n`, "utf8");
+
+  const written = ["RESPONSE.md", "agent.jsonl"];
+  if (args.runId) {
+    const summary = buildSummary({
+      taskId: parsePath(taskFileAbs).name,
+      prompt: task,
+      taskRunId: args.runId,
+      environmentId: parsePath(resolve(args.initState)).name,
+      model: resolvedModel,
+      pipelineId: agent.name,
+      harnessId: args.harness,
+      elapsedMs: Date.now() - startedAt,
+      startedAt: startedAtIso,
+      result: resultEvent,
+    });
+    writeFileSync(join(cwd, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+    written.push("summary.json");
+  }
+
   console.error(
-    `\nDone in ${Date.now() - startedAt}ms. Wrote RESPONSE.md + agent.jsonl to ${cwd}`,
+    `\nDone in ${Date.now() - startedAt}ms. Wrote ${written.join(" + ")} to ${cwd}`,
   );
 }
 
