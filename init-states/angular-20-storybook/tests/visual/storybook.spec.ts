@@ -6,11 +6,20 @@
 //
 //   tests/visual/<story-id>/
 //     ├── mobile.png    (375px — required for page/composition stories)
-//     └── desktop.png   (1200px — required for page/composition stories)
+//     ├── desktop.png   (1200px — required for page/composition stories)
+//     └── capture.json  (optional: {"capture": "element"} — see below)
 //
 // A story dir that ships only mobile.png is diffed only at mobile — atoms and
 // molecules can ship fewer than both breakpoints (VERIFY-02). Only the
 // viewports whose <viewport>.png file exists in the story dir are tested.
+//
+// Capture modes (per-story, via optional capture.json in the story dir):
+//   "page"    (default) — fullPage screenshot at viewport width. For pages and
+//              compositions whose baseline is a full-width design export.
+//   "element" — screenshot of the first rendered element inside #storybook-root
+//              (the component host). The baseline is the component's natural-size
+//              design export; the diff fails on any size mismatch, which tells
+//              the agent its component dimensions are off.
 //
 // Per-story thresholds are loaded from thresholds.json: a task-level "default"
 // and optional per-story "overrides" (D-04). The playwright.config global
@@ -70,6 +79,17 @@ const STORY_IDS = readdirSync(VISUAL_DIR, { withFileTypes: true })
   .map((d) => d.name)
   .sort();
 
+// Per-story capture mode: "page" (default) or "element" via capture.json.
+interface CaptureConfig {
+  capture: "page" | "element";
+}
+function captureMode(storyId: string): "page" | "element" {
+  const capturePath = join(VISUAL_DIR, storyId, "capture.json");
+  if (!existsSync(capturePath)) return "page";
+  const cfg = JSON.parse(readFileSync(capturePath, "utf8")) as CaptureConfig;
+  return cfg.capture === "element" ? "element" : "page";
+}
+
 for (const storyId of STORY_IDS) {
   // Only iterate viewports whose baseline PNG exists in this story dir (VERIFY-02).
   const activeViewports = VIEWPORTS.filter((vp) =>
@@ -78,6 +98,7 @@ for (const storyId of STORY_IDS) {
 
   // Per-story threshold: override if present, else task default (D-04).
   const maxDiffPixelRatio = thresholds.overrides[storyId] ?? thresholds.default;
+  const mode = captureMode(storyId);
 
   test.describe(storyId, () => {
     for (const vp of activeViewports) {
@@ -109,10 +130,20 @@ for (const storyId of STORY_IDS) {
         });
         await page.waitForTimeout(200);
 
-        await expect(page).toHaveScreenshot([storyId, `${vp.id}.png`], {
-          fullPage: true,
-          maxDiffPixelRatio,
-        });
+        if (mode === "element") {
+          // Element capture: the component host is the first rendered element
+          // inside the Storybook root. Its bounding box must match the
+          // baseline's natural dimensions exactly.
+          const host = page.locator("#storybook-root > *, #root > *").first();
+          await expect(host).toHaveScreenshot([storyId, `${vp.id}.png`], {
+            maxDiffPixelRatio,
+          });
+        } else {
+          await expect(page).toHaveScreenshot([storyId, `${vp.id}.png`], {
+            fullPage: true,
+            maxDiffPixelRatio,
+          });
+        }
       });
     }
   });
