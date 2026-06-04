@@ -8,7 +8,7 @@ export default defineConfig({
   retries: 0,
   reporter: [
     ["list"],
-    ["html", { open: "never", outputFolder: "test-results/html" }],
+    ["html", { open: "never", outputFolder: "playwright-report" }],
     ["./vrt-summary-reporter.ts"],
     ["./json-summary-reporter.ts"],
   ],
