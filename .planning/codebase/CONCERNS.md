@@ -16,11 +16,9 @@
 - Impact: Parsing edge cases (e.g. multi-line values, CRLF) are handled differently across runners. A fix in one location does not propagate.
 - Fix approach: Extract to a shared `harness/agent-parser.ts` module and import from all three.
 
-**Model alias tables duplicated five times with inconsistent naming:**
-- Issue: `MODEL_ALIASES` (haiku/sonnet/opus → versioned IDs) is copy-pasted in `harness/framework.ts`, `task-runners/plan-and-find-claude/src/main.ts`, and `task-runners/plan-and-find-claude-qmd/src/main.ts`. A separate `MODEL_MAP` (versioned IDs → OpenRouter IDs) is copy-pasted in `harness/ai-sdk/src/index.ts` and `harness/deepagents/src/index.ts`.
-- Files: `harness/framework.ts:98-102`, `harness/ai-sdk/src/index.ts:16-22`, `harness/deepagents/src/index.ts:24-30`, `task-runners/plan-and-find-claude/src/main.ts:31-35`, `task-runners/plan-and-find-claude-qmd/src/main.ts:30-34`
-- Impact: Adding a new model alias or correcting a version string requires five edits. OpenRouter harnesses map `claude-sonnet-4-6` → `anthropic/claude-sonnet-4.5`, which may route to a different (older) model than intended on OpenRouter.
-- Fix approach: Centralize in `harness/models.ts` and import everywhere.
+**Model alias tables duplicated — PARTIALLY FIXED 2026-06-04 (legacy runners remain):**
+- Resolution (active pipeline): centralized in `harness/models.ts` (`MODEL_ALIASES` + `OPENROUTER_MODEL_MAP`); `framework.ts`, `ai-sdk`, and `deepagents` all import from it. Also fixed the mislabels: OpenRouter slugs were `anthropic/claude-sonnet-4.5` for `claude-sonnet-4-6` and `anthropic/claude-opus-4.5` for `claude-opus-4-7` — both now map to the correct `4.6`/`4.7` slugs (verified against openrouter.ai), so OpenRouter benchmarks were previously running older models than labeled.
+- Remaining: legacy `task-runners/plan-and-find-claude/src/main.ts:31-35` and `task-runners/plan-and-find-claude-qmd/src/main.ts:30-34` still carry their own copies (deliberately untouched — legacy runners are frozen).
 
 **`eval-runner` is labeled LEGACY in the README but its `dist/` build output is committed:**
 - Issue: `eval-runner/dist/` contains compiled JS that diverges from `src/` whenever source changes without a rebuild. The `dist/` directory is not in `.gitignore` for `eval-runner`.
@@ -57,11 +55,8 @@
 **~~`write-summary.ts` silently emits empty `prompt` field for VRT tasks~~ (FIXED 2026-06-04):**
 - Resolution: `framework.ts` now writes `summary.json` itself from the task file it already read (`--run-id`/`--init-state` flags), so the prompt is always populated. The standalone regen tool `write-summary.ts` also checks both `tasks/<task>/<task>.md` and `tasks/<task>.md`.
 
-**`deepagents` harness always emits `isError: false` for tool results:**
-- Symptoms: Tool errors from MCP servers are logged to the event trace as successful tool results. Error signals are invisible in `agent.jsonl` review.
-- Files: `harness/deepagents/src/index.ts:160`
-- Trigger: `ToolMessage` error status is not mapped to `isError`; the field is hardcoded `false`.
-- Workaround: None — errors can only be detected by reading the raw `content` string in `agent.jsonl`.
+**~~`deepagents` harness always emits `isError: false` for tool results~~ (FIXED 2026-06-04):**
+- Resolution: `isError` now maps `ToolMessage.status === "error"` (`harness/deepagents/src/index.ts`).
 
 **~~`run_task.sh` elapsed timing has 1-second granularity~~ (FIXED 2026-06-04):**
 - Resolution: shell timing removed; `framework.ts` measures `elapsedMs` in-process with `Date.now()` (millisecond resolution) and writes it into `summary.json` directly.
@@ -86,6 +81,7 @@
 - Problem: Each benchmark run rsync-copies a full init-state (~200MB+ with `node_modules`) into a GUID-named directory. No cleanup is performed after runs.
 - Files: `run_task.sh:72,75`, `runs/` (6.7 GB on disk)
 - Cause: `npm install` runs inside each ephemeral `runs/<bench>/<task>/<guid>/` directory, creating a full `node_modules` tree per run.
+- Note: As of 2026-06-04 this is a disk-only concern — `runs/` is gitignored (commit `da6b56f`) and no longer affects the repo.
 - Improvement path: Use a shared `node_modules` cache via `npm ci --cache`, or rsync without copying `node_modules` and symlink to a shared install. Add a `cleanup` script or document manual pruning.
 
 **`npm install` runs on every benchmark run regardless of whether packages changed:**
@@ -115,10 +111,9 @@
 
 ## Scaling Limits
 
-**Git repo will grow unboundedly with committed run artifacts:**
-- Current capacity: 11,489 files tracked in `runs/` including full Angular project source copies per run.
-- Limit: Git performance degrades significantly past ~50,000 tracked files. Large blobs (PNGs, storybook bundles) also inflate clone size.
-- Scaling path: Move run artifacts to external storage (S3, GCS) and store only `RESPONSE.md` + `summary.json` in git, or use Git LFS for binary assets. Add `runs/` subdirectories to `.gitignore` and enforce via pre-commit hook.
+**~~Git repo will grow unboundedly with committed run artifacts~~ — RESOLVED (2026-06-04, commit `da6b56f`):**
+- Resolution: `runs/` added to `.gitignore` and all 11,489 tracked run artifacts removed from the index (repo now tracks 332 files). Run results are standardized in backend storage (Firebase/Supabase); local `runs/` dirs remain on disk for short-term harness tuning inspection only. Old run data stays reachable in git history.
+- Remaining: disk-space accumulation in `runs/` is still an open concern (see Performance Bottlenecks).
 
 **`stopWhen: stepCountIs(50)` hard-limits the AI SDK harness:**
 - Current capacity: 50 agent steps maximum per run.

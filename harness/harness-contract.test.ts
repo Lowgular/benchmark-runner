@@ -27,6 +27,7 @@ const FORBIDDEN: Array<{ pattern: RegExp; reason: string }> = [
   { pattern: /\bwriteFileSync?\b/, reason: "file I/O belongs to framework.ts" },
   { pattern: /\bappendFileSync?\b/, reason: "file I/O belongs to framework.ts" },
   { pattern: /\bprocess\.argv\b/, reason: "CLI parsing belongs to framework.ts" },
+  { pattern: /\bprocess\.env\b/, reason: "env access belongs to framework.ts — declare requiredEnv/optionalEnv and read params.secrets" },
   { pattern: /\bconsole\.(log|error|warn|info)\b/, reason: "logging belongs to framework.ts — yield Message events instead" },
 ];
 

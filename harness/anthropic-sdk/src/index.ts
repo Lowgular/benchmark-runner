@@ -9,6 +9,13 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 
 import type { HarnessParams, Message, Usage } from "../../framework.ts";
 
+/**
+ * The Claude Agent SDK reads ANTHROPIC_API_KEY from the environment itself —
+ * but can also auth via Claude Code's local OAuth credentials, so the key is
+ * optional. Declaring it gives trace redaction coverage when it IS set.
+ */
+export const optionalEnv = ["ANTHROPIC_API_KEY"] as const;
+
 function normalizeUsage(u: Record<string, unknown> | undefined): Usage {
   return {
     input: Number(u?.["input_tokens"] ?? 0),

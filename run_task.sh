@@ -53,6 +53,9 @@ fi
 
 FRAMEWORK="$ROOT/harness/framework.ts"
 
+# Preflight: fail fast on missing API keys BEFORE the expensive workspace setup.
+bun run "$FRAMEWORK" --harness "$HARNESS_ID" --check-env
+
 TASK_DIR="$ROOT/tasks/$BENCH/$TASK"
 if [ ! -d "$TASK_DIR" ]; then
   echo "Task dir not found: $TASK_DIR" >&2

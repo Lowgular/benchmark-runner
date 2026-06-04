@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 
 import { parse as parseYaml } from "yaml";
 
+import { resolveModel } from "./models.ts";
 import { buildSummary, type ResultEvent } from "./summary.ts";
 import { C, fmtToolResult, fmtToolUse, truncate } from "./tool-format.ts";
 
@@ -64,9 +65,24 @@ export interface HarnessParams {
   cwd: string;
   allowedTools: string[];
   mcpServers: Record<string, McpServerConfig>;
+  /**
+   * Env values declared by the plugin's `requiredEnv` export, resolved and
+   * validated by the framework. Plugins must read keys from here — never
+   * from process.env (enforced by harness-contract.test.ts).
+   */
+  secrets: Record<string, string>;
 }
 
 export type Harness = (params: HarnessParams) => AsyncIterable<Message>;
+
+/** Shape of a harness plugin module: run() plus env declarations. */
+export interface HarnessModule {
+  run: Harness;
+  /** Env vars the plugin cannot run without — validated fail-fast by the framework. */
+  requiredEnv?: readonly string[];
+  /** Env vars used when present (e.g. SDK-internal auth) — resolved + redacted, not validated. */
+  optionalEnv?: readonly string[];
+}
 
 // ---------- Agent file + model ----------
 
@@ -98,16 +114,6 @@ function parseAgentFile(filePath: string): AgentDef {
   };
 }
 
-const MODEL_ALIASES: Record<string, string> = {
-  haiku: "claude-haiku-4-5",
-  sonnet: "claude-sonnet-4-6",
-  opus: "claude-opus-4-7",
-};
-
-function resolveModel(input: string): string {
-  return MODEL_ALIASES[input.toLowerCase()] ?? input;
-}
-
 // ---------- CLI ----------
 
 interface CliArgs {
@@ -119,13 +125,16 @@ interface CliArgs {
   runId: string;
   /** Init-state dir; its basename becomes environmentId in summary.json. */
   initState: string;
+  /** Preflight mode: validate harness requiredEnv and exit (no run). */
+  checkEnv: boolean;
   verbose: boolean;
 }
 
 const USAGE =
   "Usage: bun run harness/framework.ts \\\n" +
   "         --harness <name> --agent <file> --task <file> --model <name> \\\n" +
-  "         [--run-id <guid> --init-state <dir>] [--verbose|-v]\n";
+  "         [--run-id <guid> --init-state <dir>] [--verbose|-v]\n" +
+  "       bun run harness/framework.ts --harness <name> --check-env\n";
 
 function parseArgs(argv: string[]): CliArgs {
   let harness = "";
@@ -134,12 +143,15 @@ function parseArgs(argv: string[]): CliArgs {
   let modelName = "";
   let runId = "";
   let initState = "";
+  let checkEnv = false;
   let verbose = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--verbose" || a === "-v") {
       verbose = true;
+    } else if (a === "--check-env") {
+      checkEnv = true;
     } else if (a === "--harness") {
       harness = argv[++i] ?? "";
     } else if (a === "--agent") {
@@ -161,9 +173,11 @@ function parseArgs(argv: string[]): CliArgs {
 
   const missing: string[] = [];
   if (!harness) missing.push("--harness");
-  if (!agentFile) missing.push("--agent");
-  if (!taskFile) missing.push("--task");
-  if (!modelName) missing.push("--model");
+  if (!checkEnv) {
+    if (!agentFile) missing.push("--agent");
+    if (!taskFile) missing.push("--task");
+    if (!modelName) missing.push("--model");
+  }
   if (missing.length) {
     console.error(`Missing args: ${missing.join(", ")}`);
     console.error(USAGE);
@@ -175,7 +189,49 @@ function parseArgs(argv: string[]): CliArgs {
     process.exit(1);
   }
 
-  return { harness, agentFile, taskFile, modelName, runId, initState, verbose };
+  return { harness, agentFile, taskFile, modelName, runId, initState, checkEnv, verbose };
+}
+
+// ---------- Secrets (the only process.env access in the pipeline) ----------
+
+/**
+ * Resolves the plugin's declared requiredEnv from process.env. Fails fast
+ * with a clear message if anything is missing — before any workspace cost.
+ */
+function resolveSecrets(
+  harnessName: string,
+  requiredEnv: readonly string[],
+  optionalEnv: readonly string[],
+): Record<string, string> {
+  const secrets: Record<string, string> = {};
+  const missing: string[] = [];
+  for (const key of requiredEnv) {
+    const value = process.env[key];
+    if (value) secrets[key] = value;
+    else missing.push(key);
+  }
+  for (const key of optionalEnv) {
+    const value = process.env[key];
+    if (value) secrets[key] = value;
+  }
+  if (missing.length) {
+    console.error(`Missing required env var(s) for harness '${harnessName}': ${missing.join(", ")}`);
+    process.exit(1);
+  }
+  return secrets;
+}
+
+/** Scrubs secret values from text destined for run artifacts (agent.jsonl, RESPONSE.md). */
+function makeRedactor(secrets: Record<string, string>): (text: string) => string {
+  const entries = Object.entries(secrets).filter(([, v]) => v.length > 0);
+  if (!entries.length) return (text) => text;
+  return (text) => {
+    let out = text;
+    for (const [key, value] of entries) {
+      out = out.replaceAll(value, `[REDACTED:${key}]`);
+    }
+    return out;
+  };
 }
 
 // ---------- Verbose logging dispatch ----------
@@ -218,6 +274,20 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
+  const harnessEntry = join(HERE, args.harness, "src", "index.ts");
+  if (!existsSync(harnessEntry)) {
+    throw new Error(`Harness not found: ${harnessEntry}`);
+  }
+  const { run, requiredEnv = [], optionalEnv = [] } = (await import(harnessEntry)) as HarnessModule;
+  const secrets = resolveSecrets(args.harness, requiredEnv, optionalEnv);
+
+  if (args.checkEnv) {
+    console.error(`env OK for harness '${args.harness}'${requiredEnv.length ? ` (${requiredEnv.join(", ")})` : " (none required)"}`);
+    return;
+  }
+
+  const redact = makeRedactor(secrets);
+
   const agentAbs = resolve(args.agentFile);
   const taskFileAbs = resolve(args.taskFile);
   if (!existsSync(agentAbs)) throw new Error(`Agent file not found: ${agentAbs}`);
@@ -238,12 +308,6 @@ async function main(): Promise<void> {
   );
   console.error("");
 
-  const harnessEntry = join(HERE, args.harness, "src", "index.ts");
-  if (!existsSync(harnessEntry)) {
-    throw new Error(`Harness not found: ${harnessEntry}`);
-  }
-  const { run } = (await import(harnessEntry)) as { run: Harness };
-
   const traceFile = join(cwd, "agent.jsonl");
   writeFileSync(traceFile, "", "utf8");
 
@@ -259,8 +323,9 @@ async function main(): Promise<void> {
     cwd,
     allowedTools: agent.tools,
     mcpServers: agent.mcpServers,
+    secrets,
   })) {
-    const line = JSON.stringify({ ts: new Date().toISOString(), ...msg });
+    const line = redact(JSON.stringify({ ts: new Date().toISOString(), ...msg }));
     appendFileSync(traceFile, `${line}\n`, "utf8");
     if (msg.t === "assistant" && msg.text.trim()) finalAssistantText = msg.text;
     if (msg.t === "result") resultEvent = msg;
@@ -268,7 +333,7 @@ async function main(): Promise<void> {
     else if (msg.t === "tool_use") console.error(`[turn ${msg.turn}] tool_use: ${msg.name}`);
   }
 
-  writeFileSync(join(cwd, "RESPONSE.md"), `${finalAssistantText.trim()}\n`, "utf8");
+  writeFileSync(join(cwd, "RESPONSE.md"), `${redact(finalAssistantText.trim())}\n`, "utf8");
 
   const written = ["RESPONSE.md", "agent.jsonl"];
   if (args.runId) {

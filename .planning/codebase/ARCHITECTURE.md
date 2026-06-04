@@ -142,8 +142,12 @@
 
 **`HarnessParams` interface:**
 - Purpose: Typed input to every harness's `run()` function
-- Location: `harness/framework.ts:57-64`
-- Fields: `task`, `systemPrompt`, `model`, `cwd`, `allowedTools`, `mcpServers`
+- Location: `harness/framework.ts`
+- Fields: `task`, `systemPrompt`, `model`, `cwd`, `allowedTools`, `mcpServers`, `secrets`
+
+**`requiredEnv` / `optionalEnv` plugin exports:**
+- Purpose: Declarative env dependencies — plugin states what it needs; framework resolves from `process.env`, validates fail-fast, and delivers via `params.secrets`. Plugins never touch `process.env`.
+- Examples: `harness/ai-sdk/src/index.ts` (`requiredEnv = ["OPENROUTER_API_KEY"]`), `harness/anthropic-sdk/src/index.ts` (`optionalEnv = ["ANTHROPIC_API_KEY"]` — SDK can also use Claude Code OAuth)
 
 **`AgentDef` interface:**
 - Purpose: Parsed representation of an AGENTS.md file
@@ -198,7 +202,7 @@
 **What happens:** A harness writes files (agent.jsonl, RESPONSE.md) directly inside its `run()` generator
 **Why it's wrong:** Duplicates framework responsibility; breaks the single source of truth for traces
 **Do this instead:** Yield only `Message` events from `harness/<name>/src/index.ts`; let `harness/framework.ts` own all file I/O
-**Enforced by:** `harness/harness-contract.test.ts` (`bun test harness/`) — fails on fs imports, `process.argv`, `console.*`, or non-type framework imports in any plugin
+**Enforced by:** `harness/harness-contract.test.ts` (`bun test harness/`) — fails on fs imports, `process.argv`, `process.env`, `console.*`, or non-type framework imports in any plugin
 
 ### Adding CLI parsing to a harness plugin
 
@@ -225,7 +229,7 @@
 
 **Logging:** `stderr` used for progress/status messages (`console.error`); `stdout` reserved for any piped output. Verbose mode enabled via `--verbose|-v` flag; dispatched in `harness/framework.ts:164-193` using `harness/tool-format.ts` helpers
 **Validation:** CLI arg validation in `framework.ts` parseArgs; file existence checks before processing; harness entry path validated before dynamic import
-**Authentication:** API keys injected via environment variables (`ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`); never passed as CLI args
+**Authentication:** API keys injected via environment variables (`ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`); never passed as CLI args. Plugins declare needs via `requiredEnv`/`optionalEnv` exports; `framework.ts` is the only module reading `process.env`, validates fail-fast (also pre-setup via `--check-env` in `run_task.sh`), and scrubs secret values from `agent.jsonl`/`RESPONSE.md` before writing
 
 ---
 

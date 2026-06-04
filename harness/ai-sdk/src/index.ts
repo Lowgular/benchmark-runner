@@ -4,7 +4,7 @@
  *
  * Yields standardized Message events; framework writes agent.jsonl + RESPONSE.md.
  *
- * Requires: OPENROUTER_API_KEY env var.
+ * Requires: OPENROUTER_API_KEY (declared via requiredEnv, delivered in params.secrets).
  */
 import { streamText, tool, jsonSchema, stepCountIs, type ToolSet } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
@@ -12,16 +12,9 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 import type { HarnessParams, Message, Usage } from "../../framework.ts";
+import { toOpenRouterModel } from "../../models.ts";
 
-const MODEL_MAP: Record<string, string> = {
-  "claude-haiku-4-5": "anthropic/claude-haiku-4.5",
-  "claude-sonnet-4-6": "anthropic/claude-sonnet-4.5",
-  "claude-opus-4-7": "anthropic/claude-opus-4.5",
-};
-
-function resolveOpenRouterModel(model: string): string {
-  return MODEL_MAP[model] ?? model;
-}
+export const requiredEnv = ["OPENROUTER_API_KEY"] as const;
 
 interface McpToolset {
   tools: ToolSet;
@@ -73,9 +66,9 @@ async function buildMcpTools(
 export async function* run(params: HarnessParams): AsyncGenerator<Message> {
   yield { t: "user", text: params.task };
 
-  const apiKey = process.env["OPENROUTER_API_KEY"];
+  const apiKey = params.secrets["OPENROUTER_API_KEY"];
   if (!apiKey) {
-    yield { t: "error", message: "OPENROUTER_API_KEY env var not set" };
+    yield { t: "error", message: "OPENROUTER_API_KEY missing from params.secrets" };
     yield {
       t: "result",
       status: "error",
@@ -97,7 +90,7 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
 
   try {
     const result = streamText({
-      model: openrouter(resolveOpenRouterModel(params.model)),
+      model: openrouter(toOpenRouterModel(params.model)),
       system: params.systemPrompt,
       prompt: params.task,
       tools: toolset.tools,

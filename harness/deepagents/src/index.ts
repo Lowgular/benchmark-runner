@@ -7,7 +7,7 @@
  *
  * Yields standardized Message events; framework writes agent.jsonl + RESPONSE.md.
  *
- * Requires: OPENROUTER_API_KEY env var.
+ * Requires: OPENROUTER_API_KEY (declared via requiredEnv, delivered in params.secrets).
  */
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
@@ -20,16 +20,9 @@ import {
 } from "@langchain/core/messages";
 
 import type { HarnessParams, Message, Usage } from "../../framework.ts";
+import { toOpenRouterModel } from "../../models.ts";
 
-const MODEL_MAP: Record<string, string> = {
-  "claude-haiku-4-5": "anthropic/claude-haiku-4.5",
-  "claude-sonnet-4-6": "anthropic/claude-sonnet-4.5",
-  "claude-opus-4-7": "anthropic/claude-opus-4.5",
-};
-
-function resolveOpenRouterModel(model: string): string {
-  return MODEL_MAP[model] ?? model;
-}
+export const requiredEnv = ["OPENROUTER_API_KEY"] as const;
 
 function extractText(content: BaseMessage["content"]): string {
   if (typeof content === "string") return content;
@@ -46,9 +39,9 @@ function extractText(content: BaseMessage["content"]): string {
 export async function* run(params: HarnessParams): AsyncGenerator<Message> {
   yield { t: "user", text: params.task };
 
-  const apiKey = process.env["OPENROUTER_API_KEY"];
+  const apiKey = params.secrets["OPENROUTER_API_KEY"];
   if (!apiKey) {
-    yield { t: "error", message: "OPENROUTER_API_KEY env var not set" };
+    yield { t: "error", message: "OPENROUTER_API_KEY missing from params.secrets" };
     yield {
       t: "result",
       status: "error",
@@ -60,7 +53,7 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
   }
 
   const llm = new ChatOpenAI({
-    model: resolveOpenRouterModel(params.model),
+    model: toOpenRouterModel(params.model),
     apiKey,
     configuration: { baseURL: "https://openrouter.ai/api/v1" },
     streamUsage: true,
@@ -157,7 +150,7 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
               t: "tool_result",
               turn,
               toolUseId: msg.tool_call_id,
-              isError: false,
+              isError: msg.status === "error",
               content:
                 typeof msg.content === "string"
                   ? msg.content
