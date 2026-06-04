@@ -8,7 +8,7 @@
     "start": "ng run app:storybook",
     "build": "ng run app:build-storybook",
     "verify:visual": "VERIFY_SCRIPT=verify:visual npm run build && VERIFY_SCRIPT=verify:visual playwright test tests/visual",
-    "verify:stories": "VERIFY_SCRIPT=verify:stories npm run build && VERIFY_SCRIPT=verify:stories playwright test tests/stories",
+    "verify:stories": "VERIFY_SCRIPT=verify:stories npm run build && VERIFY_SCRIPT=verify:stories playwright test tests/stories/stories.spec.ts",
     "verify:structure": "VERIFY_SCRIPT=verify:structure npm run build && VERIFY_SCRIPT=verify:structure playwright test tests/stories/structure.spec.ts",
     "validate:a11y": "VERIFY_SCRIPT=validate:a11y npm run build && VERIFY_SCRIPT=validate:a11y playwright test tests/a11y",
     "validate:semantic": "VERIFY_SCRIPT=validate:semantic npm run build && VERIFY_SCRIPT=validate:semantic playwright test tests/validate/semantic.spec.ts",
