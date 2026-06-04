@@ -86,6 +86,39 @@ function readPngHeight(bytes: Uint8Array): number {
 }
 
 // ---------------------------------------------------------------------------
+// PNG metadata stripper — Figma embeds a "Software: Figma" text chunk in its
+// exports. D-05 requires that no Figma reference reaches the agent workspace
+// (verify: `! grep -rqi figma init-states/ tasks/`), so drop all ancillary
+// text chunks (tEXt/iTXt/zTXt) before writing. Pixel data is untouched.
+// ---------------------------------------------------------------------------
+
+const STRIPPED_CHUNKS = new Set(["tEXt", "iTXt", "zTXt"]);
+
+function stripPngTextChunks(bytes: Uint8Array): Uint8Array {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const parts: Uint8Array[] = [bytes.slice(0, 8)]; // PNG signature
+  let offset = 8;
+  while (offset < bytes.length) {
+    const length = view.getUint32(offset, false);
+    const type = String.fromCharCode(...bytes.slice(offset + 4, offset + 8));
+    const chunkEnd = offset + 12 + length; // len + type + data + CRC
+    if (!STRIPPED_CHUNKS.has(type)) {
+      parts.push(bytes.slice(offset, chunkEnd));
+    }
+    offset = chunkEnd;
+    if (type === "IEND") break;
+  }
+  const total = parts.reduce((n, p) => n + p.length, 0);
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for (const p of parts) {
+    out.set(p, pos);
+    pos += p.length;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Main export loop
 // ---------------------------------------------------------------------------
 
@@ -155,9 +188,10 @@ for (const exp of EXPORTS) {
 
   const actualHeight = readPngHeight(pngBytes);
 
-  // Step 5: Write the PNG to disk
+  // Step 5: Strip text metadata (Figma software marker — D-05) and write to disk
+  const cleanBytes = stripPngTextChunks(pngBytes);
   mkdirSync(dirname(exp.out), { recursive: true });
-  writeFileSync(exp.out, pngBytes);
+  writeFileSync(exp.out, cleanBytes);
 
   console.log(`✓ ${exp.out}  (${actualWidth}×${actualHeight})`);
 }
