@@ -93,14 +93,3 @@ Diff thresholds are relaxed for glyph anti-aliasing (calibrated from prior runs 
 - Links are real `<a>` elements with `href`.
 - The footer is a `<footer>` element; column headings are real headings.
 
-## Verification
-
-Run the gate scripts after each change (see workflow):
-
-- `npm run verify:stories` — all six story ids must exist and render
-- `npm run verify:visual` — pixel diff vs the committed baselines (footer at both breakpoints)
-- `npm run verify:structure` — the rendered footer story DOM must contain `app-link`, `app-logo`, `app-social-icon-link`, `app-link-column`, `app-social-links`
-
-Then polish with the validators: `npm run validate:a11y`, `npm run validate:semantic`, `npm run validate:tailwind`.
-
-Components must follow the project's atomic-design conventions: standalone Angular components, `ChangeDetectionStrategy.OnPush`, file layout per the workspace README.

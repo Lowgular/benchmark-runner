@@ -96,8 +96,8 @@ Frontmatter `spec_version: 1`. Sections, in order:
    - For relaxed thresholds: state the number and that geometry must still be exact.
    - For ink-tight typography: warn "a solid band of diff at top or bottom means your line-height leading is leaking into the box" + `leading-none` hint.
 5. **Accessibility** — per class: icon-only → aria-label; selects → label association (`input-missing-label` enforced); disclosures → `<button type="button">` + `aria-expanded`.
-6. **Verification** — the three gate scripts + three validators, verbatim list.
-7. Closer: atomic-design conventions line (standalone, OnPush, file layout per README).
+
+**Do NOT repeat verification commands, workflow, or atomic-design conventions in the spec** — that's the agent recipe's job (`agents/vrt/AGENTS.md` owns the HOW: the six scripts, the gate-then-polish loop, OnPush/standalone). The task spec is the WHAT — pure design contract. Duplicated workflow text drifts when the recipe changes.
 
 ## 5. Launch & diagnose
 
