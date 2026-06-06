@@ -52,7 +52,10 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
     prompt: params.task,
     options: {
       cwd: params.cwd,
-      systemPrompt: params.systemPrompt,
+      // No systemPrompt override: the recipe body arrives as CLAUDE.md project
+      // memory (mounted by workspace-setup.sh), layered on the SDK's default
+      // Claude Code system prompt. A string systemPrompt would REPLACE that
+      // battle-tested default — the old invisible-prompt setup.
       model: params.model,
       permissionMode: "bypassPermissions",
       allowedTools: params.allowedTools,

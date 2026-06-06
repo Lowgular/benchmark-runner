@@ -72,22 +72,29 @@ echo ""
 
 cd "$RUN_DIR"
 
-# Workspace composition — three overlays, later layers win conflicts:
+# Workspace composition — three NEUTRAL overlays, later layers win conflicts:
 #   1. init-state  (neutral environment: scaffold, verifiers, tokens)
-#   2. agent       (recipe-owned files: .claude/skills/, whatever the recipe ships)
+#   2. agent       (vendor-neutral recipe image: AGENTS.md + skills/ + anything else)
 #   3. task        (the exam: brief, baselines, manifests, per-task overrides)
-# AGENTS.md is excluded from the agent overlay: it's the recipe definition
-# consumed via --agent, and copying it into cwd would double-inject the system
-# prompt as a memory file.
+# Then the selected harness may adapt the neutral layout to its native
+# conventions via an optional harness/<id>/workspace-setup.sh (e.g. the
+# anthropic-sdk adapter mounts AGENTS.md as CLAUDE.md and skills/ as
+# .claude/skills/). No adapter = neutral layout as-is.
 echo "[setup] layer 1/3: init-state ${INIT_STATE} (excludes from .gitignore)…"
 rsync -a --checksum --filter=":- .gitignore" "$INIT_STATE/" "$RUN_DIR/"
 
 AGENT_DIR="$(dirname "$AGENT")"
 echo "[setup] layer 2/3: agent ${AGENT_DIR}…"
-rsync -a --checksum --exclude AGENTS.md "$AGENT_DIR/" "$RUN_DIR/"
+rsync -a --checksum "$AGENT_DIR/" "$RUN_DIR/"
 
 echo "[setup] layer 3/3: task ${TASK_DIR}…"
 rsync -a --checksum "$TASK_DIR/" "$RUN_DIR/"
+
+WORKSPACE_SETUP="$ROOT/harness/$HARNESS_ID/workspace-setup.sh"
+if [ -x "$WORKSPACE_SETUP" ]; then
+  echo "[setup] harness workspace adapter: ${WORKSPACE_SETUP}…"
+  "$WORKSPACE_SETUP" "$RUN_DIR"
+fi
 
 echo "[setup] running npm ci…"
 npm ci --no-audit --no-fund

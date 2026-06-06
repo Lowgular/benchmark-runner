@@ -90,7 +90,7 @@ Match the ids in `expected.json` exactly. The Storybook preview is preconfigured
 
 ## Skills
 
-Specialized guidance ships as skills in `.claude/skills/<name>/SKILL.md`. If your runtime surfaces them automatically (a `Skill` tool or listing), use that; otherwise `ls .claude/skills/` and Read the SKILL.md whose description matches your situation. Don't load skills you don't need.
+Specialized guidance ships as skills (`SKILL.md` files). If your runtime surfaces them automatically (a `Skill` tool or listing), use that; otherwise look for a `skills/` directory in the workspace and Read the SKILL.md whose description matches your situation. Don't load skills you don't need.
 8. **Iterate in two stages:**
    - **Stage 1 — Gate (mandatory):** Repeat from step 5 until `verify:stories`, `verify:visual`, and `verify:structure` all pass. A run that fails any of these does not qualify. Fix the worst failure first; visual failures start from the widest-diff viewport.
    - **Stage 2 — Polish (best-effort):** With the gate green, spend remaining turns running `validate:a11y`, `validate:semantic`, and `validate:tailwind`. Re-run the three gate scripts after each batch of changes to confirm the gate has not regressed. Stop when you have genuinely improved validators as high as you can or have hit the turn limit.
