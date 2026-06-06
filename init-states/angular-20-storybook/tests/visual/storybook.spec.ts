@@ -124,7 +124,7 @@ for (const storyId of STORY_IDS) {
 
   test.describe(storyId, () => {
     for (const vp of activeViewports) {
-      test(`${vp.id} (${vp.width}px wide)`, async ({ page }) => {
+      test(`${vp.id} (${vp.width}px wide)`, async ({ page }, testInfo) => {
         test.setTimeout(20_000);
         // Height is the initial box only; `fullPage: true` captures full scroll height.
         await page.setViewportSize({
@@ -198,6 +198,20 @@ for (const storyId of STORY_IDS) {
             maxDiffPixelRatio,
           });
         }
+
+        // toHaveScreenshot attaches expected/actual only on FAILURE, so the
+        // HTML report's image-diff view (slider, side-by-side) is missing for
+        // passing tests. Attach the pair on pass too — the report groups
+        // attachments by the -expected/-actual suffix convention. (On failure
+        // this line is never reached; Playwright attaches its own triple.)
+        await testInfo.attach(`${vp.id}-expected.png`, {
+          path: join(VISUAL_DIR, storyId, `${vp.id}.png`),
+          contentType: "image/png",
+        });
+        await testInfo.attach(`${vp.id}-actual.png`, {
+          path: join(CURRENT_DIR, storyId, `${vp.id}.png`),
+          contentType: "image/png",
+        });
       });
     }
   });
