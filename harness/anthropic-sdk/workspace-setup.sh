@@ -27,39 +27,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$RUN_DIR"
 
-if [ -f AGENTS.md ]; then
-  # mcpServers frontmatter → .mcp.json (Claude Code's project MCP standard).
-  # Parsed with the same yaml package framework.ts uses (single source of truth
-  # for the frontmatter dialect).
-  bun -e '
-    import { readFileSync, writeFileSync } from "node:fs";
-    import { parse } from "'"$ROOT"'/harness/node_modules/yaml/dist/index.mjs";
-    const content = readFileSync("AGENTS.md", "utf8");
-    const fm = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
-    const y = fm ? parse(fm[1]) ?? {} : {};
-    const servers = y.mcpServers ?? {};
-    if (Object.keys(servers).length > 0) {
-      writeFileSync(".mcp.json", JSON.stringify({ mcpServers: servers }, null, 2) + "\n");
-      console.log("[workspace-setup:anthropic-sdk] wrote .mcp.json (" + Object.keys(servers).join(", ") + ")");
-    }
-  '
+# mcpServers frontmatter → .mcp.json + .claude/settings.json (auto-approval).
+# Done by a helper in the harness tree so `yaml` resolves from harness
+# node_modules (inline `bun -e` resolves from the run dir and fails).
+bun run "$SCRIPT_DIR/extract-mcp.ts" "$RUN_DIR"
 
+if [ -f AGENTS.md ]; then
   # Recipe body → CLAUDE.md (frontmatter stripped — tools/mcpServers are
   # harness wiring consumed by framework.ts/this adapter, not instructions).
   awk 'f{print} /^---$/{c++; if(c==2) f=1}' AGENTS.md > CLAUDE.md
   rm AGENTS.md
 fi
-
-# Project MCP servers need approval; headless runs opt in via settings.
-# Merge into any settings.json shipped by earlier layers rather than clobbering.
-mkdir -p .claude
-bun -e '
-  import { readFileSync, writeFileSync, existsSync } from "node:fs";
-  const p = ".claude/settings.json";
-  const cur = existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : {};
-  cur.enableAllProjectMcpServers = true;
-  writeFileSync(p, JSON.stringify(cur, null, 2) + "\n");
-'
 
 # Skills → SDK discovery path.
 if [ -d skills ]; then
