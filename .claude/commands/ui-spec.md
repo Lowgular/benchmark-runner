@@ -95,18 +95,20 @@ Capture mode is **by convention** — `pages-*` → fullPage, everything else �
 
 ## 4. Spec template (the brief the agent sees)
 
-Frontmatter `spec_version: 1`. Sections, in order:
-1. **Title + one-liner** — "Build a single atom: …" / for compositions, the inventory framing.
-2. **Component inventory block** — reference, don't tabulate: "the inventory is `tests/stories/expected.json`; selectors follow the naming convention; each story's required size is exactly its baseline PNG's dimensions". (Selector convention + baseline-dims rule live in AGENTS.md — the spec only points.) Sizes still appear in the visual-spec narrative wherever they carry construction guidance ("16px line + 2×4px padding → 32px").
-3. **Visual spec** — bullets; every color/radius/size as a TOKEN name (`neutral-800`, `radius-base`), never hex. Include line-height/padding arithmetic when text drives the height (e.g. "24px line + 2×4px padding → 32px"). For compositions, give **measured ink geometry** (row pitches, column x-offsets, ink-top→ink-top distances — measure them from the baseline with a throwaway pngjs script) instead of guessing CSS constructions; the agent's browser-measure loop converges on measurements, not on wrong constructions.
-That's the whole template — title, two reference blocks, narrative. Per-component micro-hints that save a polish cycle are fine inline (icon-only → `aria-label`, disclosure → `aria-expanded`), but no dedicated sections for them.
+**The snapshots ARE the spec.** The markdown is one goal sentence plus pointers to the executable contracts — see `tasks/vrt/footer/tasks/footer.md` for the canonical shape. Frontmatter `spec_version: 1`, then:
+
+1. **Goal sentence** — "Implement the <thing> exactly as shown in the snapshots, as an atomic composition."
+2. **Contract pointers** — one bullet each: `tests/stories/expected.json` (inventory + structure note), `tests/visual/<story-id>/` (snapshots = pixel contract at exact dimensions), `tests/validate/expected-tokens.json` (token bindings), and `public/` (exact vector assets — "use them, never redraw") when the task ships any.
+3. **Snapshot map** — a small table: story id → what the snapshot shows, one line each, naming the default-story content so it's unambiguous ("one text link (`UI design`)").
+
+Nothing else. No design-value tables, no Tailwind utility names (HOW), no measured-geometry narrative, no capture mechanics, no a11y sections — everything is either visible in the snapshots, owned by AGENTS.md, enforced by a validator, or an implementation choice that belongs to the agent. If a run proves the loop can't converge from snapshots alone, add **measured ink geometry** (pitches, offsets — pngjs scans of the baseline) to the spec BETWEEN runs as calibrated guidance, documenting the diff evidence (§6).
 
 **Do NOT repeat in the spec** what's owned elsewhere — duplicated text drifts:
 - verification commands, workflow, atomic-design conventions → `agents/vrt/AGENTS.md`
 - the visual capture contract (element clips, diff-band semantics, `inline-block` hosts, leading-none warnings, thresholds-absorb-AA-only) → AGENTS.md "Visual capture contract"
 - threshold values → `tests/visual/thresholds.json`
+- token bindings → `tests/validate/expected-tokens.json`
 - accessibility rules already enforced by `validate:a11y`/`validate:semantic` (axe `link-name`, `image-alt`, label association, heading rules)
-The task spec is the WHAT — design contract references + measured narrative.
 
 ## 5. Launch & diagnose
 
