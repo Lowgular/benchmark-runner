@@ -65,9 +65,10 @@ tasks/vrt/<task-name>/
         ├── thresholds.json                   # {"default":0.02,"overrides":{...}}
         └── <story-id>/
             ├── desktop.png                   # the crop/export
-            ├── mobile.png                    # only for stories verified at the mobile breakpoint
-            └── capture.json                  # {"capture":"element"} for atoms/molecules/layouts; omit for pages (fullPage)
+            └── mobile.png                    # only for stories verified at the mobile breakpoint
 ```
+
+Capture mode is **by convention** — `pages-*` → fullPage, everything else → element capture (baseline-sized clip anchored at the story root). No per-story file needed; a `capture.json` (`{"capture":"page"|"element"}`) in the story dir exists only as a rare override.
 
 **Multi-component tasks** (a layout/page plus its pieces): list EVERY piece's story in `expected.json` and baseline every piece — all crops derive from the one committed composition export, so the marginal cost is one crop-script entry each. The structure verifier roots at the **highest atomic level present** in `expected.json` (pages > layouts > molecules > atoms) and asserts every lower-level selector appears in the root story's DOM — this is what makes "atomic design is scored" true for layout-rooted tasks like the footer.
 

@@ -7,19 +7,20 @@
 //   tests/visual/<story-id>/
 //     ├── mobile.png    (375px — required for page/composition stories)
 //     ├── desktop.png   (1200px — required for page/composition stories)
-//     └── capture.json  (optional: {"capture": "element"} — see below)
+//     └── capture.json  (optional override: {"capture": "page" | "element"})
 //
 // A story dir that ships only mobile.png is diffed only at mobile — atoms and
 // molecules can ship fewer than both breakpoints (VERIFY-02). Only the
 // viewports whose <viewport>.png file exists in the story dir are tested.
 //
-// Capture modes (per-story, via optional capture.json in the story dir):
-//   "page"    (default) — fullPage screenshot at viewport width. For pages and
-//              compositions whose baseline is a full-width design export.
-//   "element" — screenshot of the first rendered element inside #storybook-root
-//              (the component host). The baseline is the component's natural-size
-//              design export; the diff fails on any size mismatch, which tells
-//              the agent its component dimensions are off.
+// Capture modes, by story-id convention (capture.json overrides):
+//   "page"    (default for pages-*) — fullPage screenshot at viewport width,
+//              for stories whose baseline is a full-width design export.
+//   "element" (default for atoms-/molecules-/layouts-) — screenshot of the
+//              first rendered element inside #storybook-root (the component
+//              host). The baseline is the component's natural-size design
+//              export; the diff fails on any size mismatch, which tells the
+//              agent its component dimensions are off.
 //
 // Per-story thresholds are loaded from thresholds.json: a task-level "default"
 // and optional per-story "overrides" (D-04). The playwright.config global
@@ -79,15 +80,19 @@ const STORY_IDS = readdirSync(VISUAL_DIR, { withFileTypes: true })
   .map((d) => d.name)
   .sort();
 
-// Per-story capture mode: "page" (default) or "element" via capture.json.
+// Per-story capture mode, by convention: "pages-*" stories are full-page
+// design exports → "page"; atoms/molecules/layouts are natural-size crops →
+// "element". An optional capture.json in the story dir overrides the default.
 interface CaptureConfig {
   capture: "page" | "element";
 }
 function captureMode(storyId: string): "page" | "element" {
   const capturePath = join(VISUAL_DIR, storyId, "capture.json");
-  if (!existsSync(capturePath)) return "page";
-  const cfg = JSON.parse(readFileSync(capturePath, "utf8")) as CaptureConfig;
-  return cfg.capture === "element" ? "element" : "page";
+  if (existsSync(capturePath)) {
+    const cfg = JSON.parse(readFileSync(capturePath, "utf8")) as CaptureConfig;
+    return cfg.capture === "element" ? "element" : "page";
+  }
+  return storyId.startsWith("pages-") ? "page" : "element";
 }
 
 for (const storyId of STORY_IDS) {
