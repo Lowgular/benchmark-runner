@@ -1,129 +1,70 @@
-# Angular 20 + Storybook 10 — Visual Benchmark init-state
+# Angular 20 + Storybook 10 — component workspace
 
-Scaffold for the UI-only benchmark. Agents add a single Storybook story
-under `src/lib/<component>/`; verifiers and validators score the result.
+You build a small atomic-design component library here; verifiers and
+validators score the result against the task's snapshots and contracts.
 
 ## Stack
 
-- Angular 20.1, standalone components, Zone.js
-- Storybook 10.3 (Angular builder, webpack5)
-- Tailwind v4 with CSS-first `@theme` tokens (`src/styles/tokens.css`)
+- Angular 20.1, standalone components, `ChangeDetectionStrategy.OnPush`, `signal()` state, `@if`/`@for` control flow
+- Storybook 10.3 (Angular builder)
+- Tailwind v4 with CSS-first `@theme` tokens (`src/styles/tokens.css`) — the only styling values allowed
 - Inter via `@fontsource/inter` (pinned for reproducible VRT)
-- Playwright + `@axe-core/playwright`
-- ESLint (typescript-eslint + angular-eslint), html-validate, stylelint
+- Playwright + `@axe-core/playwright` + html-validate
+
+## File layout
+
+Components live under `src/app/<level>/<name>/`, one folder per component:
+
+```
+src/app/
+├── atoms/<name>/         e.g. atoms/link/
+│   ├── <name>.component.ts        (standalone, OnPush, selector app-<name>)
+│   ├── <name>.component.html
+│   └── <name>.stories.ts          (title "Atoms/<Name>", one Default export)
+├── molecules/<name>/
+├── layouts/<name>/
+└── pages/<name>/
+```
+
+Story id = `kebab-case(title with "/"→"-") + "--" + kebab-case(export)`:
+`"Atoms/Link"` + export `Default` → `atoms-link--default`. Component
+selector = `app-` + the story base name minus its level prefix
+(`atoms-link--default` → `app-link`). Static assets shipped by the task
+(if any) live in `public/` and are served from the web root (`/icons/x.svg`).
+
+## Task contracts (read-only)
+
+| File | Contract |
+| --- | --- |
+| `tests/stories/expected.json` | required story ids — the component inventory |
+| `tests/visual/<story-id>/*.png` | snapshots; their pixel dimensions = the required rendered size; only the viewports whose PNG exists are checked |
+| `tests/visual/thresholds.json` | per-story pixel-diff thresholds |
+| `tests/validate/expected-tokens.json` | required design-token bindings (color / background / border per story) |
 
 ## Scripts
 
-| Script           | What it does                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------- |
-| `npm start`      | Storybook dev on `:6006` (`ng run app:storybook`)                                     |
-| `npm run build`  | Builds `storybook-static/` (`ng run app:build-storybook`)                             |
-| `npm run verify:visual` | `npm run build && playwright test` — VRT sweep over 3 viewports. Writes test-results/. |
+| Script | What it checks |
+| --- | --- |
+| `npm start` | Storybook dev server on `:6006` |
+| `npm run build` | builds `storybook-static/` (verifiers rebuild automatically when stale) |
+| `npm run verify:stories` | every expected story id registers and renders |
+| `npm run verify:visual` | screenshot diff vs the snapshots (mobile 375 / desktop 1200) |
+| `npm run verify:structure` | the highest-level story composes all lower-level component selectors |
+| `npm run validate:a11y` | axe-core WCAG scan per story |
+| `npm run validate:semantic` | semantic HTML / heading / label rules |
+| `npm run validate:tailwind` | bans arbitrary Tailwind values, inline styles, oversized markup |
+| `npm run validate:tokens` | computed styles bind to the declared design tokens |
+| `npm run verify` | all of the above with a single build |
 
-## Running end-to-end
+## Reading results
 
-The task runner expects to be invoked from a fresh per-run folder so concurrent
-runs don't trample each other. Convention: `runs/<bench>/<task>/<guid>/`.
+| File | Read it when… |
+| --- | --- |
+| `test-results/SUMMARY.md` | **Start here.** Per-test pass/fail; failing visuals include the pixel-diff ratio + artifact paths. |
+| `test-results/<script>.json` | the JSON envelope for exactly the script you just ran |
+| `test-results/<folder>/<name>-actual.png` | what your story currently renders |
+| `test-results/<folder>/<name>-diff.png` | which regions differ (red highlight) |
+| `tests/visual/<story-id>/<viewport>.png` | the target |
 
-```bash
-cd benchmark-runner
-mkdir -p runs/vrt/pricing/$(uuidgen) && cd runs/vrt/pricing/<that-guid>
-
-bun run /abs/path/to/task-runners/anthropic-sdk/src/main.ts \
-  /abs/path/to/tasks/vrt/pricing \
-  /abs/path/to/init-states/angular-20-storybook \
-  /abs/path/to/agents/vrt/AGENTS.md \
-  opus --verbose
-```
-
-The runner rsyncs the init-state into cwd (skipping `node_modules`, `.angular`,
-`storybook-static`, `test-results`), runs `npm install`, then overlays the task
-directory on top. Once it finishes, you have a fully wired workspace where
-`npm run verify:visual` works.
-
-## VRT iteration loop
-
-Stories are auto-discovered: each subfolder under `tests/visual/` is treated
-as a Storybook story id, and the folder holds three baseline PNGs:
-
-```
-tests/visual/
-├── storybook.spec.ts
-└── <story-id>/             e.g. app-pricing--default/
-    ├── mobile.png
-    ├── tablet.png
-    └── desktop.png
-```
-
-No env vars to set — the spec walks `tests/visual/` and runs every viewport
-for every discovered story. The per-task overlay just drops these folders in.
-After every run, output lands in `test-results/`:
-
-| File                                                | Read it when…                                                                                       |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `test-results/SUMMARY.md`                           | **Start here.** One section per failing viewport with pixel-diff ratio + paths to the artifacts.    |
-| `test-results/<test-folder>/<name>-expected.png`    | You want to see the target — what the story should look like.                                       |
-| `test-results/<test-folder>/<name>-actual.png`      | You want to see what your story currently renders.                                                  |
-| `test-results/<test-folder>/<name>-diff.png`        | You want to see which regions actually differ (red highlight).                                      |
-| `test-results/html/index.html`                      | Interactive HTML report — useful for humans, not agent-readable.                                    |
-
-The loop:
-
-1. `npm run verify:visual` (build + Playwright).
-2. Read `test-results/SUMMARY.md` → pick the worst-diff viewport.
-3. View its `expected.png` / `actual.png` / `diff.png` to see what's off.
-4. Edit the component / story / tokens.
-5. Repeat until SUMMARY.md reports all passed.
-
-## Folder Structure
-
-```
-.
-├── src/
-│   ├── app/             Classic Angular 20 app — standalone components, OnPush.
-│   │                    Agents add new components here (one folder per component:
-│   │                    `<name>.ts`, `<name>.html`, `<name>.stories.ts`).
-│   ├── styles/
-│   │   ├── tokens.css   Tailwind v4 `@theme` design tokens — the source of truth
-│   │   │                for color, typography, spacing, radius. Components must
-│   │   │                consume these (no hardcoded hex, no arbitrary values).
-│   │   └── global.css   Global styles + Tailwind entrypoint.
-│   ├── index.html       App shell (Storybook has its own preview shell).
-│   └── main.ts          Angular bootstrap (only used by `ng serve`, not Storybook).
-│
-├── .storybook/          Storybook 10 config (`main.ts`, `preview.ts`).
-│                        Stories are auto-discovered from `src/**/*.stories.ts`.
-│
-├── tasks/               Task briefs — one Markdown file per benchmark task.
-│                        Each file is the spec the agent reads: goal, visual
-│                        requirements, references to baseline images. The task
-│                        runner overlays per-task assets (e.g. reference PNGs)
-│                        on top of this directory before the agent starts.
-│
-├── tests/
-│   └── visual/          Playwright VRT spec + baselines. The spec discovers
-│                        every subfolder of `tests/visual/` as a Storybook story id
-│                        and sweeps 3 viewports (mobile 375, tablet 768, desktop 1280)
-│                        against `tests/visual/<story-id>/{mobile,tablet,desktop}.png`.
-│
-├── test-results/        Playwright output: per-test failure artifacts
-│                        (`*-actual.png`, `*-expected.png`, `*-diff.png`),
-│                        `SUMMARY.md` (agent-readable diff report — see
-│                        "VRT iteration loop" above), and `html/` (HTML report).
-│
-├── angular.json         Angular CLI config (build + Storybook builder targets).
-├── playwright.config.ts VRT config (viewports, diff budget, reporters).
-├── vrt-summary-reporter.ts  Custom Playwright reporter that writes test-results/SUMMARY.md.
-├── package.json         Scripts table is above; pinned deps for reproducibility.
-└── tsconfig*.json       TS configs for app, tests, Storybook.
-```
-
-### Where new work lives
-
-| You are…                | Put it in…                                      |
-| ----------------------- | ----------------------------------------------- |
-| Adding a component      | `src/app/<name>/` (`.ts` + `.html` + `.stories.ts`) |
-| Adding a design token   | `src/styles/tokens.css` (extend `@theme`)       |
-| Adding a benchmark task | `tasks/<slug>.md` (+ assets the runner overlays) |
-| Updating a baseline     | `tests/visual/<story-id>/{mobile,tablet,desktop}.png` (or rerun with `--update-snapshots`) |
-
+The loop: run a verify script → read `SUMMARY.md` → view the diff artifacts →
+edit the component → repeat until green.

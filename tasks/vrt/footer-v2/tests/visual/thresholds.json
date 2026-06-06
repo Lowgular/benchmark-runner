@@ -1,0 +1,11 @@
+{
+  "default": 0.02,
+  "overrides": {
+    "atoms-link--default": 0.08,
+    "atoms-logo--default": 0.1,
+    "atoms-social-icon-link--default": 0.1,
+    "molecules-social-links--default": 0.1,
+    "molecules-link-column--default": 0.08,
+    "layouts-footer--default": 0.06
+  }
+}
