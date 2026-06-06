@@ -97,7 +97,7 @@ Capture mode is **by convention** — `pages-*` → fullPage, everything else �
 
 Frontmatter `spec_version: 1`. Sections, in order:
 1. **Title + one-liner** — "Build a single atom: …" / for compositions, the inventory framing.
-2. **Component contract table** — Selector (`app-<name>`), Story id, "Rendered size in the default story: **exactly W × H px**" (W×H = crop dims, verbatim).
+2. **Component inventory block** — reference, don't tabulate: "the inventory is `tests/stories/expected.json`; selectors follow the naming convention; each story's required size is exactly its baseline PNG's dimensions". (Selector convention + baseline-dims rule live in AGENTS.md — the spec only points.) Sizes still appear in the visual-spec narrative wherever they carry construction guidance ("16px line + 2×4px padding → 32px").
 3. **Visual spec** — bullets; every color/radius/size as a TOKEN name (`neutral-800`, `radius-base`), never hex. Include line-height/padding arithmetic when text drives the height (e.g. "24px line + 2×4px padding → 32px"). For compositions, give **measured ink geometry** (row pitches, column x-offsets, ink-top→ink-top distances — measure them from the baseline with a throwaway pngjs script) instead of guessing CSS constructions; the agent's browser-measure loop converges on measurements, not on wrong constructions.
 4. **Story setup** — the capture contract, exact wording matters:
    - "The visual verifier screenshots a **W×H region anchored at the top-left of your story template's outermost element**."

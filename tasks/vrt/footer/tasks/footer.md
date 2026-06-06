@@ -18,16 +18,9 @@ Build a site footer as an atomic composition — three atoms, two molecules, one
 
 These are the exact vectors from the design — use them via `<img>` (or inline), never redraw them.
 
-## Component contracts
+## Component inventory
 
-| Component | Selector | Story id | Rendered size in the default story |
-|---|---|---|---|
-| Link | `app-link` | `atoms-link--default` | **exactly 69 × 16 px** |
-| Logo | `app-logo` | `atoms-logo--default` | **exactly 27 × 39 px** |
-| Social Icon Link | `app-social-icon-link` | `atoms-social-icon-link--default` | **exactly 24 × 24 px** |
-| Social Links | `app-social-links` | `molecules-social-links--default` | **exactly 144 × 24 px** |
-| Link Column | `app-link-column` | `molecules-link-column--default` | **exactly 143 × 267 px** |
-| Footer | `app-footer` | `layouts-footer--default` | desktop **exactly 1200 × 468 px**, mobile **exactly 375 × 919 px** |
+**The inventory is `tests/stories/expected.json`** — one story per component; selectors follow the naming convention (`atoms-link--default` → `app-link`). **Each story's required rendered size is exactly its baseline PNG's dimensions** in `tests/visual/<story-id>/` — the visual verifier screenshots a baseline-sized region.
 
 ## Design tokens (CSS variables)
 

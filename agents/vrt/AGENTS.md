@@ -61,13 +61,14 @@ Storybook id = `kebab-case(title.replace("/", "-")) + "--" + kebab-case(exportNa
 - `"Molecules/Input Group"` + export `Default` → `molecules-input-group--default`
 - `"Pages/Newsletter"` + export `Default` → `pages-newsletter--default`
 
-Match the ids in `expected.json` exactly. The Storybook preview is preconfigured with `layout: "fullscreen"` — no per-story layout parameter needed.
+Match the ids in `expected.json` exactly. Component selectors follow the same convention: strip the level prefix, prepend `app-` (`atoms-icon-button--default` → `app-icon-button`) — the structure verifier derives them this way. The Storybook preview is preconfigured with `layout: "fullscreen"` — no per-story layout parameter needed.
 
 ## Workflow
 
 1. **Read the brief's inventory and `tests/stories/expected.json`** — that's your component checklist.
 2. **Look at `tests/visual/`** for the pixel-checked story ids, then **view every baseline** with the `Read` tool (it renders PNGs):
    - `tests/visual/<story-id>/mobile.png` (375px) and/or `desktop.png` (1200px) — whichever exist per story
+   - **A baseline's pixel dimensions ARE that story's required rendered size** — read them up front (e.g. a one-liner with `pngjs` from `node_modules`) instead of discovering them through diff bands later
 3. **Read the design tokens** at `src/styles/tokens.css`. These define the only colors, type scale, spacing, and radius you may use (via the Tailwind utilities they generate — e.g. `bg-brand-700`, `text-neutral-900`, `rounded-lg`, `shadow-md`).
 4. **Build bottom-up**: atoms first, then molecules, then layouts, then the page. One story per component as you go.
    - Angular standalone, `ChangeDetectionStrategy.OnPush`, `signal()` for state, `@if`/`@for` control flow, `app-` selector prefix.
