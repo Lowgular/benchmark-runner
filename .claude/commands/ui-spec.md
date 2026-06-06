@@ -18,6 +18,13 @@ Every baseline PNG must be derived from committed inputs by committed code — n
 - Export page/composition frames at scale 1, per Platform variant (Desktop 1200 / Mobile 375).
 - Quota intel: Starter REST quota exhausts fast and `retry-after` can be DAYS; MCP (`claude_ai_Figma`) has a separate monthly cap. Batch all discovery (node ids, bounds) into as few calls as possible; cache node JSON to /tmp.
 
+**Mode C — browser export via real Chrome** (no REST quota needed; fully autonomous after one-time login):
+- Tool: `node scripts/figma-browser.ts` (NODE, not bun — Bun's ws can't complete the CDP handshake). Dedicated Chrome profile `~/.figma-chrome` on CDP port 9333; `ensure-chrome` launches it; Figma session persists in the profile.
+- Find node ids WITHOUT canvas clicking: in-file search (`Cmd+F`, scope "All pages") via DOM, step results, read `node-id` from the URL. Or `inspect` mode: the user clicks, the URL mirrors the selection.
+- `export <fileKey> <node:id> <out.png>` — selects via URL navigation, asserts the URL node-id matches, then **Copy as PNG** (`Cmd+Shift+C`) + CDP clipboard read. Copy-as-PNG is FIXED @2x regardless of zoom (verified); the tool box-filter halves to @1x and strips Figma text chunks.
+- **Main component vs instance:** component definitions render slot PLACEHOLDERS (grey circles) and different dims — always export the INSTANCE from an example page, and eyeball the result before trusting it.
+- **HARD RULE — zero blind position-clicks.** A position-click once hit a swap-instance control and *edited the file* (`Slot: Modified`); recovery = right-click selection → "Reset instance". Interact only with DOM-targeted elements (text/role locators) or URL navigation.
+
 **Mode B — crop from an existing committed baseline** (no Figma needed):
 - Extend `scripts/crop-atoms.ts`. Detection menu, by component class:
   - solid-color block → `findRect(tokenColor, region, minRun=12)` — run-length filter kills text-AA pixels that hit token colors exactly
