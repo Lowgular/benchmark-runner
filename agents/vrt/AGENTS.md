@@ -48,6 +48,7 @@ The task brief gives the exact component inventory: names, selectors, and story 
 - `tests/a11y/a11y.spec.ts` — WCAG 2.0A/AA/2.1AA axe-core validator. Read-only.
 - `tests/validate/semantic.spec.ts` — semantic HTML / heading hierarchy / label validator. Read-only.
 - `tests/validate/tailwind.spec.ts` — tokens-only enforcer; bans arbitrary values and inline styles. Read-only.
+- `tests/validate/expected-tokens.json` + `tokens.spec.ts` — the task's token contract (per story: css property → required design token) and its verifier: computed styles of everything you render must bind to the declared tokens. Read-only.
 - `tests/visual/thresholds.json` — per-task and per-story pixel-diff thresholds. Read-only.
 - `json-summary-reporter.ts` — shared Playwright reporter that writes per-script JSON envelopes to `test-results/`. Read-only.
 - `playwright.config.ts`, `vrt-summary-reporter.ts`, `package.json`, `angular.json`, `.storybook/`, eslint/stylelint configs — scaffold. Read-only.
@@ -70,7 +71,7 @@ Match the ids in `expected.json` exactly. The Storybook preview is preconfigured
 3. **Read the design tokens** at `src/styles/tokens.css`. These define the only colors, type scale, spacing, and radius you may use (via the Tailwind utilities they generate — e.g. `bg-brand-700`, `text-neutral-900`, `rounded-lg`, `shadow-md`).
 4. **Build bottom-up**: atoms first, then molecules, then layouts, then the page. One story per component as you go.
    - Angular standalone, `ChangeDetectionStrategy.OnPush`, `signal()` for state, `@if`/`@for` control flow, `app-` selector prefix.
-5. **Verify with six feedback loops** (run any script independently, or all at once):
+5. **Verify with seven feedback loops** (run any script independently, or all at once):
    ```bash
    npm run verify:stories    # inventory: every expected id registered + every story mounts cleanly
    npm run verify:visual     # page story vs baselines at mobile (375) and desktop (1200); diff within per-task threshold
@@ -78,7 +79,8 @@ Match the ids in `expected.json` exactly. The Storybook preview is preconfigured
    npm run validate:a11y     # axe-core WCAG 2.0A/AA + 2.1AA scan per story
    npm run validate:semantic # semantic HTML: heading hierarchy, labels, element content rules
    npm run validate:tailwind # tokens-only: bans arbitrary Tailwind values, inline styles, oversized markup
-   npm run verify            # all six, with a single Storybook build
+   npm run validate:tokens   # token bindings: computed color/background/border must match expected-tokens.json
+   npm run verify            # all seven, with a single Storybook build
    ```
 6. **Read `test-results/SUMMARY.md`** after each run — your iteration anchor. It lists per-test pass/fail (with pixel-diff ratios for visual failures and artifact paths). Each script also writes its own JSON envelope to `test-results/<script>.json` (e.g. `test-results/verify-visual.json`, `test-results/validate-a11y.json`) so you can read the detailed output for exactly the dimension you just ran.
 
@@ -96,14 +98,14 @@ Match the ids in `expected.json` exactly. The Storybook preview is preconfigured
 Specialized guidance ships as skills (`SKILL.md` files). If your runtime surfaces them automatically (a `Skill` tool or listing), use that; otherwise look for a `skills/` directory in the workspace and Read the SKILL.md whose description matches your situation. Don't load skills you don't need.
 8. **Iterate in two stages:**
    - **Stage 1 — Gate (mandatory):** Repeat from step 5 until `verify:stories`, `verify:visual`, and `verify:structure` all pass. A run that fails any of these does not qualify. Fix the worst failure first; visual failures start from the widest-diff viewport.
-   - **Stage 2 — Polish (best-effort):** With the gate green, spend remaining turns running `validate:a11y`, `validate:semantic`, and `validate:tailwind`. Re-run the three gate scripts after each batch of changes to confirm the gate has not regressed. Stop when you have genuinely improved validators as high as you can or have hit the turn limit.
+   - **Stage 2 — Polish (best-effort):** With the gate green, spend remaining turns running `validate:a11y`, `validate:semantic`, `validate:tailwind`, and `validate:tokens`. Re-run the three gate scripts after each batch of changes to confirm the gate has not regressed. Stop when you have genuinely improved validators as high as you can or have hit the turn limit.
 
 The HTML report at `test-results/html/index.html` exists for humans; you don't need it — `SUMMARY.md` plus the PNGs is everything.
 
 ## Hard rules
 
 - **Tokens only.** No hardcoded `#abc` / `rgb(...)` / `oklch(...)`. No arbitrary Tailwind values like `bg-[#abc]` or `p-[13px]`. No inline `style=` or `[style]=`. Use only utilities derived from `src/styles/tokens.css`.
-- **Don't touch the scaffold.** `package.json`, `angular.json`, `postcss.config.json`, `.storybook/`, `playwright.config.ts`, `vrt-summary-reporter.ts`, `json-summary-reporter.ts`, `tests/stories/stories.spec.ts`, `tests/stories/expected.json`, `tests/stories/structure.spec.ts`, `tests/visual/storybook.spec.ts`, `tests/visual/thresholds.json`, `tests/a11y/a11y.spec.ts`, `tests/validate/semantic.spec.ts`, `tests/validate/tailwind.spec.ts`, `src/styles/tokens.css`, `src/styles/global.css`, eslint/stylelint configs — all read-only. Tampering is detected and penalized.
+- **Don't touch the scaffold.** `package.json`, `angular.json`, `postcss.config.json`, `.storybook/`, `playwright.config.ts`, `vrt-summary-reporter.ts`, `json-summary-reporter.ts`, `tests/stories/stories.spec.ts`, `tests/stories/expected.json`, `tests/stories/structure.spec.ts`, `tests/visual/storybook.spec.ts`, `tests/visual/thresholds.json`, `tests/a11y/a11y.spec.ts`, `tests/validate/semantic.spec.ts`, `tests/validate/tailwind.spec.ts`, `tests/validate/tokens.spec.ts`, `tests/validate/expected-tokens.json`, `src/styles/tokens.css`, `src/styles/global.css`, eslint/stylelint configs — all read-only. Tampering is detected and penalized.
 - **Name by role, not context.** A button is `Button`, not `CtaButton`; an eyebrow label is a `Text` variant, not a `NewsletterTag`.
 - **Match the baselines.** They are the contract for the page story. Layout, spacing, colors, typography, and responsive behavior must match at each viewport within the per-task pixel-diff threshold (see `tests/visual/thresholds.json`).
 - **Semantic, accessible HTML.** `<button>` not `<div onclick>`; `<ul>` for lists; heading hierarchy must be coherent; form inputs need labels (visually hidden is fine); decorative icons need `aria-hidden="true"`.

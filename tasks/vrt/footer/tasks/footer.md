@@ -33,6 +33,8 @@ These are the exact vectors from the design — use them via `<img>` (or inline)
 
 Every visual value in this design maps to a token in `src/styles/tokens.css` (the Tailwind `@theme`). Use the Tailwind utilities the tokens generate — never raw hex, never arbitrary values.
 
+The color/background/border bindings below are **machine-checked**: `tests/validate/expected-tokens.json` declares them per story, and `npm run validate:tokens` asserts the computed styles of what you render bind to exactly those tokens.
+
 | Design value | CSS variable | Tailwind utility |
 |---|---|---|
 | text & icon ink `#1e1e1e` | `--color-neutral-900` | `text-neutral-900` |

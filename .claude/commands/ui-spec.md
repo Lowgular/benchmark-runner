@@ -44,14 +44,22 @@ When the frame contains icon/logo glyphs, ship the **exact vectors** with the ta
 - Exact vectors mean glyph stories no longer need the 0.08–0.10 "approximated glyph" relaxation for geometry — only for AA (see §3).
 - Cross-check asset dims against the baseline crops (the icon SVG viewBox should equal the crop dims) — corroboration is free verification.
 
-## 1c. Token coverage (CSS variables)
+## 1c. Token contract (CSS variables) — `expected-tokens.json`
 
-The agent may only use Tailwind utilities generated from `src/styles/tokens.css` (`@theme` CSS variables; `validate:tailwind` bans arbitrary values) — so before writing the spec, verify the frame's values are covered:
+The agent may only use Tailwind utilities generated from `src/styles/tokens.css` (`@theme` CSS variables; `validate:tailwind` bans arbitrary values), and the spec's token claims are **machine-checked** by `validate:tokens`. This conversion is the operator's job — the design tool is an implementation detail of THIS command; the task ships only neutral artifacts (a Sketch source would produce the identical JSON).
 
-1. **Sample every distinct color from the baseline** (throwaway pngjs script: ink, borders, fills) and map each hex to its `--color-*` variable in `init-states/angular-20-storybook/src/styles/tokens.css`. Exact match required — these tokens were extracted from the same design system.
+1. **Sample every distinct color from the baseline** (throwaway pngjs script: ink, borders, fills) and map each hex to its `--color-*` variable in `init-states/angular-20-storybook/src/styles/tokens.css`. Exact match required — these tokens were extracted from the same design system. When sampling is ambiguous (two tokens share a value, overlapped fills), read the node in Figma Dev Mode via the `figma-browser` skill — it exposes per-node CSS and variable names.
 2. **Check sizes against the scales**: type sizes → `--text-*`; gaps/paddings must land on the 4px `--spacing` grid (Tailwind v4 generates fractional steps too — 18px = `gap-4.5`); radii → `--radius-*`.
 3. **A value with no token = a task-overlay change**: extend `tokens.css` via the task's `src/styles/` overlay (same generated-file discipline — extraction script, not hand-edits), never by editing the init-state mid-task.
-4. **Write the mapping into the spec** as a "Design tokens (CSS variables)" table: design value → CSS variable → Tailwind utility (see `tasks/vrt/footer/tasks/footer.md`). The spec body then refers to values by token name only.
+4. **Author `tests/validate/expected-tokens.json`** — per story id, a flat map of general css property → token name, keyed the way the design tool describes the node (WHAT, not HOW):
+   ```json
+   {
+     "atoms-link--default": { "color": "neutral-900" },
+     "layouts-footer--default": { "color": "neutral-900", "background": "neutral-0", "border": "neutral-300" }
+   }
+   ```
+   Supported properties: `color` (every text-bearing element), `background` (every non-transparent fill), `border` (every visible border side) — subset semantics; a value may be an array when a story legitimately uses several tokens for one property. Declare all applicable properties for EVERY story (undeclared = unchecked); omit image-only stories. A declared property with zero rendered occurrences FAILS — claims must be real.
+5. **Write the table into the spec** as a "Design tokens (CSS variables)" section: design value → CSS variable → Tailwind utility, plus the machine-checked pointer line (see `tasks/vrt/footer/tasks/footer.md`). The JSON is the source of truth; the markdown table must agree with it.
 
 ## 2. Task scaffold
 
@@ -61,6 +69,7 @@ tasks/vrt/<task-name>/
 ├── public/                                   # optional exact vector assets (overlaid into Angular's public/)
 └── tests/
     ├── stories/expected.json                 # ["<level>s-<name>--default", ...]
+    ├── validate/expected-tokens.json         # token contract per story (see 1c)
     └── visual/
         ├── thresholds.json                   # {"default":0.02,"overrides":{...}}
         └── <story-id>/
