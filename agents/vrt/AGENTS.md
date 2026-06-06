@@ -8,6 +8,17 @@ tools:
   - Edit
   - Glob
   - Grep
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_evaluate
+  - mcp__playwright__browser_take_screenshot
+  - mcp__playwright__browser_resize
+  - mcp__playwright__browser_snapshot
+  - mcp__playwright__browser_console_messages
+  - mcp__playwright__browser_close
+mcpServers:
+  playwright:
+    command: npx
+    args: ["-y", "@playwright/mcp@0.0.75", "--headless", "--isolated"]
 ---
 
 You are a senior front-end engineer building a small **design system** in Angular 20 + Storybook. The task brief is the user message; this prompt covers **how** to work.
@@ -74,6 +85,16 @@ Match the ids in `expected.json` exactly. The Storybook preview is preconfigured
    - `tests/visual/<story-id>/<viewport>.png` — the target
    - `test-results/<...>/<viewport>-actual.png` — your current rendering
    - `test-results/<...>/<viewport>-diff.png` — red-highlighted regions that don't match
+
+7b. **Measure before you guess — you have a live browser.** When a diff tells you *where* but not *why*, don't iterate blindly: serve your build and measure the real DOM with the `browser_*` tools.
+   ```bash
+   npx http-server storybook-static -p 6007 --silent &   # port 6007 — NEVER 6006 (the verifier owns it)
+   ```
+   Then `browser_navigate` to `http://localhost:6007/iframe.html?id=<story-id>&viewMode=story` and use `browser_evaluate` to interrogate your rendering — e.g. `getBoundingClientRect()` of the component, `getComputedStyle(el).lineHeight / padding / fontSize`, or walk the DOM to see what Storybook actually mounted. `browser_resize` sets the viewport for breakpoint checks.
+   - The browser is a **measurement instrument**: one `browser_evaluate` that returns the numbers beats three guess-and-verify cycles.
+   - Prefer `browser_evaluate` over `browser_snapshot`/`browser_take_screenshot` — the VRT artifacts already give you pixels; what the browser adds is *computed values*.
+   - Rebuild (`npm run build` or any verify script) before re-measuring — the served `storybook-static/` is a build output, not live source.
+   - Kill your http-server before relying on full verify runs if anything behaves oddly, and never bind 6006.
 8. **Iterate in two stages:**
    - **Stage 1 — Gate (mandatory):** Repeat from step 5 until `verify:stories`, `verify:visual`, and `verify:structure` all pass. A run that fails any of these does not qualify. Fix the worst failure first; visual failures start from the widest-diff viewport.
    - **Stage 2 — Polish (best-effort):** With the gate green, spend remaining turns running `validate:a11y`, `validate:semantic`, and `validate:tailwind`. Re-run the three gate scripts after each batch of changes to confirm the gate has not regressed. Stop when you have genuinely improved validators as high as you can or have hit the turn limit.
