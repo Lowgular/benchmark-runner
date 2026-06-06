@@ -22,7 +22,7 @@
  *     [--run-id <guid> --init-state <dir>] \
  *     [--verbose|-v]
  */
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, parse as parsePath, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -65,6 +65,13 @@ export interface HarnessParams {
   cwd: string;
   allowedTools: string[];
   mcpServers: Record<string, McpServerConfig>;
+  /**
+   * Skill names the agent recipe ships (directory names under the agent's
+   * skills/). Harnesses with native skill support enable EXACTLY these —
+   * never "all discovered" — so runtime-bundled skills (e.g. the Claude CLI's
+   * built-ins) don't widen one harness's surface over another's.
+   */
+  skills: string[];
   /**
    * Env values declared by the plugin's `requiredEnv` export, resolved and
    * validated by the framework. Plugins must read keys from here — never
@@ -298,6 +305,16 @@ async function main(): Promise<void> {
   const resolvedModel = resolveModel(args.modelName);
   const cwd = process.cwd();
 
+  // Skill names = directory names under the agent's skills/ (the recipe's
+  // declared skill surface). Harnesses enable exactly these, never "all".
+  const agentSkillsDir = join(dirname(agentAbs), "skills");
+  const skills = existsSync(agentSkillsDir)
+    ? readdirSync(agentSkillsDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name)
+        .sort()
+    : [];
+
   const mcpNames = Object.keys(agent.mcpServers);
   console.error(`harness     : ${args.harness}`);
   console.error(`agent       : ${agent.name} (${agent.tools.length} tools${mcpNames.length ? `, ${mcpNames.length} MCP: ${mcpNames.join(",")}` : ""})`);
@@ -323,6 +340,7 @@ async function main(): Promise<void> {
     cwd,
     allowedTools: agent.tools,
     mcpServers: agent.mcpServers,
+    skills,
     secrets,
   })) {
     const line = redact(JSON.stringify({ ts: new Date().toISOString(), ...msg }));

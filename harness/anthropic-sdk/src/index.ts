@@ -59,18 +59,28 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
       model: params.model,
       permissionMode: "bypassPermissions",
       allowedTools: params.allowedTools,
+      // HARD tool-surface cap (integrity boundary). `allowedTools` is only a
+      // permission allowlist — under bypassPermissions it restricts nothing;
+      // `tools` is what actually removes built-ins (WebSearch, WebFetch, …)
+      // from the model's surface. MCP tool names don't belong here — MCP
+      // surface comes from the workspace .mcp.json. "Skill" must be in the
+      // base set explicitly or the cap silently disables `skills: "all"`
+      // (probe-verified).
+      tools: [...params.allowedTools.filter((t) => !t.startsWith("mcp__")), "Skill"],
       maxTurns: MAX_TURNS,
       // Benchmark isolation: load ONLY the run workspace's .claude (skills shipped
       // by the init-state). Omitting this loads the operator's ~/.claude settings
       // and skills into the benchmark agent — contamination.
       settingSources: ["project"],
-      // Enable every skill the workspace ships (progressive disclosure: only
-      // name+description enter context until the agent invokes one).
-      skills: "all",
-      mcpServers: params.mcpServers as Record<
-        string,
-        { type?: "stdio"; command: string; args?: string[]; env?: Record<string, string> }
-      >,
+      // Exactly the recipe's declared skills (progressive disclosure: only
+      // name+description enter context until invoked). NOT "all": that would
+      // also enable the CLI's bundled skills, widening this harness's surface
+      // over harnesses with no native skill runtime (probe-verified leak).
+      skills: params.skills,
+      // No mcpServers here: workspace-setup.sh mounts them as the workspace's
+      // .mcp.json (Claude Code's project MCP standard), auto-approved via
+      // .claude/settings.json enableAllProjectMcpServers. params.mcpServers is
+      // deliberately ignored — native config over programmatic injection.
     },
   });
 

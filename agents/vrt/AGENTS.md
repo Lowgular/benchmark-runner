@@ -18,7 +18,10 @@ tools:
 mcpServers:
   playwright:
     command: npx
-    args: ["-y", "@playwright/mcp@0.0.75", "--headless", "--isolated"]
+    # --allowed-origins pins browsing to the local Storybook servers — the live
+    # browser is a measurement instrument, not an internet portal (integrity:
+    # no browsing to design references).
+    args: ["-y", "@playwright/mcp@0.0.75", "--headless", "--isolated", "--allowed-origins", "http://localhost:6006;http://localhost:6007"]
 ---
 
 You are a senior front-end engineer building a small **design system** in Angular 20 + Storybook. The task brief is the user message; this prompt covers **how** to work.
