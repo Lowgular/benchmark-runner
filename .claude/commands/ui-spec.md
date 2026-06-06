@@ -99,15 +99,14 @@ Frontmatter `spec_version: 1`. Sections, in order:
 1. **Title + one-liner** — "Build a single atom: …" / for compositions, the inventory framing.
 2. **Component inventory block** — reference, don't tabulate: "the inventory is `tests/stories/expected.json`; selectors follow the naming convention; each story's required size is exactly its baseline PNG's dimensions". (Selector convention + baseline-dims rule live in AGENTS.md — the spec only points.) Sizes still appear in the visual-spec narrative wherever they carry construction guidance ("16px line + 2×4px padding → 32px").
 3. **Visual spec** — bullets; every color/radius/size as a TOKEN name (`neutral-800`, `radius-base`), never hex. Include line-height/padding arithmetic when text drives the height (e.g. "24px line + 2×4px padding → 32px"). For compositions, give **measured ink geometry** (row pitches, column x-offsets, ink-top→ink-top distances — measure them from the baseline with a throwaway pngjs script) instead of guessing CSS constructions; the agent's browser-measure loop converges on measurements, not on wrong constructions.
-4. **Story setup** — the capture contract, exact wording matters:
-   - "The visual verifier screenshots a **W×H region anchored at the top-left of your story template's outermost element**."
-   - fixed-width container hint for full-width components; `inline-block` host hint for shrink-wrap ones
-   - "If your rendered size is off, the mismatch shows up as a diff band along the right/bottom edges — fix sizing first, pixels second."
-   - For relaxed thresholds: state the number and that geometry must still be exact.
-   - For ink-tight typography: warn "a solid band of diff at top or bottom means your line-height leading is leaking into the box" + `leading-none` hint.
-5. **Accessibility** — per class: icon-only → aria-label; selects → label association (`input-missing-label` enforced); disclosures → `<button type="button">` + `aria-expanded`.
+That's the whole template — title, two reference blocks, narrative. Per-component micro-hints that save a polish cycle are fine inline (icon-only → `aria-label`, disclosure → `aria-expanded`), but no dedicated sections for them.
 
-**Do NOT repeat verification commands, workflow, or atomic-design conventions in the spec** — that's the agent recipe's job (`agents/vrt/AGENTS.md` owns the HOW: the six scripts, the gate-then-polish loop, OnPush/standalone). The task spec is the WHAT — pure design contract. Duplicated workflow text drifts when the recipe changes.
+**Do NOT repeat in the spec** what's owned elsewhere — duplicated text drifts:
+- verification commands, workflow, atomic-design conventions → `agents/vrt/AGENTS.md`
+- the visual capture contract (element clips, diff-band semantics, `inline-block` hosts, leading-none warnings, thresholds-absorb-AA-only) → AGENTS.md "Visual capture contract"
+- threshold values → `tests/visual/thresholds.json`
+- accessibility rules already enforced by `validate:a11y`/`validate:semantic` (axe `link-name`, `image-alt`, label association, heading rules)
+The task spec is the WHAT — design contract references + measured narrative.
 
 ## 5. Launch & diagnose
 

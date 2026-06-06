@@ -63,6 +63,14 @@ Storybook id = `kebab-case(title.replace("/", "-")) + "--" + kebab-case(exportNa
 
 Match the ids in `expected.json` exactly. Component selectors follow the same convention: strip the level prefix, prepend `app-` (`atoms-icon-button--default` → `app-icon-button`) — the structure verifier derives them this way. The Storybook preview is preconfigured with `layout: "fullscreen"` — no per-story layout parameter needed.
 
+## Visual capture contract
+
+- **Pages** (`pages-*`) are captured as full-page screenshots at the viewport width.
+- **Atoms / molecules / layouts** are captured as a **baseline-sized region anchored at the top-left of your story template's outermost element**. If your rendered size is off, the mismatch shows up as a diff band along the right/bottom edges — fix sizing first, pixels second.
+- Give shrink-wrap components an `inline-block`-style host in the story template so the captured element is exactly the component's size; full-width components render at the viewport width (mobile 375 / desktop 1200).
+- **Ink-tight typography baselines** (the glyph ink fills the box edge to edge): a solid band of diff at the top or bottom means your line-height leading is leaking into the box — `leading-none` usually fixes it.
+- Per-story thresholds (`tests/visual/thresholds.json`) are calibrated to absorb glyph anti-aliasing only — geometry (sizes, spacing, alignment) must be exact at any threshold.
+
 ## Workflow
 
 1. **Read the brief's inventory and `tests/stories/expected.json`** — that's your component checklist.

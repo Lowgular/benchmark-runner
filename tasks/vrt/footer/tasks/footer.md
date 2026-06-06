@@ -44,7 +44,7 @@ The spacing scale is a 4px grid (`--spacing: 0.25rem`) — all gaps and paddings
 
 ### Link (atom)
 - A plain text link: `text-base` (16px) weight 400, `neutral-900`, no underline. Default story text: `UI design`.
-- The baseline is **ink-tight** (69 × 16): the glyph ink fills the box edge to edge. Use `leading-none` so the line box equals the font size — a solid band of diff at top or bottom means your line-height leading is leaking into the box.
+- The baseline is **ink-tight** — the glyph ink fills the 69 × 16 box edge to edge (`leading-none` so the line box equals the font size).
 
 ### Logo (atom)
 - `<img src="/logo.svg">` at its intrinsic 27 × 39. Needs an `alt`.
@@ -70,20 +70,4 @@ The spacing scale is a 4px grid (`--spacing: 0.25rem`) — all gaps and paddings
 - Composes: Logo + Social Links (brand block) and three Link Columns — `Use cases` (the seven links above), `Explore` (`Design`, `Prototyping`, `Development features`, `Design systems`, `Collaboration features`, `Design process`, `FigJam`), `Resources` (`Blog`, `Best practices`, `Colors`, `Color wheel`, `Support`, `Developers`, `Resource library`).
 - **Desktop (1200 × 468):** padding 32 top / 32 sides / 160 bottom. Four columns on a **278px horizontal pitch** — content ink starts at x = 32, 311, 589, 867 (the logo's stroke reaches x = 30; that's stroke overhang, the box is at 32). Brand block: logo at the top, Social Links row below it — logo ink top at y = 30, icon row ink top at y = 91.
 - **Mobile (375 × 919):** padding 32 all sides except a similar 32 bottom. Top row: logo at the left, Social Links right-aligned (row ends flush at x = 343 = 375 − 32). Below, the three Link Columns stack vertically — section headings repeat on a **260px vertical pitch** (heading ink tops at y = 136, 396, 656); link rows tighten to a **30px pitch** at this breakpoint.
-
-## Story setup (required for visual verification)
-
-The visual verifier screenshots a **baseline-sized region anchored at the top-left of your story template's outermost element** (all six stories use element capture). If your rendered size is off, the mismatch shows up as a diff band along the right/bottom edges — fix sizing first, pixels second.
-
-- Shrink-wrap stories (Link, Logo, Social Icon Link, Social Links, Link Column): give the story template an `inline-block`-style host so the element is exactly the component's size.
-- Link Column story: wrap in a fixed-width container if needed — the baseline is 143px wide (the widest link's ink).
-- Footer story: render at full width; the desktop viewport is exactly 1200px, mobile 375px.
-
-Diff thresholds are relaxed for glyph anti-aliasing (calibrated from prior runs — Figma and Chromium rasterize glyphs differently even when geometry is perfect): icons/logo 0.10, ink-tight text 0.08, footer 0.06. Geometry — sizes, pitches, alignment — must still be exact.
-
-## Accessibility
-
-- Icon-only links: `aria-label` (e.g. `aria-label="X"`).
-- Links are real `<a>` elements with `href`.
-- The footer is a `<footer>` element; column headings are real headings.
 
