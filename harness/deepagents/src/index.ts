@@ -1,15 +1,26 @@
 /**
- * DeepAgents-style harness — runs via LangChain JS + LangGraph's createReactAgent,
+ * DeepAgents harness — runs via the `deepagents` package's createDeepAgent,
  * with OpenRouter as the model provider (via @langchain/openai's OpenAI-compatible
  * client pointed at OpenRouter's API).
  *
- * MCP servers wire in via @langchain/mcp-adapters. Tools are passed to the react agent.
+ * Native mounts (deepagents conventions, mirroring the anthropic-sdk adapter
+ * philosophy — "as close to native as possible"):
+ *   - recipe body  → `memory: ["/AGENTS.md"]` (deepagents' documented AGENTS.md
+ *     memory mechanism; file ships via run_task.sh layer 2, frontmatter stripped
+ *     by workspace-setup.sh)
+ *   - skills/      → `skills: ["/skills/"]` (SkillsMiddleware; passed only when
+ *     the recipe declares skills — params.skills is the framework-enumerated list)
+ *   - filesystem   → LocalShellBackend rooted at the run dir (virtual POSIX "/")
+ *
+ * MCP servers wire in via @langchain/mcp-adapters as extra tools.
  *
  * Yields standardized Message events; framework writes agent.jsonl + RESPONSE.md.
  *
  * Requires: OPENROUTER_API_KEY (declared via requiredEnv, delivered in params.secrets).
+ * NOTE: engine migrated createReactAgent → createDeepAgent 2026-06-05; typechecked
+ * but not yet exercised in a paid run (OpenRouter stage).
  */
-import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { createDeepAgent, LocalShellBackend } from "deepagents";
 import { ChatOpenAI } from "@langchain/openai";
 import { MultiServerMCPClient } from "@langchain/mcp-adapters";
 import {
@@ -23,6 +34,10 @@ import type { HarnessParams, Message, Usage } from "../../framework.ts";
 import { toOpenRouterModel } from "../../models.ts";
 
 export const requiredEnv = ["OPENROUTER_API_KEY"] as const;
+
+/** Mirror of the anthropic-sdk MAX_TURNS=150 backstop. One agent turn is two
+ * graph steps (model → tools), so the recursion ceiling is 2× turns. */
+const MAX_RECURSION = 300;
 
 function extractText(content: BaseMessage["content"]): string {
   if (typeof content === "string") return content;
@@ -79,12 +94,25 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
 
   const hasMcp = Object.keys(mcpConnections).length > 0;
   const mcpClient = hasMcp ? new MultiServerMCPClient({ mcpServers: mcpConnections }) : null;
-  const tools = mcpClient ? await mcpClient.getTools() : [];
+  const mcpTools = mcpClient ? await mcpClient.getTools() : [];
 
-  const agent = createReactAgent({
-    llm,
-    tools,
-    prompt: params.systemPrompt,
+  // LocalShellBackend: virtual POSIX "/" = the run dir. File/shell tools come
+  // from the backend (deepagents-native), MCP tools are appended.
+  const backend = await LocalShellBackend.create({
+    rootDir: params.cwd,
+    virtualMode: true,
+    inheritEnv: true,
+  });
+
+  const agent = createDeepAgent({
+    model: llm,
+    tools: mcpTools,
+    backend,
+    // Recipe body, deepagents-native: loaded at startup into the system prompt.
+    memory: ["/AGENTS.md"],
+    // Recipe-declared skills only (framework-enumerated) — mirrors the
+    // anthropic-sdk exact-list rule so harness surfaces stay comparable.
+    ...(params.skills.length > 0 ? { skills: ["/skills/"] } : {}),
   });
 
   let turn = 0;
@@ -94,19 +122,20 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
   try {
     const stream = await agent.stream(
       { messages: [new HumanMessage(params.task)] },
-      { streamMode: "updates", recursionLimit: 50 },
+      { streamMode: "updates", recursionLimit: MAX_RECURSION },
     );
 
     for await (const update of stream) {
-      for (const [nodeName, nodeOutput] of Object.entries(update)) {
+      // createDeepAgent's graph node names differ from createReactAgent's
+      // ("agent"/"tools"); classify by message TYPE instead — robust across
+      // engine internals.
+      for (const nodeOutput of Object.values(update as Record<string, unknown>)) {
         const messages = (nodeOutput as { messages?: BaseMessage[] } | undefined)?.messages;
         if (!messages) continue;
 
-        if (nodeName === "agent") {
-          turn++;
-          for (const msg of messages) {
-            if (!(msg instanceof AIMessage)) continue;
-
+        for (const msg of messages) {
+          if (msg instanceof AIMessage) {
+            turn++;
             const usageMeta = (msg as unknown as {
               usage_metadata?: {
                 input_tokens?: number;
@@ -142,10 +171,7 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
                 input: tc.args,
               };
             }
-          }
-        } else if (nodeName === "tools") {
-          for (const msg of messages) {
-            if (!(msg instanceof ToolMessage)) continue;
+          } else if (msg instanceof ToolMessage) {
             yield {
               t: "tool_result",
               turn,
