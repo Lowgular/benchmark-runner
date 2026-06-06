@@ -1,10 +1,13 @@
 // Runtime DOM composition check — anti-monolith gate (VERIFY-03, D-08).
 //
-// For each page-level story id in tests/stories/expected.json (overlaid by the
-// task at runtime), this verifier opens the story in the Storybook iframe and
-// asserts that every non-page component selector declared in the manifest is
-// present in the rendered DOM. This proves the agent composed the page from
-// the specced atoms/molecules/layouts rather than shipping a monolith.
+// The composition ROOT is the highest atomic level present in
+// tests/stories/expected.json (pages > layouts > molecules > atoms — overlaid
+// by the task at runtime). For each root-level story id, this verifier opens
+// the story in the Storybook iframe and asserts that every lower-level
+// component selector declared in the manifest is present in the rendered DOM.
+// This proves the agent composed the root from the specced
+// atoms/molecules/layouts rather than shipping a monolith — and it applies
+// equally to layout-rooted tasks (e.g. a footer) and page-rooted ones.
 //
 // Selectors are derived from story ids by naming convention — no static
 // analysis of component source files (D-08: "the browser never lies").
@@ -47,14 +50,19 @@ const expectedIds: string[] = existsSync(EXPECTED_PATH)
   ? (JSON.parse(readFileSync(EXPECTED_PATH, "utf8")) as string[])
   : [];
 
-// Page story ids are those whose base segment starts with "pages-"
-const pageStoryIds = expectedIds.filter((id) => id.split("--")[0]!.startsWith("pages-"));
+// The composition root is the highest atomic level present in the manifest.
+const LEVEL_ORDER = ["pages", "layouts", "molecules", "atoms"] as const;
+const hasLevel = (id: string, level: string) => id.split("--")[0]!.startsWith(`${level}-`);
+const rootLevel = LEVEL_ORDER.find((level) => expectedIds.some((id) => hasLevel(id, level)));
 
-// Non-page ids produce the component selectors the page must contain
+// Root-level story ids must contain every lower-level component selector.
+const rootStoryIds = rootLevel ? expectedIds.filter((id) => hasLevel(id, rootLevel)) : [];
+
+// Non-root ids produce the component selectors the root must contain.
 const componentSelectors = [
   ...new Set(
     expectedIds
-      .filter((id) => !id.split("--")[0]!.startsWith("pages-"))
+      .filter((id) => !(rootLevel && hasLevel(id, rootLevel)))
       .map((id) => storyIdToSelector(id)),
   ),
 ];
@@ -78,7 +86,9 @@ test("expected.json is present", () => {
 });
 
 test.describe("structure", () => {
-  for (const pageStoryId of pageStoryIds) {
+  // Single-level tasks (e.g. one atom) have no lower levels to assert — the
+  // gate is vacuous there by design; the visual/story verifiers carry them.
+  for (const pageStoryId of componentSelectors.length > 0 ? rootStoryIds : []) {
     test(`${pageStoryId} DOM composition`, async ({ page }) => {
       test.setTimeout(15_000);
 
