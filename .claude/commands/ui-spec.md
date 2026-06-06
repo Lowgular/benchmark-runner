@@ -87,10 +87,11 @@ Capture mode is **by convention** — `pages-*` → fullPage, everything else �
 |---|---|---|
 | solid box, little text (button, tag) | 0.02 (default) | geometry is exact, text is small |
 | icon glyph approximated (heart, image placeholder) | 0.08–0.10 | exact vectors unavailable until Figma quota allows extraction — note "tighten later" in spec |
-| icon glyph from exact SVG, tiny crop (24×24) | 0.10 | geometry is exact but AA dominates a tiny crop; @2x-halved baselines are slightly softer-edged than native renders |
+| icon glyph from exact SVG, tiny crop (24×24) | 0.05 | measured (footer v1): exact-SVG icon rendered PIXEL-IDENTICAL (0.000), logo 0.0095, icon row 0.02 — exact vectors barely diff at all; 0.10 was over-generous |
 | pure typography (price) | 0.06 | glyph AA between Figma and Chromium rasterizers |
-| ink-tight text crop (link) | 0.08 | same AA class, higher ink fraction in a tight crop |
-| text-dense crop (select-field, accordion, link-column) | 0.08 | a geometrically PERFECT build diffs ~0.06 on glyph AA alone (measured) |
+| ink-tight text crop (link) | 0.08 | same AA class, higher ink fraction in a tight crop (a 2px ink offset measures 0.25 — separation is wide) |
+| text-dense crop (select-field, accordion) | 0.08 | a geometrically PERFECT build diffs ~0.06 on glyph AA alone (measured) |
+| sparse text column (link-column) | 0.065 | measured (footer v1): wrong 44px-vs-34px pitch landed at 0.0739 — under the old 0.08. Window between perfect-AA (~0.05–0.06) and rearranged (0.074) is tight; if a perfect build trips it, the diff PNG proves pure AA speckle → recalibrate up with evidence |
 | sparse composition (footer layout) | **≈ 0.6× ink fraction, per viewport** (footer: desktop 0.016, mobile 0.025) | **area-ratio thresholds go blind on mostly-white frames** — a rearranged layout's pixelmatch ratio lands only ~0.75× the ink fraction (its AA heuristic discounts shifted thin glyphs), while a perfect build diffs ~0.4× ink. Measure each baseline's ink fraction (pngjs: % of px with channel < 240) and set per-viewport keys (`"<story-id>/<viewport>"` in thresholds.json) — ink density differs across breakpoints, one number rarely separates both. Incident: footer v1 passed BOTH viewports at 0.06 with visibly wrong geometry (pixelmatch 0.021/0.033 vs ink 0.028/0.044). |
 
 ## 4. Spec template (the brief the agent sees)
