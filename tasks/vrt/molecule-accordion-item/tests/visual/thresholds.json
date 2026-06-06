@@ -1,6 +1,6 @@
 {
   "default": 0.02,
   "overrides": {
-    "molecules-accordion-item--default": 0.05
+    "molecules-accordion-item--default": 0.08
   }
 }

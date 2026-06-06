@@ -10,10 +10,16 @@ You have Playwright browser tools (`browser_navigate`, `browser_evaluate`, `brow
 ## Serve your build
 
 ```bash
-npx http-server storybook-static -p 6007 --silent &
+npx http-server storybook-static -p 6007 --silent & echo $! > .measure-server.pid
 ```
 
 Port **6007** — NEVER 6006 (the verifier's `webServer` owns it and refuses to reuse an existing server; binding it breaks every verify script).
+
+NEVER use a broad `pkill -f http-server` — it matches processes outside your workspace, including your own runtime's process tree (this has crashed an entire run). Kill ONLY your own server, by saved PID:
+
+```bash
+kill "$(cat .measure-server.pid)" 2>/dev/null || true
+```
 
 `storybook-static/` is a build output: rebuild (`npm run build` or any verify script) before re-measuring, or you'll measure stale code.
 
@@ -57,4 +63,4 @@ document.querySelector('#storybook-root').outerHTML.slice(0, 800)
 
 ## Cleanup
 
-Kill your http-server (`kill %1` or `pkill -f "http-server storybook-static"`) if anything behaves oddly, and never bind 6006.
+Kill your http-server by its saved PID (`kill "$(cat .measure-server.pid)"`) if anything behaves oddly, and never bind 6006. Never `pkill` by pattern.

@@ -89,6 +89,12 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
   let status: "completed" | "error" = "completed";
   let costUsd: number | undefined;
 
+  // try/catch so a mid-stream SDK death (e.g. the CLI subprocess getting
+  // SIGTERM'd) still produces error + result events — without this, the
+  // generator throws, the framework crashes, and the run leaves no result
+  // line in agent.jsonl and no summary.json (observed: agent's broad
+  // `pkill -f http-server` killed its own CLI process tree).
+  try {
   for await (const sdkMsg of stream) {
     if (sdkMsg.type === "assistant") {
       turn++;
@@ -141,6 +147,10 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
       status = r.subtype === "success" ? "completed" : "error";
       if (typeof r.total_cost_usd === "number") costUsd = r.total_cost_usd;
     }
+  }
+  } catch (err) {
+    status = "error";
+    yield { t: "error", message: err instanceof Error ? err.message : String(err) };
   }
 
   yield {
