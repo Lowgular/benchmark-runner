@@ -157,6 +157,17 @@ for (const storyId of STORY_IDS) {
           const view = new DataView(baseline.buffer, baseline.byteOffset, baseline.byteLength);
           const clipW = view.getUint32(16, false); // PNG IHDR width
           const clipH = view.getUint32(20, false); // PNG IHDR height
+          // A non-fullPage screenshot is clamped at the viewport bottom, so a
+          // clip taller than the viewport silently captures a shorter image
+          // ("Expected 375x919, received 375x800"). Grow the viewport height
+          // to fit the clip — height never drives layout (only width does),
+          // it just sizes the capture window.
+          const neededHeight = Math.ceil(box.y + clipH);
+          const current = page.viewportSize();
+          if (current && neededHeight > current.height) {
+            await page.setViewportSize({ width: current.width, height: neededHeight });
+            await page.waitForTimeout(100);
+          }
           await expect(page).toHaveScreenshot([storyId, `${vp.id}.png`], {
             clip: { x: box.x, y: box.y, width: clipW, height: clipH },
             maxDiffPixelRatio,
