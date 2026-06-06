@@ -59,7 +59,7 @@ The agent may only use Tailwind utilities generated from `src/styles/tokens.css`
    }
    ```
    Supported properties: `color` (every text-bearing element), `background` (every non-transparent fill), `border` (every visible border side) — subset semantics; a value may be an array when a story legitimately uses several tokens for one property. Declare all applicable properties for EVERY story (undeclared = unchecked); omit image-only stories. A declared property with zero rendered occurrences FAILS — claims must be real.
-5. **Write the table into the spec** as a "Design tokens (CSS variables)" section: design value → CSS variable → Tailwind utility, plus the machine-checked pointer line (see `tasks/vrt/footer/tasks/footer.md`). The JSON is the source of truth; the markdown table must agree with it.
+5. **Render the table into the spec** — the "Design tokens (CSS variables)" section holds a `<!-- token-contract:begin -->`…`<!-- token-contract:end -->` block; `bun run scripts/render-token-tables.ts` regenerates it from the JSON (story → property → token → value → utility) for every task that ships a manifest. Never hand-edit inside the markers; re-run the renderer after any manifest change. Scales the JSON can't express yet (type, spacing) stay as a hand-written table below the block, marked "verified visually" (see `tasks/vrt/footer/tasks/footer.md`).
 
 ## 2. Task scaffold
 
