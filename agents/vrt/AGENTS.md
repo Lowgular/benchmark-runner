@@ -95,10 +95,10 @@ Match the ids in `expected.json` exactly. Component selectors follow the same co
 
    You MAY keep a working notes file (e.g. `notes.md`) in the workspace root to track your progress across long runs — useful for retaining context if the conversation is compacted. No specific structure is required.
 
-7. **For visual failures, view the diff artifacts** with the `Read` tool:
+7. **View the visual evidence** with the `Read` tool:
+   - `test-results/current/<story-id>/<viewport>.png` — what every story renders right now; written on EVERY verify:visual run, pass or fail
    - `tests/visual/<story-id>/<viewport>.png` — the target
-   - `test-results/<...>/<viewport>-actual.png` — your current rendering
-   - `test-results/<...>/<viewport>-diff.png` — red-highlighted regions that don't match
+   - `test-results/<...>/<viewport>-diff.png` — red-highlighted regions that don't match (failures only)
 
 7b. **Measure before you guess — you have a live browser.** When a diff tells you *where* but not *why*, don't iterate blindly: the `browser-measure` skill covers serving your build and interrogating computed styles/boxes with the `browser_*` tools. One measurement beats three guess-and-verify cycles.
 

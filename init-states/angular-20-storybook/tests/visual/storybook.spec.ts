@@ -31,7 +31,7 @@
 // test-results/SUMMARY.md and the HTML report at test-results/html/.
 
 import { expect, test } from "@playwright/test";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -93,6 +93,23 @@ function captureMode(storyId: string): "page" | "element" {
     return cfg.capture === "element" ? "element" : "page";
   }
   return storyId.startsWith("pages-") ? "page" : "element";
+}
+
+// Always-on current renders: toHaveScreenshot only emits artifacts on
+// FAILURE, leaving a passing run with no visual evidence to inspect. Before
+// every comparison, save the current render to a stable path so humans and
+// agents can always view what each story renders right now:
+//   test-results/current/<story-id>/<viewport>.png
+const CURRENT_DIR = join(VISUAL_DIR, "..", "..", "test-results", "current");
+async function saveCurrentRender(
+  page: import("@playwright/test").Page,
+  storyId: string,
+  viewportId: string,
+  options: { clip?: { x: number; y: number; width: number; height: number }; fullPage?: boolean },
+): Promise<void> {
+  const dir = join(CURRENT_DIR, storyId);
+  mkdirSync(dir, { recursive: true });
+  await page.screenshot({ ...options, path: join(dir, `${viewportId}.png`) });
 }
 
 for (const storyId of STORY_IDS) {
@@ -168,11 +185,14 @@ for (const storyId of STORY_IDS) {
             await page.setViewportSize({ width: current.width, height: neededHeight });
             await page.waitForTimeout(100);
           }
+          const clip = { x: box.x, y: box.y, width: clipW, height: clipH };
+          await saveCurrentRender(page, storyId, vp.id, { clip });
           await expect(page).toHaveScreenshot([storyId, `${vp.id}.png`], {
-            clip: { x: box.x, y: box.y, width: clipW, height: clipH },
+            clip,
             maxDiffPixelRatio,
           });
         } else {
+          await saveCurrentRender(page, storyId, vp.id, { fullPage: true });
           await expect(page).toHaveScreenshot([storyId, `${vp.id}.png`], {
             fullPage: true,
             maxDiffPixelRatio,

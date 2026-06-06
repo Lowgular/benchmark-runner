@@ -62,8 +62,8 @@ selector = `app-` + the story base name minus its level prefix
 | --- | --- |
 | `test-results/SUMMARY.md` | **Start here.** Per-test pass/fail; failing visuals include the pixel-diff ratio + artifact paths. |
 | `test-results/<script>.json` | the JSON envelope for exactly the script you just ran |
-| `test-results/<folder>/<name>-actual.png` | what your story currently renders |
-| `test-results/<folder>/<name>-diff.png` | which regions differ (red highlight) |
+| `test-results/current/<story-id>/<viewport>.png` | what every story renders right now — written on EVERY `verify:visual` run, pass or fail |
+| `test-results/<folder>/<name>-diff.png` | which regions differ (red highlight; failures only) |
 | `tests/visual/<story-id>/<viewport>.png` | the target |
 
 The loop: run a verify script → read `SUMMARY.md` → view the diff artifacts →
