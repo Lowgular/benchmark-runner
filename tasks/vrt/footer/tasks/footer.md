@@ -29,9 +29,24 @@ These are the exact vectors from the design — use them via `<img>` (or inline)
 | Link Column | `app-link-column` | `molecules-link-column--default` | **exactly 143 × 267 px** |
 | Footer | `app-footer` | `layouts-footer--default` | desktop **exactly 1200 × 468 px**, mobile **exactly 375 × 919 px** |
 
-## Visual spec
+## Design tokens (CSS variables)
 
-All colors and type come from the design tokens in `src/styles/tokens.css` — use the Tailwind utilities they generate, never raw hex.
+Every visual value in this design maps to a token in `src/styles/tokens.css` (the Tailwind `@theme`). Use the Tailwind utilities the tokens generate — never raw hex, never arbitrary values.
+
+| Design value | CSS variable | Tailwind utility |
+|---|---|---|
+| text & icon ink `#1e1e1e` | `--color-neutral-900` | `text-neutral-900` |
+| top border `#d9d9d9` | `--color-neutral-300` | `border-neutral-300` |
+| background `#ffffff` | `--color-neutral-0` | `bg-neutral-0` |
+| body & heading size 16px | `--text-base` | `text-base` (weight 400 links, 600 headings) |
+| font | `--font-sans` (Inter) | default |
+| icon gap 16px | `--spacing` × 4 | `gap-4` |
+| footer padding 32px | `--spacing` × 8 | `p-8` / `pt-8` / `px-8` |
+| desktop bottom padding 160px | `--spacing` × 40 | `pb-40` |
+
+The spacing scale is a 4px grid (`--spacing: 0.25rem`) — all gaps and paddings in this design are multiples of it (e.g. an 18px row gap is `gap-4.5`, a 14px one `gap-3.5`).
+
+## Visual spec
 
 ### Link (atom)
 - A plain text link: `text-base` (16px) weight 400, `neutral-900`, no underline. Default story text: `UI design`.
