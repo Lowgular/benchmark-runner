@@ -91,7 +91,7 @@ Capture mode is **by convention** — `pages-*` → fullPage, everything else �
 | pure typography (price) | 0.06 | glyph AA between Figma and Chromium rasterizers |
 | ink-tight text crop (link) | 0.08 | same AA class, higher ink fraction in a tight crop |
 | text-dense crop (select-field, accordion, link-column) | 0.08 | a geometrically PERFECT build diffs ~0.06 on glyph AA alone (measured) |
-| sparse composition (footer layout) | 0.06 | text/glyph ink is a small fraction of a large mostly-white frame |
+| sparse composition (footer layout) | **≈ 0.6× ink fraction, per viewport** (footer: desktop 0.016, mobile 0.025) | **area-ratio thresholds go blind on mostly-white frames** — a rearranged layout's pixelmatch ratio lands only ~0.75× the ink fraction (its AA heuristic discounts shifted thin glyphs), while a perfect build diffs ~0.4× ink. Measure each baseline's ink fraction (pngjs: % of px with channel < 240) and set per-viewport keys (`"<story-id>/<viewport>"` in thresholds.json) — ink density differs across breakpoints, one number rarely separates both. Incident: footer v1 passed BOTH viewports at 0.06 with visibly wrong geometry (pixelmatch 0.021/0.033 vs ink 0.028/0.044). |
 
 ## 4. Spec template (the brief the agent sees)
 

@@ -104,3 +104,9 @@ Tier 2 (after Tier 1 proves out):
 - **Threshold tightening** — with diff analysis + AA classifier in place,
   revisit the relaxed glyph thresholds (0.08–0.10): the AA-share metric may
   allow strict thresholds with an explicit AA allowance instead.
+  **Incident (footer v1):** area-ratio thresholds are blind on sparse frames —
+  the footer passed BOTH viewports at 0.06 with visibly wrong geometry
+  (slider exposed it; crude diff 0.043/0.068 vs ink fraction 0.028/0.044).
+  Interim rule now in /ui-spec: sparse-frame threshold ≈ 1.0× the baseline's
+  ink fraction (perfect ≈ 0.5× ink, rearranged ≈ 1.5× ink). The real fix is
+  the AA classifier: threshold on NON-AA diff share instead of total ratio.

@@ -52,6 +52,10 @@ const VIEWPORTS = [
 ] as const;
 
 // Load per-task threshold config (D-04): task default + per-story overrides.
+// Override keys: "<story-id>" applies to all viewports; "<story-id>/<viewport>"
+// (e.g. "layouts-footer--default/mobile") wins over the story-wide key —
+// needed when ink density differs enough between breakpoints that no single
+// ratio separates a perfect build's AA from a rearranged layout.
 interface ThresholdsConfig {
   default: number;
   overrides: Record<string, number>;
@@ -118,12 +122,15 @@ for (const storyId of STORY_IDS) {
     existsSync(join(VISUAL_DIR, storyId, `${vp.id}.png`)),
   );
 
-  // Per-story threshold: override if present, else task default (D-04).
-  const maxDiffPixelRatio = thresholds.overrides[storyId] ?? thresholds.default;
   const mode = captureMode(storyId);
 
   test.describe(storyId, () => {
     for (const vp of activeViewports) {
+      // Threshold precedence: per-viewport override > per-story override > default.
+      const maxDiffPixelRatio =
+        thresholds.overrides[`${storyId}/${vp.id}`] ??
+        thresholds.overrides[storyId] ??
+        thresholds.default;
       test(`${vp.id} (${vp.width}px wide)`, async ({ page }, testInfo) => {
         test.setTimeout(20_000);
         // Height is the initial box only; `fullPage: true` captures full scroll height.
