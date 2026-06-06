@@ -57,6 +57,13 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
       permissionMode: "bypassPermissions",
       allowedTools: params.allowedTools,
       maxTurns: MAX_TURNS,
+      // Benchmark isolation: load ONLY the run workspace's .claude (skills shipped
+      // by the init-state). Omitting this loads the operator's ~/.claude settings
+      // and skills into the benchmark agent — contamination.
+      settingSources: ["project"],
+      // Enable every skill the workspace ships (progressive disclosure: only
+      // name+description enter context until the agent invokes one).
+      skills: "all",
       mcpServers: params.mcpServers as Record<
         string,
         { type?: "stdio"; command: string; args?: string[]; env?: Record<string, string> }
