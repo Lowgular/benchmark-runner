@@ -33,18 +33,7 @@ These are the exact vectors from the design — use them via `<img>` (or inline)
 
 Every visual value in this design maps to a token in `src/styles/tokens.css` (the Tailwind `@theme`). Use the Tailwind utilities the tokens generate — never raw hex, never arbitrary values.
 
-The color/background/border bindings below are **machine-checked**: `tests/validate/expected-tokens.json` declares them per story, and `npm run validate:tokens` asserts the computed styles of what you render bind to exactly those tokens.
-
-<!-- token-contract:begin -->
-<!-- generated from tests/validate/expected-tokens.json by scripts/render-token-tables.ts — do not hand-edit -->
-| Story | Property | Token | Value | Tailwind utility |
-|---|---|---|---|---|
-| `atoms-link--default` | color | `neutral-900` | `#1e1e1e` | `text-neutral-900` |
-| `molecules-link-column--default` | color | `neutral-900` | `#1e1e1e` | `text-neutral-900` |
-| `layouts-footer--default` | color | `neutral-900` | `#1e1e1e` | `text-neutral-900` |
-| `layouts-footer--default` | background | `neutral-0` | `#ffffff` | `bg-neutral-0` |
-| `layouts-footer--default` | border | `neutral-300` | `#d9d9d9` | `border-neutral-300` |
-<!-- token-contract:end -->
+**Required token bindings (color / background / border) are declared per story in `tests/validate/expected-tokens.json` — that file is the contract.** Read it before you build; `npm run validate:tokens` asserts that everything you render computes to exactly those tokens.
 
 Type and spacing (verified visually, via the pixel diff):
 
