@@ -81,6 +81,18 @@ npm ci --no-audit --no-fund
 echo "[setup] overlaying task files from ${TASK_DIR}…"
 rsync -a --checksum "$TASK_DIR/" "$RUN_DIR/"
 
+# Agent skills: methodology ships with the RECIPE (agents/<name>/skills/), not the
+# init-state — the workspace stays a neutral environment so recipes stay comparable.
+# Overlay into the workspace's .claude/skills/ where the SDK discovers them
+# (settingSources=[project]); non-SDK harnesses read the same files via the
+# AGENTS.md "Skills" fallback note.
+AGENT_SKILLS_DIR="$(dirname "$AGENT")/skills"
+if [ -d "$AGENT_SKILLS_DIR" ]; then
+  echo "[setup] overlaying agent skills from ${AGENT_SKILLS_DIR}…"
+  mkdir -p "$RUN_DIR/.claude/skills"
+  rsync -a --checksum "$AGENT_SKILLS_DIR/" "$RUN_DIR/.claude/skills/"
+fi
+
 echo ""
 
 TASK_FILE="$TASK_DIR/tasks/$TASK.md"
