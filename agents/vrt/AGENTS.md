@@ -36,42 +36,44 @@ Build a layered component library — **atoms** → **molecules** → **layouts*
 
 ## THE LOOP
 
-**Priorities first: the three `verify:*` scripts are the GATE — pass/fail qualification. The four `validate:*` scripts are POLISH — nice-to-haves that only matter once the gate is green.** A run with a perfect a11y score and a failing visual diff is a failed run; a run that passes the gate with mediocre validators still qualifies. Never spend gate-budget on polish.
+**Priorities: the `verify:*` scripts are the GATE — pass/fail qualification. The `validate:*` scripts are nice-to-haves.** A run with a perfect a11y score and a failing visual diff is a failed run. If the turn budget runs short, gate work always wins over polish.
 
-### Phase 0 — Orient (once, before any code)
+### Phase 0 — Plan
 
 1. Read `README.md`, the task brief, and every contract: `tests/stories/expected.json`, `tests/validate/expected-tokens.json`, `tests/visual/thresholds.json`.
 2. View every baseline PNG under `tests/visual/` (the `Read` tool renders images) and record each one's pixel dimensions — **a baseline's dimensions ARE that story's required rendered size**.
 3. For any multi-row/column baseline, extract its geometry numerically BEFORE building: a pngjs one-liner over the PNG gives ink row/column bands → pitches, gaps, offsets. Building on guessed spacing and reverse-engineering it from diffs later costs many turns.
 4. Read `src/styles/tokens.css` — the only styling values you may use, via the Tailwind utilities they generate.
-5. Create `notes.md`: a per-story status table plus every number you measured. **Update it after each verify cycle** — long runs get compacted, and notes.md is your recovery anchor; without it you will burn your remaining turns re-orienting.
+5. **Write the plan into `notes.md`: a TODO list of every component in execution order** — all atoms first, then all molecules, then layouts, then the page — each item with its story id, baseline dims, and the numbers you measured. This list drives the whole run: cross items off as they finish, and **update notes.md after every cycle** (long runs get compacted; notes.md is your recovery anchor).
 
-### Phase 1 — Build: one component at a time, bottom-up
+### Phase 1 — Mini-loops: one element at a time, in plan order
 
-Work strictly in this order: **every atom → every molecule → layouts → page.** Never start a composition before everything it composes passes its own snapshot.
+For the CURRENT element only: **read its executable specs → implement → verify → validate → cross off → move on immediately.**
 
-For EACH component:
+1. Re-read this element's specs: its baseline (+ dims + measured numbers from notes.md), its `expected-tokens.json` entry, its threshold.
+2. Implement the component + its story (standalone, `ChangeDetectionStrategy.OnPush`, `signal()` state, `@if`/`@for`, `app-` selector prefix; file layout per README).
+3. Verify just it: `VERIFY_SCRIPT=verify:visual npx playwright test tests/visual -g "<story-id>"`
+   - On failure, look before touching code: your render is always at `test-results/current/<story-id>/<viewport>.png`; compare against the baseline and the red `-diff.png`. Fix sizing first (wrong size = diff band along right/bottom edges), pixels second.
+   - When the diff says WHERE but not WHY — **measure, don't guess**: the `browser-measure` skill drives a live browser to read computed styles and boxes. One measurement beats three guess-and-verify cycles.
+4. Validate just it: `npx playwright test tests/a11y tests/validate -g "<story-id>"` — fix what it reports now, while the element is fresh.
+5. Green on both → cross it off in `notes.md` → next element. **Do not revisit finished elements, do not re-run their checks.**
 
-1. **Build** the component and its story (standalone, `ChangeDetectionStrategy.OnPush`, `signal()` state, `@if`/`@for`, `app-` selector prefix; file layout per README).
-2. **Verify just that story** — no full sweep:
-   `VERIFY_SCRIPT=verify:visual npx playwright test tests/visual -g "<story-id>"`
-3. **On failure, look before touching code**: your render is always at `test-results/current/<story-id>/<viewport>.png`; compare against the baseline and the red `-diff.png`. Fix sizing first (wrong size = diff band along right/bottom edges), pixels second.
-4. **When the diff says WHERE but not WHY — measure, don't guess.** Use the `browser-measure` skill: it drives a live browser to read computed styles and boxes. One measurement beats three guess-and-verify cycles.
-5. Story passes → update `notes.md` → next component.
+**Layered invariants — why finished work stays finished:**
 
-### Phase 2 — Gate (mandatory — this is what qualifies the run)
+- Element snapshots are box-exact, so once an atom passes, its **padding, borders, colors, and fonts are LOCKED**. Spacing *between* elements (margins, gaps) is invisible at atom level — it belongs to the parent.
+- Therefore a molecule diff is an **arrangement problem**: adjust the molecule's own gaps/margins/wrappers. Never reopen a finished atom's internals to fix a parent's diff.
+- Reopen a lower element ONLY if the parent's diff proves that element itself is wrong — then re-verify both it and the parent before moving on.
+- Composition levels bring composition concerns: content projection (`ng-content`), host sizing, wrapper elements.
+
+**Milestones:** a level is DONE when every element in it passed verify + validate. Record the milestone in `notes.md` and move up — finished levels are not re-checked routinely.
+
+### Phase 2 — Final check
 
 ```bash
-npm run verify:stories && npm run verify:visual && npm run verify:structure
+npm run verify
 ```
 
-All three must pass — a run that fails any of these does not qualify, no matter how good everything else is. Fix the worst failure first. Do not move to Phase 3 until the gate is green.
-
-### Phase 3 — Polish (nice-to-have — only after the gate is green)
-
-`npm run validate:a11y`, `validate:semantic`, `validate:tailwind`, `validate:tokens` — then re-run the gate after each batch of changes; **a polish change that breaks the gate is a regression, revert it**. Stop when the validators are genuinely as good as you can get or the turn budget is near.
-
-`npm run verify` runs everything with a single build. After every script, read `test-results/SUMMARY.md` and the per-script envelope `test-results/<script>.json`.
+Everything, one build — the gate scripts must be green (that's what qualifies the run), validators as good as you got them per element. If something regressed, trust the layered invariants: the culprit is almost always at the highest level you touched last. After every script, read `test-results/SUMMARY.md` and the per-script envelope `test-results/<script>.json`.
 
 ## Visual facts that save turns
 
