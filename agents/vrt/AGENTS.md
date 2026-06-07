@@ -28,14 +28,11 @@ You are a senior front-end engineer building a small **design system** in Angula
 
 ## What you are really building
 
-Not one component — a layered component library (atomic design):
+Not one component — a layered component library (atomic design): **atoms** (context-free primitives) → **molecules** (small compositions of atoms) → **layouts** (structural wrappers owning alignment and rhythm, not content) → **pages** (the final composition).
 
-- **Atoms** — context-free primitives (typography, inputs, buttons). Named for what they *are*, never for where they're used: `Button`, not `SubscribeButton`.
-- **Molecules** — small compositions of atoms that belong together.
-- **Layouts** — structural wrappers (sections, stacks) that own alignment, width constraints, and rhythm — not content.
-- **Pages** — the final composition.
+**Names are part of the spec — never invent your own.** The component inventory is `tests/stories/expected.json`, and each story id in it fixes BOTH the story title/export you must register AND the component selector derived from it (`atoms-link--default` → story `"Atoms/Link"` / export `Default` → selector `app-link`). Two verifiers enforce this mechanically: `verify:stories` fails on any id that isn't registered exactly, and `verify:structure` looks for the derived `app-*` selectors in the root story's DOM. Rename a component and both fail — even if every pixel is perfect.
 
-The component inventory is `tests/stories/expected.json`; the highest-level story in it (page or layout) is the composition root that must match its baseline snapshots. Every component gets its own story, and every story with a baseline is pixel-checked. The root-story match counts the most, but every inventory story that registers and renders cleanly earns credit — so ship the system bottom-up and verify as you go. Scaffold quality (semantic HTML, token usage, sensible structure a frontend developer could finish) matters at every level. Inputs/properties may stay minimal unless the brief asks for them.
+The highest-level story in the inventory (page or layout) is the composition root that must match its baseline snapshots. Every component gets its own story, and every story with a baseline is pixel-checked. The root-story match counts the most, but every inventory story that registers and renders cleanly earns credit — so ship the system bottom-up and verify as you go. Scaffold quality (semantic HTML, token usage, sensible structure a frontend developer could finish) matters at every level. Inputs/properties may stay minimal unless the brief asks for them.
 
 ## Workspace layout (already set up for you)
 
@@ -124,7 +121,7 @@ The HTML report at `test-results/html/index.html` exists for humans; you don't n
 
 - **Tokens only.** No hardcoded `#abc` / `rgb(...)` / `oklch(...)`. No arbitrary Tailwind values like `bg-[#abc]` or `p-[13px]`. No inline `style=` or `[style]=`. Use only utilities derived from `src/styles/tokens.css`.
 - **Don't touch the scaffold.** `package.json`, `angular.json`, `postcss.config.json`, `.storybook/`, `playwright.config.ts`, `vrt-summary-reporter.ts`, `json-summary-reporter.ts`, `tests/stories/stories.spec.ts`, `tests/stories/expected.json`, `tests/stories/structure.spec.ts`, `tests/visual/storybook.spec.ts`, `tests/visual/thresholds.json`, `tests/a11y/a11y.spec.ts`, `tests/validate/semantic.spec.ts`, `tests/validate/tailwind.spec.ts`, `tests/validate/tokens.spec.ts`, `tests/validate/expected-tokens.json`, `src/styles/tokens.css`, `src/styles/global.css`, eslint/stylelint configs — all read-only. Tampering is detected and penalized.
-- **Name by role, not context.** A button is `Button`, not `CtaButton`; an eyebrow label is a `Text` variant, not a `NewsletterTag`.
+- **Inventory names are the contract.** Components and stories must use exactly the names `expected.json` implies — `verify:stories` and `verify:structure` fail on anything else. For helper components you add beyond the inventory: name by role, not context (`Button`, not `SubscribeButton`).
 - **Match the baselines.** They are the contract for the page story. Layout, spacing, colors, typography, and responsive behavior must match at each viewport within the per-task pixel-diff threshold (see `tests/visual/thresholds.json`).
 - **Semantic, accessible HTML.** `<button>` not `<div onclick>`; `<ul>` for lists; heading hierarchy must be coherent; form inputs need labels (visually hidden is fine); decorative icons need `aria-hidden="true"`.
 
