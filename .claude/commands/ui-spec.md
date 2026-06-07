@@ -111,6 +111,17 @@ Nothing else. No design-value tables, no Tailwind utility names (HOW), no measur
 - token bindings → `tests/validate/expected-tokens.json`
 - accessibility rules already enforced by `validate:a11y`/`validate:semantic` (axe `link-name`, `image-alt`, label association, heading rules)
 
+## 4b. PLAN.md — the pre-authored execution plan (hand-hold mode)
+
+Ship a `PLAN.md` at the task root (overlays to the workspace root) — the agent recipe's Phase 0 tells the model to execute it exactly instead of deriving its own plan. Author it from the SAME measurements used for crops and thresholds (you already have every number):
+
+- **TODO in execution order**: all atoms → all molecules → layouts → page; one numbered section per element with story id, selector, exact dims.
+- Per element: assets to use, content strings, and the **measured ink geometry** (pitches, offsets, padding) plus the construction arithmetic where it's solid (e.g. "34px pitch → leading-none 16px rows + 18px gap = `gap-4.5`").
+- Per-breakpoint sections for responsive layouts (positions, alignment, pitch differences).
+- Close with reminders that point at (not repeat) the contracts: tokens manifest, `public/` assets, the layered-invariants rule.
+
+The spec markdown (`tasks/<task>.md`) replaces any work-order section with a one-line pointer: "Your execution plan ships with the task: `PLAN.md` — follow it exactly." Division of labor: **spec = WHAT (contracts), PLAN.md = pre-chewed plan (operator-derived numbers + order), recipe = HOW (the mini-loop procedure)**.
+
 ## 5. Launch & diagnose
 
 ```bash

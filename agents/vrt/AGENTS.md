@@ -40,11 +40,16 @@ Build a layered component library — **atoms** → **molecules** → **layouts*
 
 ### Phase 0 — Plan
 
-1. Read `README.md`, the task brief, and every contract: `tests/stories/expected.json`, `tests/validate/expected-tokens.json`, `tests/visual/thresholds.json`.
+**If the task ships a `PLAN.md` in the workspace root, that IS your plan — read it, copy its TODO into `notes.md`, and execute it exactly.** It was authored from measurements of the baselines; don't re-derive what it already states. Read `README.md`, the task brief, `src/styles/tokens.css`, and the contracts (`tests/stories/expected.json`, `tests/validate/expected-tokens.json`, `tests/visual/thresholds.json`) alongside it, then go straight to Phase 1.
+
+Only if there is NO `PLAN.md`, build the plan yourself:
+
+1. Read `README.md`, the task brief, and every contract (paths above).
 2. View every baseline PNG under `tests/visual/` (the `Read` tool renders images) and record each one's pixel dimensions — **a baseline's dimensions ARE that story's required rendered size**.
 3. For any multi-row/column baseline, extract its geometry numerically BEFORE building: a pngjs one-liner over the PNG gives ink row/column bands → pitches, gaps, offsets. Building on guessed spacing and reverse-engineering it from diffs later costs many turns.
-4. Read `src/styles/tokens.css` — the only styling values you may use, via the Tailwind utilities they generate.
-5. **Write the plan into `notes.md`: a TODO list of every component in execution order** — all atoms first, then all molecules, then layouts, then the page — each item with its story id, baseline dims, and the numbers you measured. This list drives the whole run: cross items off as they finish, and **update notes.md after every cycle** (long runs get compacted; notes.md is your recovery anchor).
+4. **Write the plan into `notes.md`: a TODO list of every component in execution order** — all atoms first, then all molecules, then layouts, then the page — each item with its story id, baseline dims, and the numbers you measured.
+
+Either way: the TODO in `notes.md` drives the whole run — cross items off as they finish, and **update notes.md after every cycle** (long runs get compacted; notes.md is your recovery anchor).
 
 ### Phase 1 — Mini-loops: one element at a time, in plan order
 

@@ -6,15 +6,9 @@ spec_version: 1
 
 **Implement the footer exactly as shown in the snapshots**, as an atomic composition. Start by reading `README.md` — it explains the workspace: file layout, story naming, the contracts, and every verify/validate script.
 
-## Work order — one component at a time, bottom-up
+## Plan
 
-Build and verify each component before starting the next. Don't begin a composition until everything it composes passes its snapshot.
-
-1. **Atoms:** `atoms-logo--default` → `atoms-social-icon-link--default` → `atoms-link--default`
-2. **Molecules:** `molecules-social-links--default` (composes Social Icon Link) → `molecules-link-column--default` (composes Link)
-3. **Layout:** `layouts-footer--default` (composes all of the above; snapshotted at desktop 1200 **and** mobile 375)
-
-After each component: run the verifiers, view the diff, fix, then move on.
+**Your execution plan ships with the task: `PLAN.md` in the workspace root.** It lists every component in build order with its measured geometry. Follow it exactly, top to bottom.
 
 ## What this task ships
 
