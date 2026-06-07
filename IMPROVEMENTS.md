@@ -69,32 +69,41 @@ Tier 2 (after Tier 1 proves out):
 
 ## 2. Recipe (AGENTS.md) fixes — evidence-grounded
 
-1. **De-page the recipe** — intro still says "Pages … must match the baseline
-   screenshots", "page-level pixel match counts the most"; done-signal asks
-   for "per-viewport status for the page story". Generalize to "root story" /
-   "every snapshotted story" (layouts-rooted, all-pieces-baselined tasks).
-2. **Step 1 = read ALL contracts up front** — expected.json,
-   expected-tokens.json, thresholds.json, every snapshot + its dims, README.
-   Currently step 1 names only the brief + expected.json.
-3. **Glyph-metrics bullet in the capture contract** — generic font knowledge:
-   "infer type size from ink (Inter cap-height ≈ 0.7× font-size), never from
-   row pitch — pitch = line-box + gap". Would have killed v1's 14px rabbit
-   hole for every future typography task.
-4. **Single-story cycle hint** — `npx playwright test tests/visual -g
-   "<story-id>"` so a fix-verify cycle doesn't sweep all stories every time.
+~~All landed 2026-06-07~~ (de-paging, read-all-contracts step 1, glyph-metrics
++ measure-first bullets in the capture contract, single-story `-g` filter
+hint, notes.md MAY→MAINTAIN, step-4 "one component at a time; verify before
+the next"). The v1/v2 A/B was abandoned — v1 ran against broken gates, so v2
+was merged back into `tasks/vrt/footer` (guided brief + calibrated
+thresholds) as the single canonical footer task.
 
-## 3. Workspace ergonomics
+## 3. Harness
+
+- **Graceful budget exhaustion** — at the turn limit the run just dies:
+  v1's RESPONSE.md is a mid-sentence fragment, no inventory, no
+  self-assessment. The anthropic-sdk harness can use streaming input to
+  inject "≈10 turns left — write your final report now" near the cap so
+  every run ends with a report, even losing ones. Leaderboard hygiene.
+- ~~Automated Pass-2 scoring~~ — landed 2026-06-07: run_task.sh runs
+  `npm run verify` after the agent exits; test-results/ is the official
+  score record, independent of the agent's self-report.
+
+## 4. Workspace ergonomics
 
 - **`npm run measure:serve` / `measure:stop`** — v1 logged 5× `kill` + `lsof`
   wrangling servers; the PID-file discipline in the browser-measure skill
   prose isn't fully sticking. Make the lifecycle a tool, not an instruction.
 
-## 4. Pending decisions / A-B outcomes
+## 5. Contract growth
 
-- **footer v1 (minimal brief) vs footer-v2 (guided: work order + asset
-  enumeration + README pointer)** — if v2 wins, promote the work-order text
-  into AGENTS.md workflow step 4 ("one component at a time; verify before the
-  next") rather than repeating it per task brief.
+- **Typography in the token contract** — `expected-tokens.json` covers
+  color/background/border, but v1's actual defect class was type geometry
+  (pitch, leading, size guesses). A `"font": "base"` property (computed
+  font-size == `--text-base` on text-bearing elements) follows the same
+  WHAT-pattern and would have instantly falsified v1's "baseline is 14px"
+  hypothesis.
+
+## 6. Operational
+
 - **Per-run port isolation** (parked) — two concurrent runs both bind
   6006/6007; a cross-bound verifier could screenshot the other run's build.
   Until fixed: never run two tasks concurrently.

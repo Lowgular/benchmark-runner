@@ -111,3 +111,17 @@ bun run "$FRAMEWORK" \
   --run-id "$GUID" \
   --init-state "$INIT_STATE" \
   --verbose "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
+
+# Pass-2: official scoring. Re-run the full verifier suite on whatever the
+# agent left behind — the resulting test-results/ (SUMMARY.md + per-script
+# JSON envelopes + current renders + HTML report) is the run's score record,
+# independent of anything the agent reported about itself. A failing suite
+# must not fail the script: the score is what it is.
+echo ""
+echo "[score] running full verifier suite (Pass-2)…"
+if npm run verify; then
+  echo "[score] ALL GATES GREEN"
+else
+  echo "[score] gates failed — see $RUN_DIR/test-results/SUMMARY.md"
+fi
+echo "[score] report: npx playwright show-report $RUN_DIR/test-results/html"

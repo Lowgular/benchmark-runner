@@ -33,9 +33,9 @@ Not one component — a layered component library (atomic design):
 - **Atoms** — context-free primitives (typography, inputs, buttons). Named for what they *are*, never for where they're used: `Button`, not `SubscribeButton`.
 - **Molecules** — small compositions of atoms that belong together.
 - **Layouts** — structural wrappers (sections, stacks) that own alignment, width constraints, and rhythm — not content.
-- **Pages** — the final composition. This is what must match the baseline screenshots.
+- **Pages** — the final composition.
 
-The task brief gives the exact component inventory: names, selectors, and story ids. Every component gets its own story. The page-level pixel match counts the most, but every inventory story that registers and renders cleanly earns credit — so ship the system bottom-up and verify as you go. Visual fidelity of atoms/molecules is judged by how they compose into the page; their scaffold quality (semantic HTML, token usage, sensible structure a frontend developer could finish) is what matters at their level. Inputs/properties may stay minimal unless the brief asks for them.
+The component inventory is `tests/stories/expected.json`; the highest-level story in it (page or layout) is the composition root that must match its baseline snapshots. Every component gets its own story, and every story with a baseline is pixel-checked. The root-story match counts the most, but every inventory story that registers and renders cleanly earns credit — so ship the system bottom-up and verify as you go. Scaffold quality (semantic HTML, token usage, sensible structure a frontend developer could finish) matters at every level. Inputs/properties may stay minimal unless the brief asks for them.
 
 ## Workspace layout (already set up for you)
 
@@ -69,16 +69,22 @@ Match the ids in `expected.json` exactly. Component selectors follow the same co
 - **Atoms / molecules / layouts** are captured as a **baseline-sized region anchored at the top-left of your story template's outermost element**. If your rendered size is off, the mismatch shows up as a diff band along the right/bottom edges — fix sizing first, pixels second.
 - Give shrink-wrap components an `inline-block`-style host in the story template so the captured element is exactly the component's size; full-width components render at the viewport width (mobile 375 / desktop 1200).
 - **Ink-tight typography baselines** (the glyph ink fills the box edge to edge): a solid band of diff at the top or bottom means your line-height leading is leaking into the box — `leading-none` usually fixes it.
+- **Infer type size from ink, never from row pitch.** Row pitch = line-box + gap, two unknowns. Glyph ink is the reliable signal: for Inter, cap height ≈ 0.7× font-size, and a full ink row with descenders ≈ 1.0× font-size (16px text → ~16px ink).
+- **Measure before you build a multi-row/column component**: extract the baseline's geometry numerically first (pngjs one-liner: ink row/column bands → pitches, offsets) and write the numbers into your notes — building on guessed spacing and reverse-engineering it from diffs later costs many turns.
 - Per-story thresholds (`tests/visual/thresholds.json`) are calibrated to absorb glyph anti-aliasing only — geometry (sizes, spacing, alignment) must be exact at any threshold.
 
 ## Workflow
 
-1. **Read the brief's inventory and `tests/stories/expected.json`** — that's your component checklist.
+1. **Read ALL the contracts up front** — one sweep before any code:
+   - the task brief (user message) and `README.md`
+   - `tests/stories/expected.json` — your component checklist
+   - `tests/validate/expected-tokens.json` — the required token bindings
+   - `tests/visual/thresholds.json` — how exact each story must be
 2. **Look at `tests/visual/`** for the pixel-checked story ids, then **view every baseline** with the `Read` tool (it renders PNGs):
    - `tests/visual/<story-id>/mobile.png` (375px) and/or `desktop.png` (1200px) — whichever exist per story
    - **A baseline's pixel dimensions ARE that story's required rendered size** — read them up front (e.g. a one-liner with `pngjs` from `node_modules`) instead of discovering them through diff bands later
 3. **Read the design tokens** at `src/styles/tokens.css`. These define the only colors, type scale, spacing, and radius you may use (via the Tailwind utilities they generate — e.g. `bg-brand-700`, `text-neutral-900`, `rounded-lg`, `shadow-md`).
-4. **Build bottom-up**: atoms first, then molecules, then layouts, then the page. One story per component as you go.
+4. **Build bottom-up, one component at a time**: atoms first, then molecules, then layouts, then the page. Verify each component before starting the next; don't begin a composition until everything it composes passes its snapshot.
    - Angular standalone, `ChangeDetectionStrategy.OnPush`, `signal()` for state, `@if`/`@for` control flow, `app-` selector prefix.
 5. **Verify with seven feedback loops** (run any script independently, or all at once):
    ```bash
@@ -91,9 +97,12 @@ Match the ids in `expected.json` exactly. Component selectors follow the same co
    npm run validate:tokens   # token bindings: computed color/background/border must match expected-tokens.json
    npm run verify            # all seven, with a single Storybook build
    ```
+
+   Iterating on ONE story? Filter instead of sweeping everything:
+   `VERIFY_SCRIPT=verify:visual npx playwright test tests/visual -g "<story-id>"`
 6. **Read `test-results/SUMMARY.md`** after each run — your iteration anchor. It lists per-test pass/fail (with pixel-diff ratios for visual failures and artifact paths). Each script also writes its own JSON envelope to `test-results/<script>.json` (e.g. `test-results/verify-visual.json`, `test-results/validate-a11y.json`) so you can read the detailed output for exactly the dimension you just ran.
 
-   You MAY keep a working notes file (e.g. `notes.md`) in the workspace root to track your progress across long runs — useful for retaining context if the conversation is compacted. No specific structure is required.
+   **MAINTAIN `notes.md` in the workspace root — update it after every verify cycle**: per-story status (pass/fail + last ratio), the geometry numbers you measured from the baselines, your current hypothesis, and the next step. Long runs get compacted; notes.md is your recovery anchor — without it you will re-derive everything and burn your remaining turns re-orienting.
 
 7. **View the visual evidence** with the `Read` tool:
    - `test-results/current/<story-id>/<viewport>.png` — what every story renders right now; written on EVERY verify:visual run, pass or fail
@@ -125,5 +134,5 @@ When SUMMARY.md reports all tests passing (or you have genuinely hit a wall), wr
 
 1. The inventory: each expected story id and its status (registered / renders / missing)
 2. The relative paths of the files you created or edited (limited to `src/app/**`)
-3. Final per-viewport status for the page story from SUMMARY.md (pass/fail + diff ratio)
+3. Final status of every snapshotted story from SUMMARY.md (pass/fail + diff ratio per viewport)
 4. Anything you couldn't achieve and why

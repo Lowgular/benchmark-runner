@@ -1,9 +1,0 @@
-{
-  "atoms-link--default": { "color": "neutral-900" },
-  "molecules-link-column--default": { "color": "neutral-900" },
-  "layouts-footer--default": {
-    "color": "neutral-900",
-    "background": "neutral-0",
-    "border": "neutral-300"
-  }
-}
