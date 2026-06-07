@@ -32,6 +32,23 @@ selector = `app-` + the story base name minus its level prefix
 (`atoms-link--default` → `app-link`). Static assets shipped by the task
 (if any) live in `public/` and are served from the web root (`/icons/x.svg`).
 
+The Storybook preview is preconfigured with `layout: "fullscreen"` — no
+per-story layout parameter needed.
+
+## Visual capture
+
+`verify:visual` screenshots each baselined story per viewport (mobile 375 /
+desktop 1200 — only viewports whose PNG exists are checked):
+
+- `pages-*` stories → full-page screenshot at the viewport width
+- atoms / molecules / layouts → a **clip exactly the baseline PNG's size,
+  anchored at the top-left of the story template's outermost element**
+  (a `capture.json` in the story dir can override the mode)
+
+The screenshot is then pixel-diffed against the baseline under the story's
+threshold from `tests/visual/thresholds.json` (per-viewport override key
+`"<story-id>/<viewport>"` > per-story key > default).
+
 ## Task contracts (read-only)
 
 | File | Contract |
