@@ -111,6 +111,3 @@ bun run "$FRAMEWORK" \
   --run-id "$GUID" \
   --init-state "$INIT_STATE" \
   --verbose "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
-
-echo ""
-echo "[run_task] done. Score it (Pass-2): ./score_run.sh $RUN_DIR"

@@ -83,10 +83,13 @@ thresholds) as the single canonical footer task.
   self-assessment. The anthropic-sdk harness can use streaming input to
   inject "≈10 turns left — write your final report now" near the cap so
   every run ends with a report, even losing ones. Leaderboard hygiene.
-- ~~Automated Pass-2 scoring~~ — landed 2026-06-07 as a standalone
-  `./score_run.sh <run-dir>` (NOT inside run_task.sh — orchestration and
-  evaluation stay decoupled; the suite itself is the init-state's
-  `npm run verify`). Works on historical run dirs too.
+- **Automated Pass-2 scoring** — still manual: `cd <run-dir> && npm run
+  verify` (the init-state owns the suite; test-results/ is the score
+  record). NOT in shell scripts (run_task.sh is frozen scope — two
+  attempts reverted 2026-06-07); when automated, it belongs in the
+  existing eval-runner package, which the two-pass design already names
+  as the "separate eval step" that amplifies summary.json with
+  results[0].score.
 
 ## 4. Workspace ergonomics
 
