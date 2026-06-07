@@ -83,9 +83,10 @@ thresholds) as the single canonical footer task.
   self-assessment. The anthropic-sdk harness can use streaming input to
   inject "≈10 turns left — write your final report now" near the cap so
   every run ends with a report, even losing ones. Leaderboard hygiene.
-- ~~Automated Pass-2 scoring~~ — landed 2026-06-07: run_task.sh runs
-  `npm run verify` after the agent exits; test-results/ is the official
-  score record, independent of the agent's self-report.
+- ~~Automated Pass-2 scoring~~ — landed 2026-06-07 as a standalone
+  `./score_run.sh <run-dir>` (NOT inside run_task.sh — orchestration and
+  evaluation stay decoupled; the suite itself is the init-state's
+  `npm run verify`). Works on historical run dirs too.
 
 ## 4. Workspace ergonomics
 
