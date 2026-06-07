@@ -40,16 +40,7 @@ Build a layered component library — **atoms** → **molecules** → **layouts*
 
 ### Phase 0 — Plan
 
-**If the task ships a `PLAN.md` in the workspace root, that IS your plan — read it, copy its TODO into `notes.md`, and execute it exactly.** It was authored from measurements of the baselines; don't re-derive what it already states. Read `README.md`, the task brief, `src/styles/tokens.css`, and the contracts (`tests/stories/expected.json`, `tests/validate/expected-tokens.json`, `tests/visual/thresholds.json`) alongside it, then go straight to Phase 1.
-
-Only if there is NO `PLAN.md`, build the plan yourself:
-
-1. Read `README.md`, the task brief, and every contract (paths above).
-2. View every baseline PNG under `tests/visual/` (the `Read` tool renders images) and record each one's pixel dimensions — **a baseline's dimensions ARE that story's required rendered size**.
-3. For any multi-row/column baseline, extract its geometry numerically BEFORE building: a pngjs one-liner over the PNG gives ink row/column bands → pitches, gaps, offsets. Building on guessed spacing and reverse-engineering it from diffs later costs many turns.
-4. **Write the plan into `notes.md`: a TODO list of every component in execution order** — all atoms first, then all molecules, then layouts, then the page — each item with its story id, baseline dims, and the numbers you measured.
-
-Either way: the TODO in `notes.md` drives the whole run — cross items off as they finish, and **update notes.md after every cycle** (long runs get compacted; notes.md is your recovery anchor).
+**The task ships a `PLAN.md` in the workspace root, that IS your plan — read it, copy its TODO into `notes.md`, and execute it exactly.** It was authored from measurements of the baselines; don't re-derive what it already states. Read `README.md`, the task brief, `src/styles/tokens.css`, and the contracts (`tests/stories/expected.json`, `tests/validate/expected-tokens.json`, `tests/visual/thresholds.json`) alongside it, then go straight to Phase 1.
 
 ### Phase 1 — Mini-loops: one element at a time, in plan order
 
@@ -57,11 +48,14 @@ For the CURRENT element only: **read its executable specs → implement → veri
 
 1. Re-read this element's specs: its baseline (+ dims + measured numbers from notes.md), its `expected-tokens.json` entry, its threshold.
 2. Implement the component + its story (standalone, `ChangeDetectionStrategy.OnPush`, `signal()` state, `@if`/`@for`, `app-` selector prefix; file layout per README).
-3. Verify just it: `VERIFY_SCRIPT=verify:visual npx playwright test tests/visual -g "<story-id>"`
-   - On failure, look before touching code: your render is always at `test-results/current/<story-id>/<viewport>.png`; compare against the baseline and the red `-diff.png`. Fix sizing first (wrong size = diff band along right/bottom edges), pixels second.
+3. Check just it — ONE command runs every verifier and validator filtered to this story (registration, smoke render, visual diff, structure if it's the root, a11y, semantic, tailwind, tokens):
+   ```bash
+   npm run verify:element -- -g "<story-id>"
+   ```
+   - Fix `verify` failures before `validate` ones (gate beats polish).
+   - On a visual failure, look before touching code: your render is always at `test-results/current/<story-id>/<viewport>.png`; compare against the baseline and the red `-diff.png`. Fix sizing first (wrong size = diff band along right/bottom edges), pixels second.
    - When the diff says WHERE but not WHY — **measure, don't guess**: the `browser-measure` skill drives a live browser to read computed styles and boxes. One measurement beats three guess-and-verify cycles.
-4. Validate just it: `npx playwright test tests/a11y tests/validate -g "<story-id>"` — fix what it reports now, while the element is fresh.
-5. Green on both → cross it off in `notes.md` → next element. **Do not revisit finished elements, do not re-run their checks.**
+4. All green → cross it off in `notes.md` → next element. **Do not revisit finished elements, do not re-run their checks.**
 
 **Layered invariants — why finished work stays finished:**
 

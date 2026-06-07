@@ -71,6 +71,7 @@ threshold from `tests/visual/thresholds.json` (per-viewport override key
 | `npm run validate:semantic` | semantic HTML / heading / label rules |
 | `npm run validate:tailwind` | bans arbitrary Tailwind values, inline styles, oversized markup |
 | `npm run validate:tokens` | computed styles bind to the declared design tokens |
+| `npm run verify:element -- -g "<story-id>"` | every check above, filtered to ONE story — the per-element loop command |
 | `npm run verify` | all of the above with a single build |
 
 ## Reading results

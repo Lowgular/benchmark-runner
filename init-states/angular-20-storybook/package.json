@@ -14,6 +14,7 @@
     "validate:semantic": "VERIFY_SCRIPT=validate:semantic bash scripts/build-if-changed.sh && VERIFY_SCRIPT=validate:semantic playwright test tests/validate/semantic.spec.ts",
     "validate:tailwind": "VERIFY_SCRIPT=validate:tailwind bash scripts/build-if-changed.sh && VERIFY_SCRIPT=validate:tailwind playwright test tests/validate/tailwind.spec.ts",
     "validate:tokens": "VERIFY_SCRIPT=validate:tokens bash scripts/build-if-changed.sh && VERIFY_SCRIPT=validate:tokens playwright test tests/validate/tokens.spec.ts",
+    "verify:element": "VERIFY_SCRIPT=verify:element bash scripts/build-if-changed.sh && VERIFY_SCRIPT=verify:element playwright test",
     "verify": "VERIFY_SCRIPT=verify bash scripts/build-if-changed.sh && VERIFY_SCRIPT=verify playwright test",
     "postinstall": "playwright install chromium"
   },
