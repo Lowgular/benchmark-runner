@@ -48,14 +48,15 @@ For the CURRENT element only: **read its executable specs → implement → veri
 
 1. Re-read this element's specs: its baseline (+ dims + measured numbers from notes.md), its `expected-tokens.json` entry, its threshold.
 2. Implement the component + its story (standalone, `ChangeDetectionStrategy.OnPush`, `signal()` state, `@if`/`@for`, `app-` selector prefix; file layout per README).
-3. Check just it — ONE command runs every verifier and validator filtered to this story (registration, smoke render, visual diff, structure if it's the root, a11y, semantic, tailwind, tokens):
+3. Check just it — ONE command runs every verifier and validator filtered to this story:
    ```bash
    npm run verify:element -- -g "<story-id>"
    ```
-   - Fix `verify` failures before `validate` ones (gate beats polish).
-   - On a visual failure, look before touching code: your render is always at `test-results/current/<story-id>/<viewport>.png`; compare against the baseline and the red `-diff.png`. Fix sizing first (wrong size = diff band along right/bottom edges), pixels second.
-   - When the diff says WHERE but not WHY — **measure, don't guess**: the `browser-measure` skill drives a live browser to read computed styles and boxes. One measurement beats three guess-and-verify cycles.
-4. All green → cross it off in `notes.md` → next element. **Do not revisit finished elements, do not re-run their checks.**
+   Read the results by spec path — that's the gate/polish split:
+   - **GATE (must pass to finish the element):** `tests/stories/…` (registered + renders), `tests/visual/…` (pixel diff), `tests/stories/structure.spec.ts` (only when this story is the composition root)
+   - **POLISH (fix now if quick, never stall on it):** `tests/a11y/…`, `tests/validate/…`
+   Fix gate failures first, always. For visual failures: look before touching code — your render is always at `test-results/current/<story-id>/<viewport>.png`; compare against the baseline and the red `-diff.png`; fix sizing first (wrong size = diff band along right/bottom edges), pixels second. When the diff says WHERE but not WHY — **measure, don't guess**: the `browser-measure` skill drives a live browser to read computed styles and boxes. One measurement beats three guess-and-verify cycles.
+4. **Done = gate green.** Cross the element off in `notes.md` and move on immediately. Polish failures you couldn't fix quickly: record them as debt in `notes.md` and keep moving — never burn the plan's budget on a stubborn validator; return to the debt list in Phase 2 if budget remains. **Do not revisit finished elements, do not re-run their checks.**
 
 **Layered invariants — why finished work stays finished:**
 
@@ -64,15 +65,15 @@ For the CURRENT element only: **read its executable specs → implement → veri
 - Reopen a lower element ONLY if the parent's diff proves that element itself is wrong — then re-verify both it and the parent before moving on.
 - Composition levels bring composition concerns: content projection (`ng-content`), host sizing, wrapper elements.
 
-**Milestones:** a level is DONE when every element in it passed verify + validate. Record the milestone in `notes.md` and move up — finished levels are not re-checked routinely.
+**Milestones:** a level is DONE when every element in it has its gate green. Record the milestone in `notes.md` and move up — finished levels are not re-checked routinely.
 
-### Phase 2 — Final check
+### Phase 2 — Final check & debt
 
 ```bash
 npm run verify
 ```
 
-Everything, one build — the gate scripts must be green (that's what qualifies the run), validators as good as you got them per element. If something regressed, trust the layered invariants: the culprit is almost always at the highest level you touched last. After every script, read `test-results/SUMMARY.md` and the per-script envelope `test-results/<script>.json`.
+Everything, one build. The gate tests must be green — that's what qualifies the run; if something regressed, trust the layered invariants: the culprit is almost always at the highest level you touched last. Then spend whatever budget remains on the **polish debt list in `notes.md`** (worst first), re-running `npm run verify:element -- -g "<story-id>"` after each fix to confirm the gate didn't regress. After every script, read `test-results/SUMMARY.md` and the per-script envelope `test-results/<script>.json`.
 
 ## Visual facts that save turns
 
