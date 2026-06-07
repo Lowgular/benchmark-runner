@@ -1,8 +1,8 @@
 # Improvements backlog
 
 Captured 2026-06-06 during the footer v1 run (snapshot-only spec experiment).
-Sequencing rule: **none of these land before footer-v2 runs on the current
-stack** — v1 vs v2 must isolate the brief as the only variable.
+The v1/v2 A/B was abandoned (v1 ran against broken gates); cheap
+evidence-backed items landed 2026-06-07, the rest live here.
 
 ## 1. Agent-native visual diff feedback (the big one)
 
