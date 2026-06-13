@@ -117,10 +117,19 @@ Ship a `PLAN.md` at the task root (overlays to the workspace root) — the agent
 
 - **TODO in execution order**: all atoms → all molecules → layouts → page; one numbered section per element with story id, selector, exact dims.
 - Per element: assets to use, content strings, and the **measured ink geometry** (pitches, offsets, padding) plus the construction arithmetic where it's solid (e.g. "34px pitch → leading-none 16px rows + 18px gap = `gap-4.5`").
+- **Reusable components must state their parameterization explicitly**: "ONE component, parameterized by X — <parent> renders N instances with different content. Do NOT create one component per variant." Enumerate the full asset/content set AT the component that consumes it (not first at the parent), say which variant the default story shows, and phrase variant quirks as component behavior ("centering handles the 24×18 icon — no special case"), not trivia.
 - Per-breakpoint sections for responsive layouts (positions, alignment, pitch differences).
 - Close with reminders that point at (not repeat) the contracts: tokens manifest, `public/` assets, the layered-invariants rule.
 
 The spec markdown (`tasks/<task>.md`) replaces any work-order section with a one-line pointer: "Your execution plan ships with the task: `PLAN.md` — follow it exactly." Division of labor: **spec = WHAT (contracts), PLAN.md = pre-chewed plan (operator-derived numbers + order), recipe = HOW (the mini-loop procedure)**.
+
+## 4c. Pipeline mode — single-element tasks (the programmatic mini-loop)
+
+The recipe ships `agents/vrt/pipeline.json` + sub-agent recipes (`implementer/AGENTS.md`, `reviewer/AGENTS.md`, same frontmatter format + optional `model:`/`maxTurns:`) + a native `.mcp.json` — there is **no root AGENTS.md** and no `--agent` CLI arg: the composed workspace is self-describing, framework.ts discovers the recipe in the run dir (root `AGENTS.md` = single-agent recipe; `pipeline.json` = pipeline recipe, its `name` becomes `pipelineId` in summary.json). When the workspace contains `pipeline.json`, the anthropic-sdk harness stops being a single-agent runner and walks the graph instead. The graph is homogeneous: **`type:"agent"` nodes do work (named by role), `type:"system"` nodes make decisions (named by action — shell `exec`, exit 0 = pass)**; every edge carries the source node's output to the target; `on:"pass"|"fail"` routes only off system nodes — control flow runs on EXIT CODES, never on agent claims. The VRT loop: `start → implementer → verify(system: verify:element -- -g "{element}") → pass: end / fail: reviewer → implementer` — the reviewer's final message is saved as `feedback.md` and fed into the resumed (`session:"persistent"`) implementer — until green. The element list is `tests/stories/expected.json`, in array order — multi-element tasks chain automatically, fresh sessions per element; `{element}` is substituted in `exec` strings.
+
+**Single-element task slicing** (the reliability experiment unit — canonical example `tasks/vrt/atom-logo/`): mirror the §2 scaffold with a 1-entry `expected.json`, only that element's baseline dir + threshold override + token row (or `{}`), only the assets it needs, and a PLAN.md containing just that element's section. Slice everything from the parent composition task's measured data — never re-derive. Later, composition-level single-element tasks ship known-good lower-level components pre-built in the task overlay's `src/app/` (layer-3 rsync wins): they verify green on first gate, so the run isolates composition skill.
+
+Removing `pipeline.json` from the agent dir restores the old single-agent behavior exactly — that's the A/B switch.
 
 ## 5. Launch & diagnose
 
@@ -130,6 +139,7 @@ The spec markdown (`tasks/<task>.md`) replaces any work-order section with a one
 
 Run dirs: `runs/vrt/<task-name>/<guid>/`. Diagnose in this order:
 1. `summary.json` → status, costUsd; `agent.jsonl` result line → turnCount
+   - **Pipeline runs**: every jsonl event is tagged `agent`/`cycle`; system-node runs appear as `system:<node-id>` tool events from `agent:"harness"` (their `isError` is the truth signal), handoffs in `feedback.md`. `RESPONSE.md` is harness-composed (per-element GREEN/NOT GREEN + cycle counts) — it is ground truth, unlike sub-agent self-reports. `costUsd` is absent (resume double-counting) — use token usage.
 2. `test-results/SUMMARY.md` → per-verifier pass/fail + diff ratios
 3. jsonl tool mix (one-liner: count tool_use by name) → friction signals:
    - many Bash greps into `storybook-static/` → spec ambiguity about the capture contract

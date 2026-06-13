@@ -16,7 +16,8 @@
     "validate:tokens": "VERIFY_SCRIPT=validate:tokens bash scripts/build-if-changed.sh && VERIFY_SCRIPT=validate:tokens playwright test tests/validate/tokens.spec.ts",
     "verify:element": "VERIFY_SCRIPT=verify:element bash scripts/build-if-changed.sh && VERIFY_SCRIPT=verify:element playwright test",
     "verify": "VERIFY_SCRIPT=verify bash scripts/build-if-changed.sh && VERIFY_SCRIPT=verify playwright test",
-    "postinstall": "playwright install chromium"
+    "postinstall": "playwright install chromium && node scripts/integrity-snapshot.mjs",
+    "verify:integrity": "VERIFY_SCRIPT=verify:integrity playwright test tests/integrity"
   },
   "private": true,
   "dependencies": {

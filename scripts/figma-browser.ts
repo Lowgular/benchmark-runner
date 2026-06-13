@@ -141,6 +141,99 @@ async function cmdInspect(fileKey: string, nodeId?: string) {
 }
 
 /**
+ * Read a node as STRUCTURED SPEC via the full Plugin API that the Figma web
+ * editor exposes on the main page as `window.figma` (discovered 2026-06-07;
+ * the `__windowDotFigmaOnAccess` global is the lazy-getter hook). This is the
+ * "Figma is the spec" channel: auto-layout (direction/gap/padding/sizing),
+ * component property definitions (including SLOT-type props → ng-content),
+ * variant props, text styles, and variable-bound fills — no pixel inference,
+ * no properties-panel scraping, quota-immune.
+ *
+ * The serializer runs inside the page (passed as a STRING expression so this
+ * file needs no DOM/plugin typings). Node ids: instance-internal nodes use
+ * the `I<root>;<nested>;…` path form — both forms work with getNodeByIdAsync.
+ * Pass "selection" as nodeId to read whatever is selected in the canvas.
+ */
+const READ_FN = `async ({ nodeId, depth }) => {
+  if (typeof figma === "undefined") return { error: "window.figma not present — open the file in the design editor (not viewer) and retry" };
+  async function varName(id) {
+    try { const v = await figma.variables.getVariableByIdAsync(id); return v ? v.name : id; } catch { return id; }
+  }
+  async function paints(arr) {
+    if (!arr || !arr.length) return undefined;
+    const out = [];
+    for (const f of arr) {
+      if (f.visible === false) continue;
+      if (f.type === "SOLID") {
+        const hex = "#" + [f.color.r, f.color.g, f.color.b].map((c) => Math.round(c * 255).toString(16).padStart(2, "0")).join("");
+        const v = f.boundVariables && f.boundVariables.color;
+        out.push({ type: "SOLID", hex, opacity: f.opacity, variable: v ? await varName(v.id) : undefined });
+      } else out.push({ type: f.type });
+    }
+    return out;
+  }
+  async function ser(node, d) {
+    const o = { id: node.id, name: node.name, type: node.type };
+    try { o.size = { w: Math.round(node.width * 100) / 100, h: Math.round(node.height * 100) / 100 }; } catch {}
+    if (node.layoutMode && node.layoutMode !== "NONE")
+      o.autoLayout = { dir: node.layoutMode, gap: node.itemSpacing,
+        padding: [node.paddingTop, node.paddingRight, node.paddingBottom, node.paddingLeft],
+        primaryAlign: node.primaryAxisAlignItems, counterAlign: node.counterAxisAlignItems,
+        sizing: node.layoutSizingHorizontal + "x" + node.layoutSizingVertical };
+    o.fills = await paints(node.fills);
+    if (node.strokes && node.strokes.length) { o.strokes = await paints(node.strokes); o.strokeWeight = node.strokeWeight; }
+    if (node.cornerRadius && node.cornerRadius !== 0) o.cornerRadius = node.cornerRadius;
+    if (node.type === "TEXT") {
+      o.text = node.characters;
+      o.font = { family: node.fontName && node.fontName.family, style: node.fontName && node.fontName.style,
+        size: node.fontSize, lineHeight: node.lineHeight, letterSpacing: node.letterSpacing };
+      if (node.textStyleId && typeof node.textStyleId === "string") {
+        try { const s = await figma.getStyleByIdAsync(node.textStyleId); if (s) o.textStyle = s.name; } catch {}
+      }
+    }
+    if (node.type === "INSTANCE") {
+      try { const mc = await node.getMainComponentAsync();
+        o.component = mc && mc.parent && mc.parent.type === "COMPONENT_SET" ? mc.parent.name : mc && mc.name;
+        o.mainId = mc && mc.id; o.variantProps = node.variantProperties || undefined; } catch {}
+      try { o.props = Object.fromEntries(Object.entries(node.componentProperties || {}).map(([k, v]) => [k, v.value])); } catch {}
+    }
+    if (node.type === "COMPONENT_SET" || node.type === "COMPONENT") {
+      try { if (node.type === "COMPONENT_SET" || (node.parent && node.parent.type !== "COMPONENT_SET")) o.propertyDefs = node.componentPropertyDefinitions; } catch {}
+    }
+    if (d > 0 && node.children && node.children.length) {
+      o.children = [];
+      for (const c of node.children) o.children.push(await ser(c, d - 1));
+    } else if (node.children && node.children.length) o.childCount = node.children.length;
+    return o;
+  }
+  if (nodeId === "selection") {
+    const sel = figma.currentPage.selection;
+    if (!sel.length) return { error: "nothing selected", page: figma.currentPage.name };
+    const nodes = [];
+    for (const n of sel) nodes.push(await ser(n, depth));
+    return { page: figma.currentPage.name, nodes };
+  }
+  const node = await figma.getNodeByIdAsync(nodeId);
+  if (!node) return { error: "node not found: " + nodeId };
+  return { page: figma.currentPage.name, nodes: [await ser(node, depth)] };
+}`;
+
+async function cmdRead(fileKey: string, nodeId: string, depth: number) {
+  const { browser, ctx } = await connect();
+  // "selection" must not navigate (it would change the selection); plain reads reuse the tab too.
+  const page =
+    nodeId === "selection"
+      ? (ctx.pages().find((p) => p.url().includes(fileKey)) ?? (await openFile(ctx, fileKey)))
+      : await openFile(ctx, fileKey);
+  // READ_FN is a function-source string: call it inline with the args baked in
+  // (evaluate(string) evaluates an EXPRESSION — a bare function source would be
+  // returned uncalled and JSON.stringify to undefined).
+  const result = await page.evaluate(`(${READ_FN})(${JSON.stringify({ nodeId, depth })})`);
+  console.log(JSON.stringify(result, null, 2));
+  await browser.close();
+}
+
+/**
  * Export via Figma's "Copy as PNG" (Cmd+Shift+C) + CDP clipboard read.
  *
  * Proven 2026-06-06 (Footer 175:4454): Copy-as-PNG renders at a FIXED @2x,
@@ -251,7 +344,11 @@ if (cmd === "ensure-chrome") {
   await cmdInspect(args[0], args[1]);
 } else if (cmd === "export" && args[0] && args[1] && args[2]) {
   await cmdExport(args[0], args[1], args[2]);
+} else if (cmd === "read" && args[0] && args[1]) {
+  await cmdRead(args[0], args[1], args[2] ? Number(args[2]) : 4);
 } else {
-  console.error("usage: figma-browser.ts ensure-chrome | inspect <fileKey> [nodeId] | export <fileKey> <nodeId> <out.png>");
+  console.error(
+    "usage: figma-browser.ts ensure-chrome | inspect <fileKey> [nodeId] | export <fileKey> <nodeId> <out.png> | read <fileKey> <nodeId|selection> [depth=4]",
+  );
   process.exit(1);
 }

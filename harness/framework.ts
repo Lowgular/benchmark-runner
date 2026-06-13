@@ -22,12 +22,11 @@
  *     [--run-id <guid> --init-state <dir>] \
  *     [--verbose|-v]
  */
-import { appendFileSync, existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, parse as parsePath, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parse as parseYaml } from "yaml";
-
+import { parseAgentFile, type AgentDef } from "./agent-file.ts";
 import { resolveModel } from "./models.ts";
 import { buildSummary, type ResultEvent } from "./summary.ts";
 import { C, fmtToolResult, fmtToolUse, truncate } from "./tool-format.ts";
@@ -41,14 +40,30 @@ export interface Usage {
   cacheCreate: number;
 }
 
-export type Message =
+/**
+ * Optional provenance on every event — pipeline-mode harnesses tag which
+ * node produced it (`agent`: pipeline node name or "harness" for gate runs)
+ * and which loop cycle it belongs to. Single-agent harnesses omit both;
+ * the JSON lines stay byte-identical to before.
+ */
+type Provenance = { agent?: string; cycle?: number };
+
+export type Message = (
   | { t: "user"; text: string }
   | { t: "assistant"; turn: number; text: string; usage: Usage }
   | { t: "thinking"; turn: number; text: string }
   | { t: "tool_use"; turn: number; id: string; name: string; input: unknown }
   | { t: "tool_result"; turn: number; toolUseId: string; isError: boolean; content: string }
   | { t: "result"; status: "completed" | "error"; turnCount: number; totalUsage: Usage; model: string; costUsd?: number }
-  | { t: "error"; message: string };
+  | { t: "error"; message: string }
+  /**
+   * Run artifact produced by the harness (e.g. a pipeline handoff file like
+   * feedback.md). The FRAMEWORK writes it — harnesses never touch the
+   * filesystem; they yield this event instead. `path` is relative to cwd.
+   */
+  | { t: "artifact"; path: string; content: string }
+) &
+  Provenance;
 
 export interface McpServerConfig {
   type: "stdio" | "http" | "sse";
@@ -78,6 +93,14 @@ export interface HarnessParams {
    * from process.env (enforced by harness-contract.test.ts).
    */
   secrets: Record<string, string>;
+  /**
+   * Debug instrumentation (--debug): harnesses that support it nudge the
+   * model to self-report unclear specs / missing tools after each
+   * verification cycle, appended to improvements.jsonl in the workspace.
+   * Debug runs are diagnostic — their cost/turn metrics are not comparable
+   * to clean runs.
+   */
+  debug: boolean;
 }
 
 export type Harness = (params: HarnessParams) => AsyncIterable<Message>;
@@ -93,39 +116,13 @@ export interface HarnessModule {
 
 // ---------- Agent file + model ----------
 
-export interface AgentDef {
-  name: string;
-  description: string;
-  tools: string[];
-  mcpServers: Record<string, McpServerConfig>;
-  body: string;
-}
-
-function parseAgentFile(filePath: string): AgentDef {
-  const content = readFileSync(filePath, "utf8");
-  const fm = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!fm) throw new Error(`No YAML frontmatter found in ${filePath}`);
-  const [, frontmatterStr = "", body = ""] = fm;
-  const frontmatter = (parseYaml(frontmatterStr) ?? {}) as Record<string, unknown>;
-  const tools = Array.isArray(frontmatter["tools"])
-    ? (frontmatter["tools"] as unknown[]).map(String)
-    : [];
-  const mcpServers =
-    (frontmatter["mcpServers"] as Record<string, McpServerConfig> | undefined) ?? {};
-  return {
-    name: String(frontmatter["name"] ?? ""),
-    description: String(frontmatter["description"] ?? ""),
-    tools,
-    mcpServers,
-    body: body.trim(),
-  };
-}
+// Parsing lives in agent-file.ts (shared with pipeline-mode harness modules).
+export type { AgentDef } from "./agent-file.ts";
 
 // ---------- CLI ----------
 
 interface CliArgs {
   harness: string;
-  agentFile: string;
   taskFile: string;
   modelName: string;
   /** Client-generated GUID for this run; enables summary.json writing. */
@@ -135,34 +132,38 @@ interface CliArgs {
   /** Preflight mode: validate harness requiredEnv and exit (no run). */
   checkEnv: boolean;
   verbose: boolean;
+  /** Debug instrumentation: model self-reports friction to improvements.jsonl. */
+  debug: boolean;
 }
 
 const USAGE =
   "Usage: bun run harness/framework.ts \\\n" +
-  "         --harness <name> --agent <file> --task <file> --model <name> \\\n" +
-  "         [--run-id <guid> --init-state <dir>] [--verbose|-v]\n" +
+  "         --harness <name> --task <file> --model <name> \\\n" +
+  "         [--run-id <guid> --init-state <dir>] [--verbose|-v] [--debug]\n" +
+  "       (run from the composed workspace — the recipe is discovered in cwd:\n" +
+  "        AGENTS.md = single-agent, pipeline.json = pipeline)\n" +
   "       bun run harness/framework.ts --harness <name> --check-env\n";
 
 function parseArgs(argv: string[]): CliArgs {
   let harness = "";
-  let agentFile = "";
   let taskFile = "";
   let modelName = "";
   let runId = "";
   let initState = "";
   let checkEnv = false;
   let verbose = false;
+  let debug = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--verbose" || a === "-v") {
       verbose = true;
+    } else if (a === "--debug") {
+      debug = true;
     } else if (a === "--check-env") {
       checkEnv = true;
     } else if (a === "--harness") {
       harness = argv[++i] ?? "";
-    } else if (a === "--agent") {
-      agentFile = argv[++i] ?? "";
     } else if (a === "--task") {
       taskFile = argv[++i] ?? "";
     } else if (a === "--model") {
@@ -181,7 +182,6 @@ function parseArgs(argv: string[]): CliArgs {
   const missing: string[] = [];
   if (!harness) missing.push("--harness");
   if (!checkEnv) {
-    if (!agentFile) missing.push("--agent");
     if (!taskFile) missing.push("--task");
     if (!modelName) missing.push("--model");
   }
@@ -196,7 +196,34 @@ function parseArgs(argv: string[]): CliArgs {
     process.exit(1);
   }
 
-  return { harness, agentFile, taskFile, modelName, runId, initState, checkEnv, verbose };
+  return { harness, taskFile, modelName, runId, initState, checkEnv, verbose, debug };
+}
+
+// ---------- Recipe discovery (the composed workspace is self-describing) ----------
+
+/**
+ * Layer 2 of run_task.sh rsyncs the agent folder into the run dir, so the
+ * recipe is discovered in cwd, not passed by path:
+ *   - root AGENTS.md            → the default single-agent recipe
+ *   - pipeline.json, no AGENTS.md → a pipeline recipe: sub-agents own their
+ *     prompts/tools; the framework only needs a name for summary.json
+ *     (pipeline.json `name`, default "pipeline").
+ */
+function discoverRecipe(cwd: string): AgentDef {
+  const recipePath = join(cwd, "AGENTS.md");
+  if (existsSync(recipePath)) return parseAgentFile(recipePath);
+  const pipelinePath = join(cwd, "pipeline.json");
+  if (existsSync(pipelinePath)) {
+    const spec = JSON.parse(readFileSync(pipelinePath, "utf8")) as Record<string, unknown>;
+    return {
+      name: String(spec["name"] ?? "pipeline"),
+      description: "",
+      tools: [],
+      mcpServers: {},
+      body: "",
+    };
+  }
+  throw new Error(`Workspace is not a recipe: neither AGENTS.md nor pipeline.json found in ${cwd}`);
 }
 
 // ---------- Secrets (the only process.env access in the pipeline) ----------
@@ -241,18 +268,40 @@ function makeRedactor(secrets: Record<string, string>): (text: string) => string
   };
 }
 
+// ---------- Run artifacts yielded by harnesses ----------
+
+/**
+ * Writes a harness-yielded artifact (e.g. a pipeline handoff file like
+ * feedback.md) under the run dir. Harnesses never write files themselves —
+ * they yield `{t:"artifact"}` events and the framework persists them here.
+ */
+function writeArtifact(cwd: string, relPath: string, content: string): void {
+  const abs = resolve(cwd, relPath);
+  if (abs !== resolve(cwd) && !abs.startsWith(`${resolve(cwd)}/`)) {
+    throw new Error(`Artifact path escapes the run dir: ${relPath}`);
+  }
+  mkdirSync(dirname(abs), { recursive: true });
+  writeFileSync(abs, content, "utf8");
+}
+
 // ---------- Verbose logging dispatch ----------
+
+/** "[implementer c2] " prefix for pipeline-tagged events; empty for single-agent runs. */
+function whoTag(msg: Message): string {
+  if (!msg.agent) return "";
+  return `${C.cyan}[${msg.agent}${msg.cycle != null ? ` c${msg.cycle}` : ""}]${C.reset} `;
+}
 
 function logMessage(msg: Message): void {
   switch (msg.t) {
     case "thinking":
-      console.log(`\n${C.magenta}● Thinking${C.reset}\n${C.dim}${truncate(msg.text, 600)}${C.reset}`);
+      console.log(`\n${whoTag(msg)}${C.magenta}● Thinking${C.reset}\n${C.dim}${truncate(msg.text, 600)}${C.reset}`);
       break;
     case "assistant":
-      if (msg.text.trim()) console.log(`\n${C.bold}● Assistant${C.reset}\n${msg.text}`);
+      if (msg.text.trim()) console.log(`\n${whoTag(msg)}${C.bold}● Assistant${C.reset}\n${msg.text}`);
       break;
     case "tool_use":
-      console.log(`\n${C.dim}[turn ${msg.turn}]${C.reset} ${fmtToolUse(msg.name, msg.input)}`);
+      console.log(`\n${whoTag(msg)}${C.dim}[turn ${msg.turn}]${C.reset} ${fmtToolUse(msg.name, msg.input)}`);
       break;
     case "tool_result": {
       const { body, lineCount } = fmtToolResult(msg.content, msg.isError);
@@ -267,6 +316,9 @@ function logMessage(msg: Message): void {
       break;
     case "error":
       console.error(`${C.red}[error]${C.reset} ${msg.message}`);
+      break;
+    case "artifact":
+      console.log(`${C.dim}[artifact] wrote ${msg.path} (${msg.content.length} chars)${C.reset}`);
       break;
     case "user":
       // first user message is the task; usually too noisy to print
@@ -295,21 +347,21 @@ async function main(): Promise<void> {
 
   const redact = makeRedactor(secrets);
 
-  const agentAbs = resolve(args.agentFile);
   const taskFileAbs = resolve(args.taskFile);
-  if (!existsSync(agentAbs)) throw new Error(`Agent file not found: ${agentAbs}`);
   if (!existsSync(taskFileAbs)) throw new Error(`Task file not found: ${taskFileAbs}`);
 
-  const agent = parseAgentFile(agentAbs);
+  const cwd = process.cwd();
+  const agent = discoverRecipe(cwd);
   const task = readFileSync(taskFileAbs, "utf8");
   const resolvedModel = resolveModel(args.modelName);
-  const cwd = process.cwd();
 
-  // Skill names = directory names under the agent's skills/ (the recipe's
-  // declared skill surface). Harnesses enable exactly these, never "all".
-  const agentSkillsDir = join(dirname(agentAbs), "skills");
-  const skills = existsSync(agentSkillsDir)
-    ? readdirSync(agentSkillsDir, { withFileTypes: true })
+  // Skill names = directory names under the recipe's skills/ (the declared
+  // skill surface). Harnesses enable exactly these, never "all". A harness
+  // workspace adapter may already have moved skills/ → .claude/skills/
+  // (it runs before the framework), so check the mounted location first.
+  const skillsDir = [join(cwd, ".claude", "skills"), join(cwd, "skills")].find((d) => existsSync(d));
+  const skills = skillsDir
+    ? readdirSync(skillsDir, { withFileTypes: true })
         .filter((d) => d.isDirectory())
         .map((d) => d.name)
         .sort()
@@ -342,13 +394,18 @@ async function main(): Promise<void> {
     mcpServers: agent.mcpServers,
     skills,
     secrets,
+    debug: args.debug,
   })) {
     const line = redact(JSON.stringify({ ts: new Date().toISOString(), ...msg }));
     appendFileSync(traceFile, `${line}\n`, "utf8");
     if (msg.t === "assistant" && msg.text.trim()) finalAssistantText = msg.text;
     if (msg.t === "result") resultEvent = msg;
+    if (msg.t === "artifact") writeArtifact(cwd, msg.path, redact(msg.content));
     if (args.verbose) logMessage(msg);
-    else if (msg.t === "tool_use") console.error(`[turn ${msg.turn}] tool_use: ${msg.name}`);
+    else if (msg.t === "tool_use") {
+      const who = msg.agent ? `[${msg.agent}${msg.cycle != null ? ` c${msg.cycle}` : ""}] ` : "";
+      console.error(`${who}[turn ${msg.turn}] tool_use: ${msg.name}`);
+    }
   }
 
   writeFileSync(join(cwd, "RESPONSE.md"), `${redact(finalAssistantText.trim())}\n`, "utf8");

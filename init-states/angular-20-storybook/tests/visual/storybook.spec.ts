@@ -105,6 +105,24 @@ function captureMode(storyId: string): "page" | "element" {
 // agents can always view what each story renders right now:
 //   test-results/current/<story-id>/<viewport>.png
 const CURRENT_DIR = join(VISUAL_DIR, "..", "..", "test-results", "current");
+
+// Fail-closed guard on capture geometry: a 0×0 baseline (corrupt/empty design
+// export) or a 0×0 story root (component rendered nothing — e.g. a required
+// input missing throws NG0950 and Angular mounts an empty host) must FAIL
+// loudly with the real cause, not pass by diffing background against
+// background or die on an opaque screenshot error downstream.
+function baselineSize(storyId: string, viewportId: string): { width: number; height: number } {
+  const baseline = readFileSync(join(VISUAL_DIR, storyId, `${viewportId}.png`));
+  const view = new DataView(baseline.buffer, baseline.byteOffset, baseline.byteLength);
+  const width = view.getUint32(16, false); // PNG IHDR width
+  const height = view.getUint32(20, false); // PNG IHDR height
+  if (width === 0 || height === 0) {
+    throw new Error(
+      `baseline tests/visual/${storyId}/${viewportId}.png is ${width}x${height} — corrupt or empty export`,
+    );
+  }
+  return { width, height };
+}
 async function saveCurrentRender(
   page: import("@playwright/test").Page,
   storyId: string,
@@ -177,10 +195,13 @@ for (const storyId of STORY_IDS) {
             .first();
           const box = await host.boundingBox();
           if (!box) throw new Error(`story template root not visible for ${storyId}`);
-          const baseline = readFileSync(join(VISUAL_DIR, storyId, `${vp.id}.png`));
-          const view = new DataView(baseline.buffer, baseline.byteOffset, baseline.byteLength);
-          const clipW = view.getUint32(16, false); // PNG IHDR width
-          const clipH = view.getUint32(20, false); // PNG IHDR height
+          if (box.width === 0 || box.height === 0) {
+            throw new Error(
+              `story template root for ${storyId} is ${box.width}x${box.height} — ` +
+                `the component rendered empty (check the story's args and the browser console)`,
+            );
+          }
+          const { width: clipW, height: clipH } = baselineSize(storyId, vp.id);
           // A non-fullPage screenshot is clamped at the viewport bottom, so a
           // clip taller than the viewport silently captures a shorter image
           // ("Expected 375x919, received 375x800"). Grow the viewport height
@@ -199,6 +220,7 @@ for (const storyId of STORY_IDS) {
             maxDiffPixelRatio,
           });
         } else {
+          baselineSize(storyId, vp.id); // same 0×0-baseline guard as element mode
           await saveCurrentRender(page, storyId, vp.id, { fullPage: true });
           await expect(page).toHaveScreenshot([storyId, `${vp.id}.png`], {
             fullPage: true,

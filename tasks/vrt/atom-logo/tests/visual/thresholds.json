@@ -1,0 +1,6 @@
+{
+  "default": 0.02,
+  "overrides": {
+    "atoms-logo--default": 0.05
+  }
+}

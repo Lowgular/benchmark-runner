@@ -38,7 +38,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 case "$BENCH" in
   vrt)
     INIT_STATE="$ROOT/init-states/angular-20-storybook"
-    AGENT="$ROOT/agents/vrt/AGENTS.md"
+    AGENT_DIR="$ROOT/agents/vrt"
     ;;
   *)
     echo "Unknown bench: $BENCH (supported: vrt)" >&2
@@ -74,8 +74,11 @@ cd "$RUN_DIR"
 
 # Workspace composition — three NEUTRAL overlays, later layers win conflicts:
 #   1. init-state  (neutral environment: scaffold, verifiers, tokens)
-#   2. agent       (vendor-neutral recipe image: AGENTS.md + skills/ + anything else)
+#   2. agent       (vendor-neutral recipe image: pipeline.json + sub-agent
+#                   dirs, and/or a root AGENTS.md, + skills/ + anything else)
 #   3. task        (the exam: brief, baselines, manifests, per-task overrides)
+# The composed workspace is self-describing — framework.ts discovers the
+# recipe in the run dir (AGENTS.md = single-agent, pipeline.json = pipeline).
 # Then the selected harness may adapt the neutral layout to its native
 # conventions via an optional harness/<id>/workspace-setup.sh (e.g. the
 # anthropic-sdk adapter mounts AGENTS.md as CLAUDE.md and skills/ as
@@ -83,7 +86,6 @@ cd "$RUN_DIR"
 echo "[setup] layer 1/3: init-state ${INIT_STATE} (excludes from .gitignore)…"
 rsync -a --checksum --filter=":- .gitignore" "$INIT_STATE/" "$RUN_DIR/"
 
-AGENT_DIR="$(dirname "$AGENT")"
 echo "[setup] layer 2/3: agent ${AGENT_DIR}…"
 rsync -a --checksum "$AGENT_DIR/" "$RUN_DIR/"
 
@@ -105,7 +107,6 @@ TASK_FILE="$TASK_DIR/tasks/$TASK.md"
 
 bun run "$FRAMEWORK" \
   --harness "$HARNESS_ID" \
-  --agent "$AGENT" \
   --task "$TASK_FILE" \
   --model "$MODEL" \
   --run-id "$GUID" \

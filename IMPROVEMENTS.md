@@ -111,6 +111,12 @@ thresholds) as the single canonical footer task.
 - **Per-run port isolation** (parked) — two concurrent runs both bind
   6006/6007; a cross-bound verifier could screenshot the other run's build.
   Until fixed: never run two tasks concurrently.
+- **Scoring-time integrity check** — `verify:integrity` (in-workspace,
+  2026-06-07) catches accidental scaffold edits and names the file, but an
+  adversarial agent could re-run `scripts/integrity-snapshot.mjs` after
+  tampering. The authoritative check belongs in eval-runner / Pass-2:
+  re-hash the run dir's protected files against the COMMITTED init-state +
+  task sources (which the agent can't reach).
 - **Schema-validate the contract JSONs** (JSON Schema per kind) — typo'd token
   names / properties should fail at authoring time. Becomes important once
   task authoring is opened up beyond /ui-spec.

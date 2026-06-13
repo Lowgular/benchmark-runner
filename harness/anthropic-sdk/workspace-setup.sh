@@ -35,8 +35,9 @@ bun run "$SCRIPT_DIR/extract-mcp.ts" "$RUN_DIR"
 if [ -f AGENTS.md ]; then
   # Recipe body → CLAUDE.md (frontmatter stripped — tools/mcpServers are
   # harness wiring consumed by framework.ts/this adapter, not instructions).
+  # AGENTS.md is KEPT: framework.ts discovers the recipe from the workspace
+  # (this adapter runs before it), so deleting it would break discovery.
   awk 'f{print} /^---$/{c++; if(c==2) f=1}' AGENTS.md > CLAUDE.md
-  rm AGENTS.md
 fi
 
 # Skills → SDK discovery path.

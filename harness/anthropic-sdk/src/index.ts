@@ -12,6 +12,8 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 import type { HarnessParams, Message, Usage } from "../../framework.ts";
+import { loadPipeline, runPipeline } from "./pipeline.ts";
+import { normalizeUsage, stringifyToolResultContent } from "./sdk-utils.ts";
 
 /**
  * The Claude Agent SDK reads ANTHROPIC_API_KEY from the environment itself —
@@ -20,32 +22,49 @@ import type { HarnessParams, Message, Usage } from "../../framework.ts";
  */
 export const optionalEnv = ["ANTHROPIC_API_KEY"] as const;
 
-function normalizeUsage(u: Record<string, unknown> | undefined): Usage {
-  return {
-    input: Number(u?.["input_tokens"] ?? 0),
-    output: Number(u?.["output_tokens"] ?? 0),
-    cacheRead: Number(u?.["cache_read_input_tokens"] ?? 0),
-    cacheCreate: Number(u?.["cache_creation_input_tokens"] ?? 0),
-  };
-}
-
-function stringifyToolResultContent(content: unknown): string {
-  if (typeof content === "string") return content;
-  if (Array.isArray(content)) {
-    return content
-      .map((c) => {
-        const cb = c as Record<string, unknown>;
-        return cb["type"] === "text" ? String(cb["text"] ?? "") : `[${cb["type"]}]`;
-      })
-      .join("\n");
-  }
-  return String(content ?? "");
-}
-
 /** Hard backstop — generous ceiling sized well above healthy converging runs. Tune from observed data. Also serves as the per-run cost guard for the autonomous convergence loop. */
 const MAX_TURNS = 150;
 
+/**
+ * --debug instrumentation: after every per-element verification cycle
+ * (a Bash call running `verify:element`), inject a reflection nudge as
+ * PostToolUse additionalContext. The model self-reports friction — unclear
+ * specs, wrong assumptions, missing tools — by appending JSON lines to
+ * improvements.jsonl in the workspace; the operator mines that file after
+ * the run. Costs context — debug runs are diagnostic, not comparable.
+ */
+const REFLECTION_NUDGE =
+  "[debug instrumentation — not part of the task] You just ran a verification cycle. " +
+  "Reflect for one beat before continuing: in THIS mini-iteration, was anything unclear, " +
+  "wrongly assumed, or missing — in the plan, the spec, the feedback you got, or the tools available? " +
+  "If yes, append ONE line to improvements.jsonl (create if absent) in the workspace root:\n" +
+  '{"element":"<story-id>","phase":"<plan|implement|verify|validate>","struggle":"<what was unclear or wrong, concretely>","wanted":"<the tool/feedback/spec-detail that would have removed the struggle>"}\n' +
+  "Be concrete and honest — 'everything was clear' means write NOTHING and continue. " +
+  "Do not let this interrupt your loop: reflect, optionally append, then proceed with the next step.";
+
 export async function* run(params: HarnessParams): AsyncGenerator<Message> {
+  // Pipeline mode: a workspace shipping pipeline.json (recipe layer) switches
+  // this harness into a declarative multi-agent graph walker. No file →
+  // exactly the single-agent behavior below.
+  let pipeline: ReturnType<typeof loadPipeline> = null;
+  try {
+    pipeline = loadPipeline(params.cwd);
+  } catch (err) {
+    yield { t: "error", message: `pipeline.json invalid: ${err instanceof Error ? err.message : String(err)}` };
+    yield {
+      t: "result",
+      status: "error",
+      turnCount: 0,
+      totalUsage: { input: 0, output: 0, cacheRead: 0, cacheCreate: 0 },
+      model: params.model,
+    };
+    return;
+  }
+  if (pipeline) {
+    yield* runPipeline(params, pipeline);
+    return;
+  }
+
   yield { t: "user", text: params.task };
 
   const stream = query({
@@ -81,6 +100,32 @@ export async function* run(params: HarnessParams): AsyncGenerator<Message> {
       // .mcp.json (Claude Code's project MCP standard), auto-approved via
       // .claude/settings.json enableAllProjectMcpServers. params.mcpServers is
       // deliberately ignored — native config over programmatic injection.
+      ...(params.debug
+        ? {
+            hooks: {
+              PostToolUse: [
+                {
+                  matcher: "Bash",
+                  hooks: [
+                    async (input: unknown) => {
+                      const cmd = String(
+                        ((input as { tool_input?: { command?: unknown } }).tool_input
+                          ?.command as string) ?? "",
+                      );
+                      if (!cmd.includes("verify:element")) return {};
+                      return {
+                        hookSpecificOutput: {
+                          hookEventName: "PostToolUse" as const,
+                          additionalContext: REFLECTION_NUDGE,
+                        },
+                      };
+                    },
+                  ],
+                },
+              ],
+            },
+          }
+        : {}),
     },
   });
 

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "name": "vrt",
+  "nodes": [
+    { "id": "implementer", "type": "agent", "agent": "implementer", "session": "persistent" },
+    { "id": "verify", "type": "system", "exec": "npm run verify:element -- -g \"{element}\"" },
+    { "id": "reviewer", "type": "agent", "agent": "reviewer", "output": "feedback.md" }
+  ],
+  "edges": [
+    { "from": "start", "to": "implementer" },
+    { "from": "implementer", "to": "verify" },
+    { "from": "verify", "to": "end", "on": "pass" },
+    { "from": "verify", "to": "reviewer", "on": "fail" },
+    { "from": "reviewer", "to": "implementer" }
+  ]
+}
